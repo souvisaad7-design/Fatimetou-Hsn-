@@ -13,11 +13,10 @@ interface State {
 
 const emptyConversation = (): Conversation => ({ id: uid(), title: NEW_TITLE, messages: [], createdAt: Date.now(), updatedAt: Date.now() });
 
+/** عند كل دخول إلى المساعد نبدأ بمحادثة جديدة، وتبقى المحادثات السابقة في القائمة الجانبية */
 function initialState(): State {
   const saved = storage.get<State>(cfg.storageKey);
   const conversations = (saved?.conversations ?? []).filter((c) => c.messages.length);
-  const current = conversations.find((c) => c.id === saved?.currentId);
-  if (current) return { conversations, currentId: current.id };
   const fresh = emptyConversation();
   return { conversations: [...conversations, fresh], currentId: fresh.id };
 }
