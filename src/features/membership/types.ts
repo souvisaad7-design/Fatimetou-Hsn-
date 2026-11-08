@@ -6,6 +6,8 @@ export type Gender = "ذكر" | "أنثى";
 
 export interface Member {
   id: string;
+  /** حساب الدخول المرتبط (فارغ لمن أضافه المسؤول يدوياً) */
+  userId?: string | null;
   code: string; // رقم المنتسب: AWN-0001
   fullName: string;
   phone: string; // 8 أرقام
@@ -17,8 +19,6 @@ export interface Member {
   address?: string; // المقاطعة / الحي
   listId?: string; // قائمة المنتسب (يحددها المشرف)
   pledge?: number; // مبلغ الانتساب الشهري الذي يختاره حسب قدرته (اختياري)
-  /** بصمة كلمة السر (SHA-256) — لا تُحفظ كلمة السر نفسها */
-  pinHash?: string;
   status: MemberStatus;
   createdAt: string; // ISO
   approvedAt?: string;
@@ -31,6 +31,7 @@ export interface MemberList {
   name: string;
   supervisor: string;
   supervisorPhone?: string;
+  supervisorUserId?: string | null;
 }
 
 /** دفعة انتساب شهري */
@@ -41,8 +42,8 @@ export interface Payment {
   amount: number;
   method: string;
   reference?: string;
-  /** صورة الإيصال (مضغوطة) يرفعها المنتسب كإثبات للدفع */
-  receipt?: string;
+  /** هل رفع المنتسب صورة إيصال؟ (الصورة تُحمَّل عند الطلب فقط) */
+  hasReceipt?: boolean;
   status: RecordStatus;
   source: "member" | "admin"; // أبلغ عنها المنتسب أم سجّلها المشرف
   createdAt: string;
@@ -73,12 +74,24 @@ export interface Donation {
   createdAt: string;
 }
 
+/** دور المستخدم الحالي كما تحدده قاعدة البيانات */
+export interface Profile {
+  memberId: string | null;
+  isAdmin: boolean;
+  listIds: string[];
+  adminsExist: boolean;
+}
+
 export interface Database {
-  version: 1;
   members: Member[];
   lists: MemberList[];
   payments: Payment[];
   campaigns: Campaign[];
   donations: Donation[];
-  counter: number; // لتوليد رقم المنتسب
+  /** مجموع التبرعات المؤكدة لكل حملة (يراه الجميع دون كشف المتبرعين) */
+  campaignTotals: Record<string, { raised: number; donors: number }>;
+  profile: Profile | null;
+  /** loading: أول تحميل، ready: جاهز، error: تعذّر الاتصال */
+  status: "idle" | "loading" | "ready" | "error";
+  error?: string;
 }

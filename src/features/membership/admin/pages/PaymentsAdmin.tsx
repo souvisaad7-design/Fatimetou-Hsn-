@@ -78,7 +78,7 @@ export function PaymentsAdmin() {
                     <td>{p.source === "member" ? "المنتسب" : "المشرف"}</td>
                     <td><Badge tone={statusTone(p.status)}>{recordStatusLabel[p.status]}</Badge></td>
                     <td><div className="ui-row-actions">
-                      <ReceiptButton src={p.receipt} />
+                      <ReceiptButton paymentId={p.id} has={p.hasReceipt} />
                       {p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}
                       <ConfirmButton label="حذف" icon="trash" onConfirm={() => deletePayment(p.id)} />
                     </div></td>

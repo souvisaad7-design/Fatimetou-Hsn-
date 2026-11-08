@@ -141,7 +141,12 @@ function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string;
     const err = validateAmount(f.amount);
     if (err) return setError(err);
     if (!f.month) return;
-    await reportPayment({ memberId, ...f, receipt });
+    try {
+      await reportPayment({ memberId, ...f, receipt });
+    } catch (err) {
+      setError((err as Error).message);
+      return;
+    }
     toast("تم إرسال الدفعة، وستؤكدها اللجنة بعد المراجعة");
     onClose();
   };
@@ -183,7 +188,12 @@ function PledgeForm({ memberId, current, onClose }: { memberId: string; current?
     e.preventDefault();
     const err = validateAmount(v, { required: false });
     if (err) return setError(err);
-    await updatePledge(memberId, v ? toAmount(v) : undefined);
+    try {
+      await updatePledge(memberId, v ? toAmount(v) : undefined);
+    } catch (err) {
+      setError((err as Error).message);
+      return;
+    }
     toast("تم تحديث مبلغ انتسابك");
     onClose();
   };

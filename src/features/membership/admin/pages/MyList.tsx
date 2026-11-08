@@ -75,7 +75,7 @@ export function MyList({ fixedListId }: { fixedListId?: string }) {
               <div key={p.id} className="ad-row">
                 <div className="ad-row__main"><b>{db.members.find((m) => m.id === p.memberId)?.fullName}</b><span className="ad-muted">{monthLabel(p.month)} · {p.method}</span></div>
                 <div className="ad-row__side">
-                  <ReceiptButton src={p.receipt} />
+                  <ReceiptButton paymentId={p.id} has={p.hasReceipt} />
                   <Button small icon="check" onClick={async () => { await setPaymentStatus(p.id, "confirmed"); toast("تم تأكيد الدفعة"); }}>تأكيد {money(p.amount, false)}</Button>
                   <ConfirmButton label="رفض" onConfirm={() => setPaymentStatus(p.id, "rejected")} />
                 </div>
@@ -108,7 +108,7 @@ export function MyList({ fixedListId }: { fixedListId?: string }) {
                 )}
                 {state === "pending" && pending && (
                   <>
-                    <ReceiptButton src={pending.receipt} />
+                    <ReceiptButton paymentId={pending.id} has={pending.hasReceipt} />
                     <Button small icon="check" onClick={async () => { await setPaymentStatus(pending.id, "confirmed"); toast("تم تأكيد الدفعة"); }}>تأكيد {money(pending.amount, false)}</Button>
                   </>
                 )}

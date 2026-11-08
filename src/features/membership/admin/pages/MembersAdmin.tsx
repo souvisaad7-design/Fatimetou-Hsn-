@@ -138,7 +138,7 @@ function MemberDetail({ id, onClose }: { id: string; onClose: () => void }) {
                         <td>{p.method}{p.reference && <span className="ad-muted num" dir="ltr"> · {p.reference}</span>}</td>
                         <td>{p.source === "member" ? "أبلغ عنها المنتسب" : "سجّلها المشرف"}</td>
                         <td><Badge tone={statusTone(p.status)}>{recordStatusLabel[p.status]}</Badge></td>
-                        <td><div className="ui-row-actions"><ReceiptButton src={p.receipt} />{p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}</div></td>
+                        <td><div className="ui-row-actions"><ReceiptButton paymentId={p.id} has={p.hasReceipt} />{p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}</div></td>
                       </tr>
                     ))}
                   </tbody>

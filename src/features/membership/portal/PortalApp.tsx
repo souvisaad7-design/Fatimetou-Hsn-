@@ -4,13 +4,13 @@ import { org } from "../../../shared/org";
 import { useTheme } from "../../../shared/useTheme";
 import { membershipConfig as cfg } from "../config";
 import { useDb } from "../hooks/useDb";
+import { logout as apiLogout, restoreSession } from "../services/api";
 import { useHashRoute } from "../hooks/useHashRoute";
 import type { Member } from "../types";
 import { AuthGate, WaitingScreen } from "./AuthGate";
 import { CampaignsPage } from "./pages/CampaignsPage";
 import { HomePage } from "./pages/HomePage";
 import { StatusPage } from "./pages/StatusPage";
-import { memberSession } from "./session";
 import "./portal.css";
 
 const NAV = [
@@ -25,15 +25,17 @@ const NAV = [
  */
 export default function PortalApp() {
   const db = useDb();
-  const [memberId, setMemberId] = useState(memberSession.get());
-  const member = db.members.find((m) => m.id === memberId) ?? null;
-  const login = (m: Member) => { memberSession.set(m.id); setMemberId(m.id); window.location.hash = "/home"; };
-  const logout = () => { memberSession.clear(); setMemberId(null); window.location.hash = ""; };
+  const member = db.members.find((m) => m.id === db.profile?.memberId) ?? null;
+  const login = (_m: Member) => { window.location.hash = "/home"; };
+  const logout = async () => { await apiLogout(); window.location.hash = ""; };
 
+  useEffect(() => { void restoreSession(); }, []);
   useEffect(() => {
     if (!member || member.status !== "approved") document.title = `${cfg.committeeName} — ${cfg.orgName}`;
   }, [member]);
 
+  if (db.status === "idle" || db.status === "loading") return <div className="app-message" aria-busy="true"><span className="app-spinner" aria-hidden="true" /><p>جارٍ التحميل...</p></div>;
+  if (db.status === "error" && !db.profile) return <div className="app-message" role="alert"><h1>تعذّر الاتصال</h1><p>{db.error}</p><button type="button" onClick={() => void restoreSession()}>إعادة المحاولة</button></div>;
   if (!member) return <AuthGate onLogin={login} />;
   if (member.status !== "approved") return <WaitingScreen member={member} onLogout={logout} />;
   return <PortalShell member={member} onLogout={logout} />;

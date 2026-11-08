@@ -33,6 +33,6 @@ export const toAmount = (v: string | number) => Number(String(v ?? "").replace(/
 export function validatePin(v: string): string | null {
   const p = v.trim();
   if (!p) return "اختر كلمة سر";
-  if (p.length < 4) return "كلمة السر 4 أحرف أو أرقام على الأقل";
+  if (p.length < 6) return "كلمة المرور 6 أحرف أو أرقام على الأقل";
   return null;
 }

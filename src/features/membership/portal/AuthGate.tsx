@@ -40,10 +40,15 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
     if (pe) return setError(pe);
     if (!secret.trim()) return setError("أدخل كلمة المرور");
     setBusy(true);
-    const m = await loginMember(phone, secret);
-    setBusy(false);
-    if (!m) return setError("رقم الهاتف أو كلمة المرور غير صحيحة.");
-    onLogin(m);
+    try {
+      const m = await loginMember(phone, secret);
+      if (!m) setError("رقم الهاتف أو كلمة المرور غير صحيحة.");
+      else onLogin(m);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -113,7 +118,6 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
             </div>
           </div>
         )}
-        <p className="lg-hint">من سُجّل قبل إضافة كلمات المرور يدخل برقم المنتسب، مثل <bdi dir="ltr" style={{ whiteSpace: "nowrap" }}>AWN-0012</bdi>.</p>
       </main>
 
       <Leaves />
@@ -195,7 +199,7 @@ export function WaitingScreen({ member, onLogout }: { member: Member; onLogout: 
             <div><dt>الحالة</dt><dd><Badge tone={statusTone(member.status)}>{memberStatusLabel[member.status]}</Badge></dd></div>
             <div><dt>تاريخ الطلب</dt><dd className="num">{dateLabel(member.createdAt)}</dd></div>
           </dl>
-          {!rejected && !suspended && <Notice>هذه الصفحة تتحدث تلقائياً عند قبول طلبك.</Notice>}
+          {!rejected && !suspended && <Notice>هذه الصفحة تتحدث تلقائياً كل بضع ثوانٍ، وتنقلك إلى الموقع فور قبول طلبك.</Notice>}
           <Button variant="ghost" icon="logout" block onClick={onLogout}>خروج</Button>
         </Card>
       </div>

@@ -64,7 +64,7 @@ export function RequestsAdmin({ supervisorListId }: { supervisorListId?: string 
                     <td>{p.method}</td>
                     <td className="num" dir="ltr">{p.reference ?? "—"}</td>
                     <td><div className="ui-row-actions">
-                      <ReceiptButton src={p.receipt} />
+                      <ReceiptButton paymentId={p.id} has={p.hasReceipt} />
                       <Button small icon="check" onClick={async () => { await setPaymentStatus(p.id, "confirmed"); toast("تم تأكيد الدفعة"); }}>تأكيد</Button>
                       <ConfirmButton label="رفض" onConfirm={() => setPaymentStatus(p.id, "rejected")} />
                     </div></td>

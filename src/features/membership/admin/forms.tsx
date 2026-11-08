@@ -35,7 +35,7 @@ export function MemberFormModal({ member, onClose }: { member?: Member; onClose:
       if (member) { await saveMember({ ...member, ...data }); toast("تم حفظ التعديلات"); }
       else { const m = await addMemberByAdmin(data); toast(`تمت إضافة المنتسب ${m.code}`); }
       onClose();
-    } catch (err) { setErrors({ phone: (err as Error).message }); }
+    } catch (err) { setErrors({ fullName: (err as Error).message }); }
   };
 
   return (
@@ -71,7 +71,7 @@ export function PaymentFormModal({ memberId, month, onClose }: { memberId?: stri
     const err = validateAmount(f.amount);
     if (err) return setError(err);
     if (!f.memberId) return setError("اختر المنتسب");
-    await recordPayment(f);
+    try { await recordPayment(f); } catch (err) { return setError((err as Error).message); }
     toast("تم تسجيل الدفعة");
     onClose();
   };
@@ -102,7 +102,9 @@ export function CampaignFormModal({ campaign, onClose }: { campaign?: Campaign; 
     const errs = { title: f.title.trim() ? null : "أدخل عنوان الحملة", goal: validateAmount(f.goal, { required: false }) };
     setErrors(errs);
     if (hasErrors(errs)) return;
-    await saveCampaign({ ...campaign, title: f.title.trim(), description: f.description.trim(), goal: toAmount(f.goal), startDate: f.startDate, endDate: f.endDate || undefined, active: f.active });
+    try {
+      await saveCampaign({ ...campaign, title: f.title.trim(), description: f.description.trim(), goal: toAmount(f.goal), startDate: f.startDate, endDate: f.endDate || undefined, active: f.active });
+    } catch (err) { return setErrors({ title: (err as Error).message }); }
     toast(campaign ? "تم حفظ الحملة" : "تمت إضافة الحملة");
     onClose();
   };
@@ -131,7 +133,9 @@ export function DonationFormModal({ campaignId, onClose }: { campaignId: string;
     const err = validateAmount(f.amount);
     if (err) return setError(err);
     const m = db.members.find((x) => x.id === f.memberId);
-    await addDonation({ campaignId, ...f, memberId: m?.id, donorName: m?.fullName ?? f.donorName, donorPhone: m?.phone ?? f.donorPhone }, true);
+    try {
+      await addDonation({ campaignId, ...f, memberId: m?.id, donorName: m?.fullName ?? f.donorName, donorPhone: m?.phone ?? f.donorPhone }, true);
+    } catch (err) { return setError((err as Error).message); }
     toast("تم تسجيل التبرع");
     onClose();
   };
@@ -153,15 +157,22 @@ export function DonationFormModal({ campaignId, onClose }: { campaignId: string;
 }
 
 export function ListFormModal({ list, onClose }: { list?: MemberList; onClose: () => void }) {
+  const db = useDb();
   const toast = useToast();
-  const [f, setF] = useState({ name: list?.name ?? "", supervisor: list?.supervisor ?? "", supervisorPhone: list?.supervisorPhone ?? "" });
+  // المشرف يجب أن يكون منتسباً لديه حساب دخول، حتى يدخل لوحة «قائمتي» بحسابه
+  const candidates = db.members.filter((m) => m.status === "approved" && m.userId);
+  const current = candidates.find((m) => m.userId && m.userId === list?.supervisorUserId);
+  const [f, setF] = useState({ name: list?.name ?? "", supervisorMemberId: current?.id ?? "" });
   const [errors, setErrors] = useState<Errors>({});
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const errs = { name: f.name.trim() ? null : "أدخل اسم القائمة", supervisor: f.supervisor.trim() ? null : "أدخل اسم المشرف", supervisorPhone: f.supervisorPhone ? validatePhone(f.supervisorPhone) : null };
+    const sup = candidates.find((m) => m.id === f.supervisorMemberId);
+    const errs = { name: f.name.trim() ? null : "أدخل اسم القائمة", supervisor: sup ? null : "اختر المشرف" };
     setErrors(errs);
-    if (hasErrors(errs)) return;
-    await saveList({ id: list?.id, name: f.name.trim(), supervisor: f.supervisor.trim(), supervisorPhone: f.supervisorPhone.replace(/\D/g, "") || undefined });
+    if (hasErrors(errs) || !sup) return;
+    try {
+      await saveList({ id: list?.id, name: f.name.trim(), supervisor: sup.fullName, supervisorPhone: sup.phone, supervisorMemberId: sup.id });
+    } catch (err) { return setErrors({ name: (err as Error).message }); }
     toast(list ? "تم حفظ القائمة" : "تمت إضافة القائمة");
     onClose();
   };
@@ -169,8 +180,15 @@ export function ListFormModal({ list, onClose }: { list?: MemberList; onClose: (
     <Modal title={list ? "تعديل القائمة" : "قائمة جديدة"} onClose={onClose}>
       <form className="ui-form" onSubmit={submit} noValidate>
         <Field label="اسم القائمة" error={errors.name} full>{(id, d) => <input id={id} aria-describedby={d} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />}</Field>
-        <Field label="المشرف" error={errors.supervisor}>{(id, d) => <input id={id} aria-describedby={d} value={f.supervisor} onChange={(e) => setF({ ...f, supervisor: e.target.value })} />}</Field>
-        <Field label="هاتف المشرف" optional error={errors.supervisorPhone}>{(id, d) => <input id={id} aria-describedby={d} value={f.supervisorPhone} onChange={(e) => setF({ ...f, supervisorPhone: e.target.value })} dir="ltr" inputMode="tel" />}</Field>
+        <Field label="المشرف" full error={errors.supervisor} hint="منتسب معتمد لديه حساب؛ يدخل لوحة «قائمتي» برقم هاتفه وكلمة مروره">
+          {(id, d) => (
+            <select id={id} aria-describedby={d} value={f.supervisorMemberId} onChange={(e) => setF({ ...f, supervisorMemberId: e.target.value })}>
+              <option value="">اختر المشرف</option>
+              {candidates.map((m) => <option key={m.id} value={m.id}>{m.fullName} — {m.phone}</option>)}
+            </select>
+          )}
+        </Field>
+        {candidates.length === 0 && <div className="ui-field--full"><p className="ui-hint">لا يوجد منتسبون معتمدون لديهم حساب بعد. يجب أن يسجّل المشرف من بوابة المنتسبين ثم تقبله.</p></div>}
         <div className="ui-field--full"><Button type="submit" block>حفظ</Button></div>
       </form>
     </Modal>

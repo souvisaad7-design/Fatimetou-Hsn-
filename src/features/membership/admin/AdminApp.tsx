@@ -5,7 +5,7 @@ import { useTheme } from "../../../shared/useTheme";
 import { membershipConfig as cfg } from "../config";
 import { useDb } from "../hooks/useDb";
 import { useHashRoute } from "../hooks/useHashRoute";
-import { dashboardStats, findSupervisorList } from "../services/api";
+import { claimFirstAdmin, dashboardStats, logout as apiLogout, restoreSession, staffLogin } from "../services/api";
 import { validatePhone } from "../lib/validation";
 import { Button, Field, Notice } from "../ui";
 import { CampaignsAdmin } from "./pages/CampaignsAdmin";
@@ -19,10 +19,6 @@ import { RequestsAdmin } from "./pages/RequestsAdmin";
 import { SettingsAdmin } from "./pages/SettingsAdmin";
 import "./admin.css";
 
-const SESSION = "awn:membership:admin";
-
-/** دور المستخدم: عضو اللجنة يرى كل شيء، والمشرف يرى قائمته فقط */
-type Session = { role: "admin" } | { role: "supervisor"; listId: string };
 
 const NAV: Array<{ id: string; label: string; icon: IconName; supervisor?: boolean }> = [
   { id: "dashboard", label: "لوحة المعلومات", icon: "grid" },
@@ -37,62 +33,98 @@ const NAV: Array<{ id: string; label: string; icon: IconName; supervisor?: boole
 ];
 
 /** لوحة إدارة اللجنة الانتسابية */
+/** دور المستخدم في لوحة الإدارة، كما تحدده قاعدة البيانات */
+type Session = { role: "admin" } | { role: "supervisor"; listId: string };
+
 export default function AdminApp() {
-  const [session, setSession] = useState<Session | null>(() => {
-    try {
-      const raw = sessionStorage.getItem(SESSION);
-      const parsed = raw ? (JSON.parse(raw) as Session) : null;
-      return parsed && (parsed.role === "admin" || parsed.role === "supervisor") ? parsed : null;
-    } catch { return null; }
-  });
-  const login = (next: Session) => {
-    try { sessionStorage.setItem(SESSION, JSON.stringify(next)); } catch { /* */ }
-    setSession(next);
-  };
-  const logout = () => {
-    try { sessionStorage.removeItem(SESSION); } catch { /* */ }
-    window.location.hash = "";
-    setSession(null);
-  };
-  if (!session) return <AdminLogin onLogin={login} />;
+  const db = useDb();
+  useEffect(() => { void restoreSession(); }, []);
+  const profile = db.profile;
+  const session: Session | null = profile?.isAdmin
+    ? { role: "admin" }
+    : profile?.listIds.length
+      ? { role: "supervisor", listId: profile.listIds[0] }
+      : null;
+  const logout = async () => { await apiLogout(); window.location.hash = ""; };
+
+  if (db.status === "idle" || db.status === "loading") {
+    return <div className="app-message" aria-busy="true"><span className="app-spinner" aria-hidden="true" /><p>جارٍ التحميل...</p></div>;
+  }
+  if (!profile) return <AdminLogin />;
+  if (!session) return <NoAccess adminsExist={profile.adminsExist} onLogout={logout} />;
   return <AdminShell session={session} onLogout={logout} />;
 }
 
-function AdminLogin({ onLogin }: { onLogin: (s: Session) => void }) {
-  const [mode, setMode] = useState<"admin" | "supervisor">("admin");
-  const [value, setValue] = useState("");
+function AdminLogin() {
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => { document.title = `دخول الإدارة | ${cfg.committeeName}`; }, []);
-  const switchTo = (m: "admin" | "supervisor") => { setMode(m); setValue(""); setError(null); };
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (mode === "admin") {
-      if (value.trim() === cfg.adminPin) onLogin({ role: "admin" });
-      else setError("الرمز غير صحيح");
-      return;
-    }
-    const pe = validatePhone(value);
+    const pe = validatePhone(phone);
     if (pe) return setError(pe);
-    const list = findSupervisorList(value);
-    if (!list) return setError("هذا الرقم ليس مسجّلاً كمشرف قائمة. تواصل مع اللجنة الانتسابية.");
-    onLogin({ role: "supervisor", listId: list.id });
+    if (!pin) return setError("أدخل كلمة المرور");
+    setBusy(true);
+    try {
+      const profile = await staffLogin(phone, pin);
+      if (!profile) setError("رقم الهاتف أو كلمة المرور غير صحيحة.");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <div className="ad-login">
-      <form className="ad-login__box" onSubmit={submit}>
+      <form className="ad-login__box" onSubmit={submit} noValidate>
         <img src={org.logo} alt="" width={64} height={64} />
         <h1>لوحة {cfg.committeeName}</h1>
-        <p className="ad-muted">{cfg.orgName}</p>
-        <div className="ad-tabs" role="tablist">
-          <button type="button" role="tab" aria-selected={mode === "admin"} className={mode === "admin" ? "is-active" : undefined} onClick={() => switchTo("admin")}>عضو اللجنة</button>
-          <button type="button" role="tab" aria-selected={mode === "supervisor"} className={mode === "supervisor" ? "is-active" : undefined} onClick={() => switchTo("supervisor")}>مشرف قائمة</button>
-        </div>
-        <Field label={mode === "admin" ? "رمز الدخول" : "رقم هاتف المشرف"} error={error}>
-          {(id, d) => <input id={id} aria-describedby={d} type={mode === "admin" ? "password" : "tel"} inputMode="numeric" value={value} onChange={(e) => { setValue(e.target.value); setError(null); }} dir="ltr" autoFocus />}
+        <p className="ad-muted">لأعضاء اللجنة ومشرفي القوائم</p>
+        <Field label="رقم الهاتف" error={null}>
+          {(id) => <input id={id} type="tel" inputMode="tel" value={phone} onChange={(e) => { setPhone(e.target.value); setError(null); }} dir="ltr" autoComplete="tel" autoFocus />}
         </Field>
-        <Button type="submit" block>دخول</Button>
-        <Notice tone="warn">نسخة تجريبية: الدخول في الواجهة فقط وليس حماية حقيقية، والبيانات محفوظة في هذا المتصفح. رمز اللجنة الافتراضي <b dir="ltr">2026</b>، والمشرف يدخل برقم هاتفه المسجّل في قائمته.</Notice>
+        <Field label="كلمة المرور" error={error}>
+          {(id, d) => <input id={id} aria-describedby={d} type="password" value={pin} onChange={(e) => { setPin(e.target.value); setError(null); }} dir="ltr" autoComplete="current-password" />}
+        </Field>
+        <Button type="submit" block disabled={busy}>{busy ? "جارٍ الدخول..." : "دخول"}</Button>
+        <Notice>الدخول بحسابك نفسه في بوابة المنتسبين. تظهر لك اللوحة إذا كنت مسؤولاً في اللجنة أو مشرف قائمة.</Notice>
       </form>
+    </div>
+  );
+}
+
+/** حساب بلا صلاحية إدارة. إذا لم يوجد أي مسؤول بعد، يستطيع أول مستخدم أن يصبح المسؤول الأول */
+function NoAccess({ adminsExist, onLogout }: { adminsExist: boolean; onLogout: () => void }) {
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const claim = async () => {
+    setBusy(true);
+    try {
+      if (!(await claimFirstAdmin())) setError("يوجد مسؤول بالفعل. اطلب منه منحك الصلاحية.");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="ad-login">
+      <div className="ad-login__box">
+        <img src={org.logo} alt="" width={64} height={64} />
+        <h1>ليست لديك صلاحية إدارة</h1>
+        {adminsExist ? (
+          <p className="ad-muted">حسابك ليس مسؤولاً في اللجنة ولا مشرفاً لقائمة. اطلب من مسؤول اللجنة أن يجعلك مشرفاً لقائمة من «القوائم والمشرفون».</p>
+        ) : (
+          <>
+            <p className="ad-muted">لا يوجد أي مسؤول في النظام بعد. يمكنك أن تصبح <b>المسؤول الأول</b> للجنة الانتسابية الآن.</p>
+            <Button block icon="check" onClick={claim} disabled={busy}>اجعلني المسؤول الأول</Button>
+          </>
+        )}
+        {error && <p className="ui-error">{error}</p>}
+        <Button variant="ghost" icon="logout" block onClick={onLogout}>خروج</Button>
+      </div>
     </div>
   );
 }

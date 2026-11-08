@@ -24,7 +24,7 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
       fullName: validateName(f.fullName),
       phone: validatePhone(f.phone),
       pin: validatePin(f.pin),
-      pin2: f.pin && f.pin !== f.pin2 ? "كلمتا السر غير متطابقتين" : null,
+      pin2: f.pin && f.pin !== f.pin2 ? "كلمتا المرور غير متطابقتين" : null,
       nni: validateNni(f.nni),
       pledge: validateAmount(f.pledge, { required: false }),
       agree: pledgeOk ? null : "يجب الموافقة على التعهد",
@@ -57,10 +57,10 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
           <Field label="رقم الهاتف" hint="8 أرقام" error={errors.phone}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.phone} onChange={set("phone")} inputMode="tel" dir="ltr" autoComplete="tel" placeholder="22 33 44 55" />}
           </Field>
-          <Field label="كلمة السر" hint="4 أحرف أو أرقام على الأقل، للدخول لاحقاً" error={errors.pin}>
+          <Field label="كلمة المرور" hint="6 أحرف أو أرقام على الأقل، للدخول لاحقاً" error={errors.pin}>
             {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin} onChange={set("pin")} autoComplete="new-password" dir="ltr" />}
           </Field>
-          <Field label="تأكيد كلمة السر" error={errors.pin2}>
+          <Field label="تأكيد كلمة المرور" error={errors.pin2}>
             {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin2} onChange={set("pin2")} autoComplete="new-password" dir="ltr" />}
           </Field>
           <Field label="الرقم الوطني" optional error={errors.nni}>

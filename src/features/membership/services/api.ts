@@ -1,30 +1,31 @@
 /**
- * واجهة العمليات (API) لنظام لجنة الانتساب.
- * كل الصفحات تتعامل مع هذه الدوال فقط. لربط النظام بخادم (Supabase مثلاً)
- * يُعاد كتابة جسم الدوال بطلبات للخادم، مع الإبقاء على أسمائها وأنواعها.
+ * واجهة العمليات (API) لنظام اللجنة الانتسابية — متصلة بـ Supabase.
+ * القراءة من store (ما تسمح به صلاحيات المستخدم)، وكل تعديل عبر دوال آمنة في قاعدة البيانات
+ * تتحقق من الدور (منتسب، مشرف، مسؤول)، ثم يُعاد تحميل البيانات.
  */
 import { membershipConfig as cfg } from "../config";
 import { currentMonth, lastMonths } from "../lib/format";
 import { cleanPhone, toAmount } from "../lib/validation";
-import type { Campaign, Database, Donation, Member, MemberList, MemberStatus, Payment, RecordStatus } from "../types";
-import { seedDatabase } from "../data/seed";
-import { store, uid } from "./store";
+import type { Campaign, Database, Member, MemberList, MemberStatus, Profile, RecordStatus } from "../types";
+import { store } from "./store";
+import { SUPABASE_KEY, SUPABASE_URL, emailForPhone, errorMessage, supabase } from "./supabase";
 
-const now = () => new Date().toISOString();
-const done = <T,>(v: T) => Promise.resolve(v);
-
-/* ======================= المنتسبون ======================= */
-
-/** بصمة كلمة السر مع رقم الهاتف (لا نحفظ كلمة السر نفسها) */
-export async function hashPin(phone: string, pin: string): Promise<string> {
-  const data = new TextEncoder().encode(`awn:${cleanPhone(phone)}:${pin.trim()}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+async function rpc(name: string, args: Record<string, unknown> = {}) {
+  const { data, error } = await supabase.rpc(name, args);
+  if (error) throw new Error(errorMessage(error));
+  await store.refresh();
+  return data;
 }
+
+const currentMember = (): Member | null => {
+  const db = store.get();
+  return db.members.find((m) => m.id === db.profile?.memberId) ?? null;
+};
+
+/* ======================= الدخول والتسجيل ======================= */
 
 export interface RegistrationInput {
   fullName: string;
-  /** كلمة السر التي يختارها المنتسب للدخول لاحقاً */
   pin?: string;
   phone: string;
   nni?: string;
@@ -36,128 +37,114 @@ export interface RegistrationInput {
   pledge?: number;
 }
 
+/** تسجيل مستخدم جديد: ينشئ الحساب والطلب على الخادم، ثم يدخل به (يبقى «قيد المراجعة») */
 export async function registerMember(input: RegistrationInput): Promise<Member> {
-  const phone = cleanPhone(input.phone);
-  const existing = store.get().members.find((m) => m.phone === phone && m.status !== "rejected");
-  if (existing) throw new Error("هذا الرقم مسجّل من قبل. ارجع إلى «تسجيل الدخول» وادخل برقمك وكلمة المرور.");
-  const pinHash = input.pin ? await hashPin(phone, input.pin) : undefined;
-
-  let created!: Member;
-  store.update((db) => {
-    const counter = db.counter + 1;
-    created = {
-      id: uid(),
-      code: `${cfg.codePrefix}-${String(counter).padStart(4, "0")}`,
-      fullName: input.fullName.trim().replace(/\s+/g, " "),
-      phone,
-      nni: input.nni ? cleanPhone(input.nni) : undefined,
-      gender: input.gender,
-      birthDate: input.birthDate || undefined,
-      occupation: input.occupation,
-      institution: input.institution?.trim() || undefined,
-      address: input.address?.trim() || undefined,
-      pledge: input.pledge || undefined,
-      pinHash,
-      status: "pending",
-      createdAt: now(),
-    };
-    return { ...db, counter, members: [created, ...db.members] };
-  });
-  return created;
-}
-
-/**
- * دخول المنتسب برقم هاتفه وكلمة السر.
- * من سُجّل قبل إضافة كلمات السر (أو أضافته اللجنة يدوياً) يدخل برقم المنتسب بدلها.
- */
-export async function loginMember(phone: string, secret: string): Promise<Member | null> {
-  const p = cleanPhone(phone);
-  const candidates = store.get().members.filter((m) => m.phone === p).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  for (const m of candidates) {
-    if (m.pinHash) {
-      if ((await hashPin(p, secret)) === m.pinHash) return m;
-    } else if (findMember(p, secret)?.id === m.id) {
-      return m;
-    }
+  let res: Response;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+      body: JSON.stringify({ ...input, phone: cleanPhone(input.phone) }),
+    });
+  } catch (err) {
+    throw new Error(errorMessage(err));
   }
-  return null;
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  if (!res.ok) throw new Error(data.error ?? "تعذّر إرسال الطلب، حاول مرة أخرى.");
+  const m = await loginMember(input.phone, input.pin ?? "");
+  if (!m) throw new Error("تم إرسال الطلب، لكن تعذّر الدخول. جرّب تسجيل الدخول.");
+  return m;
 }
 
-/** دخول المنتسب إلى صفحته برقم الهاتف ورقم المنتسب */
-export function findMember(phone: string, code: string): Member | null {
-  const p = cleanPhone(phone);
-  const c = code.trim().toUpperCase().replace(/\s/g, "");
-  const normalized = /^\d+$/.test(c) ? `${cfg.codePrefix}-${c.padStart(4, "0")}` : c;
-  return store.get().members.find((m) => m.phone === p && m.code === normalized) ?? null;
+/** الدخول برقم الهاتف وكلمة المرور؛ يرجع ملف المنتسب أو null إذا كانت البيانات خاطئة */
+export async function loginMember(phone: string, pin: string): Promise<Member | null> {
+  const { error } = await supabase.auth.signInWithPassword({ email: emailForPhone(phone), password: pin });
+  if (error) {
+    if (/Invalid login credentials/i.test(error.message)) return null;
+    throw new Error(errorMessage(error));
+  }
+  await store.refresh();
+  return currentMember();
 }
 
-export function saveMember(member: Member): Promise<Member> {
-  store.update((db) => ({ ...db, members: db.members.map((m) => (m.id === member.id ? member : m)) }));
-  return done(member);
+/** دخول لوحة الإدارة: يرجع دور المستخدم (مسؤول، مشرف، أو لا صلاحية) */
+export async function staffLogin(phone: string, pin: string): Promise<Profile | null> {
+  await loginMember(phone, pin);
+  return store.get().profile;
 }
 
-export function addMemberByAdmin(input: RegistrationInput & { listId?: string }): Promise<Member> {
-  return registerMember(input).then((m) => setMemberStatus(m.id, "approved", input.listId));
+export async function logout(): Promise<void> {
+  await supabase.auth.signOut();
+  store.reset();
 }
 
-export function setMemberStatus(id: string, status: MemberStatus, listId?: string): Promise<Member> {
-  let updated!: Member;
-  store.update((db) => ({
-    ...db,
-    members: db.members.map((m) => {
-      if (m.id !== id) return m;
-      updated = {
-        ...m,
-        status,
-        listId: listId ?? m.listId,
-        approvedAt: status === "approved" && !m.approvedAt ? now() : m.approvedAt,
-      };
-      return updated;
-    }),
-  }));
-  return done(updated);
+/** استرجاع جلسة سابقة في هذا التبويب (عند فتح الصفحة) */
+export function restoreSession(): Promise<void> {
+  return store.refresh();
 }
 
-export function deleteMember(id: string): Promise<void> {
-  store.update((db) => ({
-    ...db,
-    members: db.members.filter((m) => m.id !== id),
-    payments: db.payments.filter((p) => p.memberId !== id),
-    donations: db.donations.map((d) => (d.memberId === id ? { ...d, memberId: undefined } : d)),
-  }));
-  return done(undefined);
+/** أول مستخدم يطلب ذلك يصبح المسؤول الأول (فقط إذا لم يوجد أي مسؤول) */
+export async function claimFirstAdmin(): Promise<boolean> {
+  return Boolean(await rpc("claim_first_admin"));
+}
+
+/* ======================= المنتسبون ======================= */
+
+const memberPayload = (m: Partial<Member> & { id?: string }) => ({
+  id: m.id ?? "",
+  full_name: m.fullName,
+  phone: m.phone ? cleanPhone(m.phone) : m.phone,
+  nni: m.nni ?? "",
+  gender: m.gender,
+  birth_date: m.birthDate ?? "",
+  occupation: m.occupation,
+  institution: m.institution ?? "",
+  address: m.address ?? "",
+  list_id: m.listId ?? "",
+  pledge: m.pledge ? String(m.pledge) : "",
+  notes: m.notes ?? "",
+});
+
+export async function saveMember(member: Member): Promise<Member> {
+  await rpc("admin_save_member", { p: memberPayload(member) });
+  return member;
+}
+
+/** المسؤول يضيف منتسباً يدوياً (معتمد، بلا حساب دخول) */
+export async function addMemberByAdmin(input: RegistrationInput & { listId?: string; notes?: string }): Promise<Member> {
+  const id = (await rpc("admin_save_member", { p: memberPayload(input) })) as string;
+  return store.get().members.find((m) => m.id === id) ?? ({ id, code: "", ...input, status: "approved", createdAt: new Date().toISOString() } as Member);
+}
+
+/** قبول (مع القائمة) أو رفض أو إيقاف منتسب */
+export async function setMemberStatus(id: string, status: MemberStatus, listId?: string): Promise<void> {
+  if (status === "approved") await rpc("approve_member", { p_member: id, p_list: listId ?? null });
+  else await rpc("set_member_status", { p_member: id, p_status: status });
+}
+
+export async function deleteMember(id: string): Promise<void> {
+  await rpc("delete_member", { p_member: id });
 }
 
 /** المنتسب يغيّر مبلغ انتسابه الشهري متى شاء («انتسب حسب قدرتك») */
-export function updatePledge(memberId: string, pledge?: number): Promise<void> {
-  store.update((db) => ({ ...db, members: db.members.map((m) => (m.id === memberId ? { ...m, pledge: pledge || undefined } : m)) }));
-  return done(undefined);
+export async function updatePledge(_memberId: string, pledge?: number): Promise<void> {
+  await rpc("update_my_pledge", { p_pledge: pledge ?? null });
 }
 
 /* ======================= القوائم والمشرفون ======================= */
 
-/** دخول المشرف برقم هاتفه المسجّل في قائمته */
-export function findSupervisorList(phone: string): MemberList | null {
-  const p = cleanPhone(phone);
-  return store.get().lists.find((l) => l.supervisorPhone === p) ?? null;
+export async function saveList(list: Omit<MemberList, "id"> & { id?: string; supervisorMemberId?: string }): Promise<void> {
+  await rpc("save_list", {
+    p_id: list.id ?? null,
+    p_name: list.name,
+    p_supervisor_member: list.supervisorMemberId ?? null,
+    p_supervisor_name: list.supervisor,
+    p_supervisor_phone: list.supervisorPhone ?? "",
+  });
 }
 
-export function saveList(list: Omit<MemberList, "id"> & { id?: string }): Promise<MemberList> {
-  const item: MemberList = { ...list, id: list.id ?? uid() };
-  store.update((db) => ({
-    ...db,
-    lists: db.lists.some((l) => l.id === item.id) ? db.lists.map((l) => (l.id === item.id ? item : l)) : [...db.lists, item],
-  }));
-  return done(item);
-}
-
-export function deleteList(id: string): Promise<void> {
-  store.update((db) => ({
-    ...db,
-    lists: db.lists.filter((l) => l.id !== id),
-    members: db.members.map((m) => (m.listId === id ? { ...m, listId: undefined } : m)),
-  }));
-  return done(undefined);
+export async function deleteList(id: string): Promise<void> {
+  await rpc("delete_list", { p_id: id });
 }
 
 /* ======================= الانتساب الشهري ======================= */
@@ -171,63 +158,45 @@ export interface PaymentInput {
   receipt?: string;
 }
 
-/** المنتسب يبلغ عن دفعة (تبقى بانتظار تأكيد اللجنة) */
-export function reportPayment(input: PaymentInput): Promise<Payment> {
-  return addPayment(input, "member", "pending");
+/** المنتسب يبلغ عن دفعة (تبقى بانتظار تأكيد المشرف أو اللجنة) */
+export async function reportPayment(input: PaymentInput): Promise<void> {
+  await rpc("report_payment", {
+    p_month: input.month, p_amount: toAmount(input.amount), p_method: input.method, p_reference: input.reference ?? "", p_receipt: input.receipt ?? "",
+  });
 }
 
 /** المشرف يسجّل دفعة مستلمة (مؤكدة مباشرة) */
-export function recordPayment(input: PaymentInput): Promise<Payment> {
-  return addPayment(input, "admin", "confirmed");
+export async function recordPayment(input: PaymentInput): Promise<void> {
+  await rpc("record_payment", {
+    p_member: input.memberId, p_month: input.month, p_amount: toAmount(input.amount), p_method: input.method, p_reference: input.reference ?? "",
+  });
 }
 
-function addPayment(input: PaymentInput, source: Payment["source"], status: RecordStatus): Promise<Payment> {
-  const payment: Payment = {
-    id: uid(),
-    memberId: input.memberId,
-    month: input.month,
-    amount: toAmount(input.amount),
-    method: input.method,
-    reference: input.reference?.trim() || undefined,
-    receipt: input.receipt || undefined,
-    status,
-    source,
-    createdAt: now(),
-  };
-  store.update((db) => ({ ...db, payments: [payment, ...db.payments] }));
-  return done(payment);
+export async function setPaymentStatus(id: string, status: RecordStatus): Promise<void> {
+  await rpc("set_payment_status", { p_id: id, p_status: status });
 }
 
-export function setPaymentStatus(id: string, status: RecordStatus): Promise<void> {
-  store.update((db) => ({ ...db, payments: db.payments.map((p) => (p.id === id ? { ...p, status } : p)) }));
-  return done(undefined);
+export async function deletePayment(id: string): Promise<void> {
+  await rpc("delete_payment", { p_id: id });
 }
 
-export function deletePayment(id: string): Promise<void> {
-  store.update((db) => ({ ...db, payments: db.payments.filter((p) => p.id !== id) }));
-  return done(undefined);
+/** صورة الإيصال (تُحمَّل عند الحاجة فقط) */
+export async function getReceipt(paymentId: string): Promise<string | null> {
+  const { data, error } = await supabase.from("payments").select("receipt").eq("id", paymentId).maybeSingle();
+  if (error) throw new Error(errorMessage(error));
+  return (data?.receipt as string | null) ?? null;
 }
 
 /* ======================= الحملات والتبرعات ======================= */
 
-export function saveCampaign(c: Omit<Campaign, "id" | "createdAt"> & { id?: string; createdAt?: string }): Promise<Campaign> {
-  const item: Campaign = { ...c, id: c.id ?? uid(), createdAt: c.createdAt ?? now() };
-  store.update((db) => ({
-    ...db,
-    campaigns: db.campaigns.some((x) => x.id === item.id)
-      ? db.campaigns.map((x) => (x.id === item.id ? item : x))
-      : [item, ...db.campaigns],
-  }));
-  return done(item);
+export async function saveCampaign(c: Omit<Campaign, "id" | "createdAt"> & { id?: string; createdAt?: string }): Promise<void> {
+  await rpc("save_campaign", {
+    p: { id: c.id ?? "", title: c.title, description: c.description, goal: c.goal, start_date: c.startDate, end_date: c.endDate ?? "", active: c.active },
+  });
 }
 
-export function deleteCampaign(id: string): Promise<void> {
-  store.update((db) => ({
-    ...db,
-    campaigns: db.campaigns.filter((c) => c.id !== id),
-    donations: db.donations.filter((d) => d.campaignId !== id),
-  }));
-  return done(undefined);
+export async function deleteCampaign(id: string): Promise<void> {
+  await rpc("delete_campaign", { p_id: id });
 }
 
 export interface DonationInput {
@@ -240,54 +209,32 @@ export interface DonationInput {
   reference?: string;
 }
 
-/** تبرع يبلغ عنه المتبرع (بانتظار التأكيد) أو يسجّله المشرف (مؤكد) */
-export function addDonation(input: DonationInput, confirmed = false): Promise<Donation> {
-  const d: Donation = {
-    id: uid(),
-    campaignId: input.campaignId,
-    memberId: input.memberId,
-    donorName: input.donorName.trim() || "فاعل خير",
-    donorPhone: input.donorPhone ? cleanPhone(input.donorPhone) : undefined,
-    amount: toAmount(input.amount),
-    method: input.method,
-    reference: input.reference?.trim() || undefined,
-    status: confirmed ? "confirmed" : "pending",
-    createdAt: now(),
-  };
-  store.update((db) => ({ ...db, donations: [d, ...db.donations] }));
-  return done(d);
+/** تبرع: من المنتسب (بانتظار التأكيد) أو يسجّله المسؤول (مؤكد تلقائياً على الخادم) */
+export async function addDonation(input: DonationInput, _confirmed = false): Promise<void> {
+  await rpc("add_donation", {
+    p_campaign: input.campaignId,
+    p_donor_name: input.donorName,
+    p_donor_phone: input.donorPhone ? cleanPhone(input.donorPhone) : "",
+    p_amount: toAmount(input.amount),
+    p_method: input.method,
+    p_reference: input.reference ?? "",
+    p_member: input.memberId ?? null,
+  });
 }
 
-export function setDonationStatus(id: string, status: RecordStatus): Promise<void> {
-  store.update((db) => ({ ...db, donations: db.donations.map((d) => (d.id === id ? { ...d, status } : d)) }));
-  return done(undefined);
+export async function setDonationStatus(id: string, status: RecordStatus): Promise<void> {
+  await rpc("set_donation_status", { p_id: id, p_status: status });
 }
 
-export function deleteDonation(id: string): Promise<void> {
-  store.update((db) => ({ ...db, donations: db.donations.filter((d) => d.id !== id) }));
-  return done(undefined);
+export async function deleteDonation(id: string): Promise<void> {
+  await rpc("delete_donation", { p_id: id });
 }
 
-/* ======================= النسخ الاحتياطي ======================= */
+/* ======================= التصدير ======================= */
 
 export function exportBackup(): string {
-  return JSON.stringify(store.get(), null, 2);
-}
-
-export function importBackup(json: string): void {
-  const data = JSON.parse(json) as Database;
-  if (data?.version !== 1 || !Array.isArray(data.members) || !Array.isArray(data.payments)) {
-    throw new Error("الملف ليس نسخة احتياطية صالحة لنظام الانتساب.");
-  }
-  store.replace(data);
-}
-
-export function resetDemo(): void {
-  store.replace(seedDatabase());
-}
-
-export function clearAll(): void {
-  store.replace({ version: 1, members: [], lists: [], payments: [], campaigns: [], donations: [], counter: 0 });
+  const { members, lists, payments, campaigns, donations } = store.get();
+  return JSON.stringify({ exportedAt: new Date().toISOString(), members, lists, payments, campaigns, donations }, null, 2);
 }
 
 /* ======================= حسابات ======================= */
@@ -295,8 +242,13 @@ export function clearAll(): void {
 export const confirmed = <T extends { status: RecordStatus }>(rows: T[]) => rows.filter((r) => r.status === "confirmed");
 export const sum = (rows: Array<{ amount: number }>) => rows.reduce((s, r) => s + r.amount, 0);
 
+/** ما جُمع للحملة (من الخادم، فيشمل تبرعات الجميع دون كشف أسمائهم) */
 export function campaignRaised(db: Database, campaignId: string) {
-  return sum(confirmed(db.donations.filter((d) => d.campaignId === campaignId)));
+  return db.campaignTotals[campaignId]?.raised ?? sum(confirmed(db.donations.filter((d) => d.campaignId === campaignId)));
+}
+
+export function campaignDonors(db: Database, campaignId: string) {
+  return db.campaignTotals[campaignId]?.donors ?? confirmed(db.donations.filter((d) => d.campaignId === campaignId)).length;
 }
 
 /** حالة كل شهر للمنتسب: مدفوع / بانتظار التأكيد / غير مدفوع (منذ اعتماده) */

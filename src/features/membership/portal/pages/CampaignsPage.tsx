@@ -2,12 +2,11 @@ import { useState, type FormEvent } from "react";
 import { useToast } from "../../../../shared/toast";
 import { membershipConfig as cfg } from "../../config";
 import { useDb } from "../../hooks/useDb";
-import { addDonation, campaignRaised } from "../../services/api";
+import { addDonation, campaignDonors, campaignRaised } from "../../services/api";
 import { dateLabel, money } from "../../lib/format";
 import { validateAmount, validatePhone } from "../../lib/validation";
 import type { Campaign } from "../../types";
 import { Badge, Button, Empty, Field, Modal, Notice, Progress } from "../../ui";
-import { memberSession } from "../session";
 
 export function CampaignsPage() {
   const db = useDb();
@@ -26,7 +25,7 @@ export function CampaignsPage() {
         <div className="pt-campaigns">
           {campaigns.map((c) => {
             const raised = campaignRaised(db, c.id);
-            const donors = db.donations.filter((d) => d.campaignId === c.id && d.status === "confirmed").length;
+            const donors = campaignDonors(db, c.id);
             return (
               <article key={c.id} className={`pt-campaign${c.active ? "" : " is-closed"}`}>
                 <div className="pt-campaign__top">
@@ -53,7 +52,7 @@ export function CampaignsPage() {
 function DonateForm({ campaign, onClose }: { campaign: Campaign; onClose: () => void }) {
   const db = useDb();
   const toast = useToast();
-  const me = db.members.find((m) => m.id === memberSession.get());
+  const me = db.members.find((m) => m.id === db.profile?.memberId);
   const [f, setF] = useState({ donorName: me?.fullName ?? "", donorPhone: me?.phone ?? "", amount: "", method: cfg.paymentMethods[0], reference: "" });
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [sent, setSent] = useState(false);
@@ -63,7 +62,12 @@ function DonateForm({ campaign, onClose }: { campaign: Campaign; onClose: () => 
     const errs = { amount: validateAmount(f.amount), donorPhone: f.donorPhone ? validatePhone(f.donorPhone) : null };
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
-    await addDonation({ campaignId: campaign.id, memberId: me?.id, ...f });
+    try {
+      await addDonation({ campaignId: campaign.id, memberId: me?.id, ...f });
+    } catch (err) {
+      setErrors({ amount: (err as Error).message });
+      return;
+    }
     setSent(true);
     toast("شكراً لك! تم تسجيل تبرعك");
   };

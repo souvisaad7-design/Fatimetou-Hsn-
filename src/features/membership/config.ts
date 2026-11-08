@@ -19,11 +19,5 @@ export const membershipConfig = {
   /** عدد الأشهر المتتالية غير المدفوعة التي ينبَّه بعدها المشرف */
   lateAfterMonths: 2,
 
-  /**
-   * ⚠️ رمز دخول لوحة الإدارة في الواجهة فقط (للعرض والتجربة)، وليس حماية حقيقية.
-   * عند ربط النظام بخادم (Supabase Auth مثلاً) يُستبدل بتسجيل دخول حقيقي.
-   */
-  adminPin: (import.meta.env.VITE_ADMIN_PIN as string | undefined) || "2026",
-
   storageKey: "awn:membership:v1",
 };
