@@ -18,7 +18,7 @@ export const mockProvider: ChatProvider = {
     const lastQuestion = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const intent = matchIntent(lastQuestion, mockKnowledge);
     // البحث عن فيديو مناسب يجري بالتوازي مع كتابة الرد
-    const skipVideos = NO_VIDEO.has(intent.id) || intent.id.startsWith("lead-");
+    const skipVideos = intent.playlist || NO_VIDEO.has(intent.id) || intent.id.startsWith("lead-");
     const videosPromise = skipVideos ? Promise.resolve([]) : searchVideos(lastQuestion, signal);
     const [min, max] = cfg.mock.thinkingMs;
     await sleep(min + Math.random() * (max - min), signal);
@@ -30,6 +30,6 @@ export const mockProvider: ChatProvider = {
       if (part.trim()) await sleep(cfg.mock.tokenMs * (1 + Math.random()), signal);
     }
     const videos = await videosPromise;
-    return { content: intent.answer, followups: intent.followups ?? [], actions: resolveActions(intent.actions), videos };
+    return { content: intent.answer, followups: intent.followups ?? [], actions: resolveActions(intent.actions), videos, playlist: intent.playlist ?? false };
   },
 };

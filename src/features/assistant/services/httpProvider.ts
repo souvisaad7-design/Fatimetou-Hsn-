@@ -30,7 +30,7 @@ export const httpProvider: ChatProvider = {
       if (type.includes("application/json")) {
         const data = (await res.json()) as ChatReply;
         onToken?.(data.content ?? "");
-        return { content: data.content ?? "", followups: data.followups ?? [], actions: resolveActions(data.actions), videos: data.videos ?? [] };
+        return { content: data.content ?? "", followups: data.followups ?? [], actions: resolveActions(data.actions), videos: data.videos ?? [], playlist: data.playlist ?? false };
       }
 
       const reader = res.body!.getReader();
@@ -55,14 +55,14 @@ export const httpProvider: ChatProvider = {
           try {
             const obj = JSON.parse(payload) as { delta?: string } & Partial<ChatReply>;
             if (obj.delta) { text += obj.delta; onToken?.(text); }
-            if (obj.followups || obj.actions || obj.videos) extra = { ...extra, ...obj };
+            if (obj.followups || obj.actions || obj.videos || obj.playlist) extra = { ...extra, ...obj };
           } catch {
             text += payload;
             onToken?.(text);
           }
         }
       }
-      return { content: text, followups: extra.followups ?? [], actions: resolveActions(extra.actions), videos: extra.videos ?? [] };
+      return { content: text, followups: extra.followups ?? [], actions: resolveActions(extra.actions), videos: extra.videos ?? [], playlist: extra.playlist ?? false };
     } finally {
       clearTimeout(timer);
     }

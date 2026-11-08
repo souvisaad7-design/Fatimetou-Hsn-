@@ -17,6 +17,9 @@ export function Welcome({ onAsk }: { onAsk: (q: string) => void }) {
           </button>
         ))}
       </div>
+      <button type="button" className="ast-videos-btn" onClick={() => onAsk(cfg.channelPlaylist.buttonLabel)}>
+        <Icon name="play" /> {cfg.channelPlaylist.buttonLabel}
+      </button>
     </div>
   );
 }

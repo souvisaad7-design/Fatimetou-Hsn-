@@ -57,6 +57,17 @@ export const assistantConfig = {
   },
 
   /**
+   * مشغّل كل فيديوهات قناة الجمعية (قائمة الرفع) داخل فقاعة الرد — دون أي API.
+   * يتنقل المستخدم بين الفيديوهات من زر القائمة داخل المشغّل.
+   */
+  channelPlaylist: {
+    embedUrl: "https://www.youtube-nocookie.com/embed/videoseries?list=UUtSeTuqXTgjteFqL8XVBz3w&rel=0&playsinline=1",
+    title: "فيديوهات جمعية عون وسند الخيرية",
+    intro: "هذه فيديوهات جمعية عون وسند الخيرية 🎬",
+    buttonLabel: "فيديوهات الجمعية",
+  },
+
+  /**
    * فيديوهات قناة الجمعية على يوتيوب (تُعرض داخل البوت).
    * searchUrl: دالة البحث على الخادم (api/youtube/search). على Vercel تعمل كما هي؛
    * وعلى GitHub Pages اضبط VITE_VIDEO_SEARCH_URL برابط مشروع Vercel الكامل.

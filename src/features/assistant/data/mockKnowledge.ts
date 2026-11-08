@@ -20,12 +20,22 @@ import { committeesListAnswer, fullLeadershipAnswer, leadershipIntents } from ".
 const PHONE = org.phone;
 const SITE = `[aoun-sand.vercel.app](${org.siteUrl})`;
 const APPS = org.paymentApps.join("، ");
-const SOCIALS = org.socials.map((x) => `[${x.name}](${x.url})`).join(" · ");
+// يوتيوب لا يُعرض كرابط خارجي: فيديوهات الجمعية تُشاهَد داخل المساعد نفسه
+const SOCIALS = org.socials.filter((x) => x.name !== "يوتيوب").map((x) => `[${x.name}](${x.url})`).join(" · ");
+const VIDEOS_HINT = "ولمشاهدة فيديوهات الجمعية هنا داخل المساعد، اكتب «فيديوهات الجمعية».";
 const NEEDS_CONFIRMATION = "هذه المعلومة تحتاج إلى تأكيد من إدارة الجمعية.";
 
 export const mockKnowledge: KnowledgeBase = {
   intents: [
     ...leadershipIntents,
+    {
+      id: "channel-videos",
+      priority: 15,
+      playlist: true,
+      keywords: ["فيديو", "فيديوهات", "قناه", "قناتكم", "يوتيوب", "youtube", "مقاطع", "مقطع", "تسجيلات", "مصوره", "اشاهد", "نشاهد", "مشاهده", "شاهد"],
+      answer: "يمكنك مشاهدة كل فيديوهات الجمعية هنا، والتنقل بينها من زر القائمة داخل المشغّل.",
+      followups: ["ما أبرز مشاريع الجمعية؟", "كيف يمكنني دعم مشاريع الجمعية؟"],
+    },
     {
       id: "about",
       priority: 1,
@@ -104,6 +114,7 @@ export const mockKnowledge: KnowledgeBase = {
     {
       id: "projects",
       priority: 3,
+      playlist: true,
       keywords: ["مشروع", "مشاريع", "انشطه الجمعيه", "برامج", "برنامج", "حملات", "انجازات", "ابرز", "تعملون", "مجالات", "تفعلون"],
       answer:
         "يشمل البرنامج السنوي للجمعية:\n\n" +
@@ -116,7 +127,7 @@ export const mockKnowledge: KnowledgeBase = {
         "- حملة غزة عند الإمكان.\n\n" +
         "وفي عام **2026–2027** يستمر البرنامج نفسه مع التركيز على **معهد المحجة البيضاء**: دورات صيفية، ومسابقات قرآنية، وحفل تخريج، تحت شعار «نجاح المعهد نجاح للجمعية».\n\n" +
         "كما ساهمت الجمعية منذ تأسيسها في الإشراف على ما يقارب **100 سقاية** ماء ضمن مشروع **«سقيا الأمل»**.",
-      followups: ["ما هو معهد المحجة البيضاء؟", "كيف يمكنني دعم مشاريع الجمعية؟"],
+      followups: ["فيديوهات الجمعية", "كيف يمكنني دعم مشاريع الجمعية؟"],
     },
     {
       id: "institute",
@@ -367,8 +378,8 @@ export const mockKnowledge: KnowledgeBase = {
     {
       id: "socials",
       priority: 12,
-      keywords: ["فيسبوك", "تيك توك", "تيكتوك", "يوتيوب", "سناب", "انستغرام", "صفحات", "وسائل التواصل الاجتماعي", "حسابات الجمعيه"],
-      answer: `صفحات الجمعية على وسائل التواصل الاجتماعي: ${SOCIALS}`,
+      keywords: ["فيسبوك", "تيك توك", "تيكتوك", "سناب", "انستغرام", "صفحات", "وسائل التواصل الاجتماعي", "حسابات الجمعيه"],
+      answer: `صفحات الجمعية على وسائل التواصل الاجتماعي: ${SOCIALS}\n\n${VIDEOS_HINT}`,
       followups: ["كيف أتواصل مع إدارة الجمعية؟"],
     },
     {
@@ -381,7 +392,7 @@ export const mockKnowledge: KnowledgeBase = {
         `- **العنوان:** ${org.address}\n` +
         `- **البريد الإلكتروني:** ${org.email}\n` +
         `- **موقع الجمعية:** ${SITE}\n` +
-        `- **وسائل التواصل الاجتماعي:** ${SOCIALS}`,
+        `- **وسائل التواصل الاجتماعي:** ${SOCIALS}\n\n${VIDEOS_HINT}`,
       actions: [{ type: "link", url: org.whatsapp, label: "مراسلة الجمعية على واتساب" }],
       followups: ["كيف يمكنني دعم مشاريع الجمعية؟", "من هم أعضاء المكتب التنفيذي؟"],
     },

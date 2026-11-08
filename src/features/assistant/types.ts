@@ -22,6 +22,8 @@ export interface ChatMessage {
   followups?: string[];
   actions?: ReplyAction[];
   videos?: VideoResult[];
+  /** عرض مشغّل قائمة كل فيديوهات قناة الجمعية داخل الرد */
+  playlist?: boolean;
   error?: boolean;
 }
 
@@ -45,6 +47,7 @@ export interface ChatReply {
   followups?: string[];
   actions?: ReplyAction[];
   videos?: VideoResult[];
+  playlist?: boolean;
 }
 
 export interface ChatProvider {
@@ -63,6 +66,8 @@ export interface Intent {
   answer: string;
   followups?: string[];
   actions?: ReplyAction[];
+  /** يعرض مشغّل قائمة فيديوهات القناة مع الرد */
+  playlist?: boolean;
 }
 
 export interface KnowledgeBase {

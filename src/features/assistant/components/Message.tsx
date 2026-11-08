@@ -4,6 +4,7 @@ import { copyText, useToast } from "../../../shared/toast";
 import { assistantConfig as cfg } from "../config";
 import { Markdown } from "../lib/Markdown";
 import type { ChatMessage } from "../types";
+import { PlaylistCard } from "./PlaylistCard";
 import { VideoCard } from "./VideoCard";
 
 export function UserMessage({ content }: { content: string }) {
@@ -15,7 +16,7 @@ export function UserMessage({ content }: { content: string }) {
 }
 
 interface BotProps {
-  message: Pick<ChatMessage, "content" | "followups" | "actions" | "error" | "videos">;
+  message: Pick<ChatMessage, "content" | "followups" | "actions" | "error" | "videos" | "playlist">;
   isLast?: boolean;
   isWelcome?: boolean;
   onAsk?: (q: string) => void;
@@ -30,7 +31,8 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
     <BotShell error={message.error}>
       <div className="ast-msg__body"><Markdown text={message.content} /></div>
 
-      {!!message.videos?.length && <VideoCard videos={message.videos} />}
+      {message.playlist && <PlaylistCard />}
+      {!message.playlist && !!message.videos?.length && <VideoCard videos={message.videos} />}
 
       {links.length > 0 && (
         <div className="ast-msg__actions">
