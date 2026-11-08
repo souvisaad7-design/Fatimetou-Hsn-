@@ -56,6 +56,18 @@ export const assistantConfig = {
     headers: {} as Record<string, string>, // لا تضع مفاتيح سرية هنا؛ مكانها الخادم
   },
 
+  /**
+   * فيديوهات قناة الجمعية على يوتيوب (تُعرض داخل البوت).
+   * searchUrl: دالة البحث على الخادم (api/youtube/search). على Vercel تعمل كما هي؛
+   * وعلى GitHub Pages اضبط VITE_VIDEO_SEARCH_URL برابط مشروع Vercel الكامل.
+   * إذا تعذّر البحث، يكمل البوت رده نصياً دون فيديو.
+   */
+  videos: {
+    enabled: env.VITE_VIDEOS_ENABLED !== "false",
+    searchUrl: (env.VITE_VIDEO_SEARCH_URL as string | undefined) || "/api/youtube/search",
+    timeoutMs: 4000,
+  },
+
   mock: { thinkingMs: [500, 1100] as [number, number], tokenMs: 18 },
 
   storageKey: "awn:assistant:v1",

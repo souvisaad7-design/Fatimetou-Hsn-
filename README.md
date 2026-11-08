@@ -45,6 +45,24 @@ src/
 الملف التعريفي الرسمي للجمعية وتعليمات المساعد في `docs/assistant-knowledge-base.md`.
 الردود الحالية مبنية عليه، وعند ربط نموذج ذكاء اصطناعي يُستعمل الملف كاملاً كتعليمات للنظام (System Prompt) في الخادم.
 
+## فيديوهات قناة الجمعية داخل البوت
+
+عندما يسأل المستخدم عن نشاط أو حملة أو حدث، يبحث البوت في فيديوهات قناة الجمعية على يوتيوب
+(@associationaidesoutien)، ويشغّل الفيديو المناسب داخل فقاعة الرد (youtube-nocookie، دون روابط خارجية).
+
+| الملف | الدور |
+|---|---|
+| `supabase/migrations/20261108090000_youtube_videos.sql` | جدول `youtube_videos`، البحث العربي/الفرنسي، RLS، ودالة `search_youtube_videos` |
+| `api/youtube/sync.ts` | جلب كل فيديوهات القناة من YouTube Data API v3 وتحديث الجدول (upsert) |
+| `api/youtube/search.ts` | `/api/youtube/search?q=...` يرجع أفضل 3 فيديوهات |
+| `api/_lib/videoTool.ts` | أداة `search_association_videos` جاهزة لنموذج ذكاء اصطناعي مستقبلاً |
+| `vercel.json` | تشغيل المزامنة يومياً (Vercel Cron) |
+| `src/features/assistant/components/VideoCard.tsx` | المشغّل داخل البوت (تحميل كسول، وصور مصغّرة للفيديوهات الأخرى) |
+
+- دوال `api/` تعمل على **Vercel** فقط. على GitHub Pages يعمل البوت بلا فيديوهات، إلا إذا ضُبط `VITE_VIDEO_SEARCH_URL` برابط مشروع Vercel.
+- المتغيرات المطلوبة في `.env.example`. مفتاح يوتيوب ومفتاح service role على الخادم فقط.
+- إذا فشل البحث أو لم يوجد فيديو مناسب، يجيب البوت نصياً كالعادة.
+
 ## ربط المساعد بالـ Backend لاحقاً
 
 أنشئ ملف `.env` (أو اضبط المتغيرات في GitHub Actions):

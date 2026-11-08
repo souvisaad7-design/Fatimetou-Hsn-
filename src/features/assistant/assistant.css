@@ -163,6 +163,40 @@
 }
 .ast-chip:hover { border-color: var(--brand); color: var(--brand); }
 
+/* ---------- بطاقة الفيديو داخل الرد ---------- */
+.ast-video { margin-top: 12px; max-width: 560px; }
+.ast-video__frame {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+  border-radius: var(--radius); overflow: hidden; background: var(--navy);
+  box-shadow: var(--shadow);
+}
+.ast-video__frame iframe, .ast-video__frame img {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; display: block;
+}
+.ast-video__title { margin-top: 8px; font-weight: 700; line-height: 1.5; font-size: 0.95rem; }
+.ast-video__more { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.ast-video__thumb {
+  display: flex; flex-direction: column; gap: 6px; text-align: start; padding: 0;
+  background: none; border: 0; cursor: pointer; color: var(--ink); font: inherit; min-width: 0;
+}
+.ast-video__thumb-img {
+  position: relative; display: block; aspect-ratio: 16 / 9; max-width: 100%;
+  border-radius: 10px; overflow: hidden; background: var(--navy); border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+.ast-video__thumb:hover .ast-video__thumb-img, .ast-video__thumb:focus-visible .ast-video__thumb-img { border-color: var(--pink); }
+.ast-video__thumb-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ast-video__play {
+  position: absolute; inset: 0; margin: auto; width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--pink); color: var(--navy);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.ast-video__play svg { width: 18px; height: 18px; fill: currentColor; margin-left: 3px; }
+.ast-video__thumb-title {
+  font-size: 0.82rem; line-height: 1.45; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
 /* ---------- حقل الكتابة ---------- */
 .ast-composer-wrap { padding: 8px max(16px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 .ast-composer {

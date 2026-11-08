@@ -7,6 +7,13 @@ export interface ReplyAction {
   label?: string;
 }
 
+/** فيديو من قناة الجمعية يُعرض ويُشغَّل داخل فقاعة الرد */
+export interface VideoResult {
+  id: string;
+  title: string;
+  thumbnail?: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   role: Role;
@@ -14,6 +21,7 @@ export interface ChatMessage {
   createdAt: number;
   followups?: string[];
   actions?: ReplyAction[];
+  videos?: VideoResult[];
   error?: boolean;
 }
 
@@ -36,6 +44,7 @@ export interface ChatReply {
   content: string;
   followups?: string[];
   actions?: ReplyAction[];
+  videos?: VideoResult[];
 }
 
 export interface ChatProvider {

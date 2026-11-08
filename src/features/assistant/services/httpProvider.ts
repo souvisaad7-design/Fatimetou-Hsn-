@@ -5,7 +5,7 @@ import { resolveActions } from "./utils";
 /**
  * مزوّد الـ Backend (غير مفعّل حالياً).
  * الطلب:  POST { messages: [{ role, content }] }
- * الرد:   JSON { content, followups?, actions? }
+ * الرد:   JSON { content, followups?, actions?, videos? }   (videos: [{ id, title, thumbnail }] من أداة search_association_videos)
  *     أو  SSE  أسطر "data: {\"delta\":\"...\"}" ثم اختيارياً "data: {\"followups\":[...]}"
  *     أو  نص متدفق خام
  */
@@ -30,7 +30,7 @@ export const httpProvider: ChatProvider = {
       if (type.includes("application/json")) {
         const data = (await res.json()) as ChatReply;
         onToken?.(data.content ?? "");
-        return { content: data.content ?? "", followups: data.followups ?? [], actions: resolveActions(data.actions) };
+        return { content: data.content ?? "", followups: data.followups ?? [], actions: resolveActions(data.actions), videos: data.videos ?? [] };
       }
 
       const reader = res.body!.getReader();
@@ -55,14 +55,14 @@ export const httpProvider: ChatProvider = {
           try {
             const obj = JSON.parse(payload) as { delta?: string } & Partial<ChatReply>;
             if (obj.delta) { text += obj.delta; onToken?.(text); }
-            if (obj.followups || obj.actions) extra = { ...extra, ...obj };
+            if (obj.followups || obj.actions || obj.videos) extra = { ...extra, ...obj };
           } catch {
             text += payload;
             onToken?.(text);
           }
         }
       }
-      return { content: text, followups: extra.followups ?? [], actions: resolveActions(extra.actions) };
+      return { content: text, followups: extra.followups ?? [], actions: resolveActions(extra.actions), videos: extra.videos ?? [] };
     } finally {
       clearTimeout(timer);
     }
