@@ -42,12 +42,12 @@ export const assistantConfig = {
   },
 
   /**
-   * موقع الجمعية — الرابط الوحيد إليه هو زر الانتساب:
-   * زر "الانتقال إلى موقع الانتساب" تحت ردود الانتساب، ورابط «الانتساب إلى الجمعية» في الشريط الجانبي.
+   * رابط صفحة الانتساب (اختياري). المساعد مستقل، فلا يظهر أي زر انتساب ما دام الرابط غير مضبوط.
+   * عند ضبط VITE_MEMBERSHIP_URL يظهر زر تحت ردود الانتساب، ورابط في الشريط الجانبي.
    */
   membership: {
-    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || org.siteUrl,
-    label: "الانتقال إلى موقع الانتساب",
+    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || null,
+    label: "التسجيل في الجمعية",
   },
 
   api: {

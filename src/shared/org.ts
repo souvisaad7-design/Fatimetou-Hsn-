@@ -12,9 +12,7 @@ export const org = {
   slogan: "عون للمحتاج وسند للضعيف",
   /** رقم الجمعية للتواصل ودفع الانتساب والتبرعات */
   phone: "32203250",
-  /** موقع الجمعية — لا يُفتح إلا من أزرار الانتساب */
-  siteUrl: "https://aoun-sand.vercel.app/",
-  /** من موقع الجمعية الرسمي */
+  /** بيانات عامة عن الجمعية */
   license: { number: "FA 010000210303202510407", date: "2025-03-05" },
   address: "نواكشوط - كارفور",
   email: "associationaidesoutien@gmail.com",
@@ -25,7 +23,7 @@ export const org = {
     { name: "يوتيوب", url: "https://youtube.com/@associationaidesoutien" },
     { name: "سناب شات", url: "https://www.snapchat.com/add/jmywnwsnd" },
   ],
-  /** تطبيقات الدفع المعتمدة في موقع الجمعية للتحويل إلى رقم الجمعية */
+  /** تطبيقات الدفع للتحويل إلى رقم الجمعية */
   paymentApps: ["بنكيلي", "مصرفي", "السداد", "بيم بانك", "غازا بي", "كليك"],
   logo: logoUrl,
   logoFull: logoFullUrl,

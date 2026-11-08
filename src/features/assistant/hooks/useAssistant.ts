@@ -61,7 +61,7 @@ export function useAssistant() {
     [busy, store, respond],
   );
 
-  /** بدء محادثة جديدة بسؤال جاهز (مثلاً عند القدوم من موقع الانتساب) */
+  /** بدء محادثة جديدة بسؤال جاهز (من رابط فيه ?q=) */
   const startWith = useCallback(
     (text: string) => {
       const q = text.trim();

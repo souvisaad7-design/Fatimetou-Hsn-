@@ -1,0 +1,108 @@
+/* مكوّنات نظام لجنة الانتساب — كل الأصناف تبدأ بـ ui- */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 9px 18px; border-radius: 12px; border: 1.5px solid transparent;
+  font: 700 0.95rem var(--f-body); cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: transform 0.12s, background 0.15s, border-color 0.15s;
+}
+.ui-btn:active { transform: scale(0.98); }
+.ui-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ui-btn--primary { background: var(--brand); color: var(--brand-ink); }
+.ui-btn--primary:hover:not(:disabled) { background: var(--brand-strong); }
+.ui-btn--pink { background: var(--pink); color: var(--navy); }
+.ui-btn--ghost { background: transparent; color: var(--brand); border-color: var(--line); }
+.ui-btn--ghost:hover:not(:disabled) { border-color: var(--brand); }
+.ui-btn--soft { background: var(--brand-soft); color: var(--brand); }
+.ui-btn--danger { background: var(--danger); color: #fff; }
+.ui-btn--block { display: flex; width: 100%; }
+.ui-btn--sm { min-height: 34px; padding: 5px 12px; font-size: 0.85rem; border-radius: 10px; }
+.ui-icon-btn { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: none; border: 0; cursor: pointer; color: var(--ink); }
+.ui-icon-btn:hover { background: var(--brand-soft); color: var(--brand); }
+.ui-confirm { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+
+/* الحقول */
+.ui-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+@media (max-width: 600px) { .ui-form { grid-template-columns: 1fr; } }
+.ui-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ui-field--full { grid-column: 1 / -1; }
+.ui-field label { font-weight: 700; font-size: 0.9rem; }
+.ui-optional { color: var(--muted); font-weight: 400; }
+.ui-input, .ui-field input:not([type="radio"]):not([type="checkbox"]), .ui-field select, .ui-field textarea {
+  width: 100%; min-height: 46px; padding: 10px 14px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 1rem;
+}
+.ui-field textarea { min-height: 80px; resize: vertical; }
+.ui-input:focus, .ui-field input:focus, .ui-field select:focus, .ui-field textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.ui-field.has-error input, .ui-field.has-error select { border-color: var(--danger); }
+.ui-hint { color: var(--muted); font-size: 0.8rem; }
+.ui-error { color: var(--danger); font-size: 0.82rem; font-weight: 600; }
+.ui-choices { display: flex; gap: 8px; flex-wrap: wrap; }
+.ui-choice { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 12px; border: 1.5px solid var(--line); cursor: pointer; font-weight: 600; }
+.ui-choice:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); }
+.ui-choice input { accent-color: var(--brand); }
+.ui-check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92rem; cursor: pointer; }
+.ui-check input { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+
+/* الشارات */
+.ui-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.ui-badge--ok { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+.ui-badge--warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.ui-badge--bad { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+.ui-badge--neutral { background: var(--brand-soft); color: var(--muted); }
+.ui-badge--brand { background: var(--brand-soft); color: var(--brand); }
+
+/* البطاقات والإحصائيات */
+.ui-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
+.ui-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.ui-card__head h2 { font-size: 1.1rem; }
+.ui-card__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ui-stat { display: flex; flex-direction: column; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; min-width: 0; position: relative; }
+.ui-stat__icon { position: absolute; top: 14px; left: 14px; color: var(--brand); opacity: 0.8; }
+.ui-stat__label { color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+.ui-stat__value { font-size: 1.45rem; font-family: var(--f-display); line-height: 1.3; }
+.ui-stat__sub { color: var(--muted); font-size: 0.78rem; }
+.ui-stat--navy { background: var(--navy); border-color: var(--navy); color: #fff; }
+.ui-stat--navy .ui-stat__label, .ui-stat--navy .ui-stat__sub { color: rgba(255,255,255,.75); }
+.ui-stat--navy .ui-stat__icon { color: var(--pink); }
+.ui-stat--pink { background: var(--pink); border-color: var(--pink); color: var(--navy); }
+.ui-stat--pink .ui-stat__label, .ui-stat--pink .ui-stat__sub, .ui-stat--pink .ui-stat__icon { color: var(--navy); }
+
+.ui-progress { height: 10px; border-radius: 999px; background: var(--brand-soft); overflow: hidden; }
+.ui-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pink), var(--brand)); }
+[dir="rtl"] .ui-progress span { background: linear-gradient(270deg, var(--pink), var(--brand)); }
+
+.ui-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: var(--muted); padding: 28px 12px; }
+.ui-empty__title { font-weight: 700; color: var(--ink); }
+
+.ui-notice { border-radius: 12px; padding: 10px 14px; font-size: 0.88rem; line-height: 1.7; }
+.ui-notice--info { background: var(--brand-soft); color: var(--ink); }
+.ui-notice--warn { background: var(--accent-soft); color: var(--ink); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); }
+
+/* الجداول */
+.ui-table-wrap { overflow-x: auto; margin: 0 -18px; padding: 0 18px; }
+.ui-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 560px; }
+.ui-table th { text-align: start; color: var(--muted); font-weight: 700; font-size: 0.8rem; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ui-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.ui-table tr:last-child td { border-bottom: 0; }
+.ui-table tbody tr:hover { background: color-mix(in srgb, var(--brand-soft) 50%, transparent); }
+.ui-table .num { white-space: nowrap; }
+.ui-row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* النافذة المنبثقة */
+.ui-modal { position: fixed; inset: 0; z-index: 60; background: var(--scrim); display: grid; place-items: center; padding: 16px; animation: ui-fade 0.15s ease both; }
+.ui-modal__box { width: min(560px, 100%); max-height: calc(100dvh - 32px); overflow: auto; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); }
+.ui-modal__box--wide { width: min(820px, 100%); }
+.ui-modal__head { position: sticky; top: 0; background: var(--surface); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); z-index: 1; }
+.ui-modal__head h2 { font-size: 1.1rem; }
+.ui-modal__body { padding: 18px; }
+@keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* شبكة الأشهر */
+.ui-months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 480px) { .ui-months { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ui-month { border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 0.75rem; line-height: 1.4; border: 1px solid var(--line); }
+.ui-month b { display: block; font-size: 0.8rem; }
+.ui-month--paid { background: color-mix(in srgb, var(--ok) 14%, transparent); border-color: transparent; color: var(--ok); }
+.ui-month--pending { background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: transparent; color: var(--warn); }
+.ui-month--unpaid { background: color-mix(in srgb, var(--danger) 10%, transparent); border-color: transparent; color: var(--danger); }
+.ui-month--before { color: var(--muted); opacity: 0.6; }

@@ -1,11 +1,11 @@
-/** الموقع الأول: الصفحة الرئيسية لجمعية عون وسند الخيرية (مستقل عن المساعد) */
+/** بوابة المنتسبين للجنة الانتساب: التسجيل، متابعة الوضعية والانتساب، والتبرع للحملات */
 import { mount } from "../app/bootstrap";
-import HomePage from "../features/home/HomePage";
+import PortalApp from "../features/membership/portal/PortalApp";
 
-// الروابط القديمة للمساعد (#/assistant) كانت على هذا العنوان؛ نحوّلها إلى عنوانه المستقل الجديد
+// الروابط القديمة للمساعد (#/assistant) نحوّلها إلى عنوانه المستقل
 if (window.location.hash.startsWith("#/assistant")) {
   const query = window.location.hash.split("?")[1];
   window.location.replace(`./assistant/${query ? `?${query}` : ""}`);
 } else {
-  mount(<HomePage />);
+  mount(<PortalApp />);
 }

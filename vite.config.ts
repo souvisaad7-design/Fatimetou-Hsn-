@@ -6,12 +6,13 @@ import { resolve } from "node:path";
 export default defineConfig({
   plugins: [react()],
   base: "./",
-  // موقعان مستقلان: الصفحة الرئيسية (/) والمساعد الذكي (/assistant/)
+  // بوابة المنتسبين (/)، لوحة الإدارة (/admin/)، والمساعد الذكي (/assistant/)
   build: {
     rollupOptions: {
       input: {
         home: resolve(__dirname, "index.html"),
         assistant: resolve(__dirname, "assistant/index.html"),
+        admin: resolve(__dirname, "admin/index.html"),
       },
     },
   },
