@@ -46,6 +46,10 @@ export interface Intent {
   id: string;
   priority?: number;
   maxWords?: number;
+  /** لا يُطابق إلا إذا احتوى السؤال على إحدى هذه الكلمات (مثل "مسؤول" لأسئلة الأشخاص) */
+  requires?: string[];
+  /** لا يُطابق إذا احتوى السؤال على إحدى هذه الكلمات */
+  excludes?: string[];
   keywords: string[];
   answer: string;
   followups?: string[];

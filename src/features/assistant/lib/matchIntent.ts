@@ -9,6 +9,8 @@ export function matchIntent(question: string, kb: KnowledgeBase) {
   let bestScore = 0;
   for (const intent of kb.intents) {
     if (intent.maxWords && words > intent.maxWords) continue;
+    if (intent.requires && !intent.requires.some((k) => q.includes(normalizeArabic(k)))) continue;
+    if (intent.excludes?.some((k) => q.includes(normalizeArabic(k)))) continue;
     const hits = intent.keywords.filter((k) => q.includes(normalizeArabic(k))).length;
     if (!hits) continue;
     const score = hits * 10 + (intent.priority ?? 0);
