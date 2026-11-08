@@ -58,7 +58,7 @@ export function Composer({ busy, onSend, onStop, focusKey }: Props) {
           <Icon name={busy ? "stop" : "send"} />
         </button>
       </form>
-      <p className="ast-disclaimer">المساعد يعمل حالياً بإجابات تجريبية، وقد لا تعكس المعلومات الرسمية للجمعية بشكل كامل.</p>
+      <p className="ast-disclaimer">إجابات المساعد مبنية على الملف التعريفي للجمعية. للتأكد من أي معلومة يُرجى الرجوع إلى إدارة الجمعية.</p>
     </footer>
   );
 }

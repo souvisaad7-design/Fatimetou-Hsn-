@@ -44,6 +44,11 @@ src/
         └── components/
 ```
 
+## القاعدة المعرفية للمساعد
+
+الملف التعريفي الرسمي للجمعية وتعليمات المساعد في `docs/assistant-knowledge-base.md`.
+الردود الحالية مبنية عليه، وعند ربط نموذج ذكاء اصطناعي يُستعمل الملف كاملاً كتعليمات للنظام (System Prompt) في الخادم.
+
 ## ربط المساعد بالـ Backend لاحقاً
 
 أنشئ ملف `.env` (أو اضبط المتغيرات في GitHub Actions):
@@ -71,4 +76,4 @@ VITE_MEMBERSHIP_URL=https://join.example.org
 ## قبل النشر الرسمي
 
 - الشعار في `public/` (`awn-logo.png` للرمز و `awn-logo-full.png` للشعار الكامل)، والألوان في `src/styles/tokens.css`.
-- راجع المحتوى التجريبي في `src/features/assistant/data/mockKnowledge.ts` و `src/features/membership/data.ts`.
+- راجع المحتوى التجريبي في `src/features/membership/data.ts` (صفحة الانتساب).
