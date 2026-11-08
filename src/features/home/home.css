@@ -87,3 +87,5 @@
   text-align: center; color: var(--muted); font-size: 0.9rem;
 }
 .hm-footer a { color: var(--brand); }
+.hm-footer p + p { margin-top: 6px; }
+.hm-socials { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; }

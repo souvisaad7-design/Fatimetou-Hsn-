@@ -112,7 +112,13 @@ export default function HomePage() {
 
       <footer className="hm-footer">
         <div className="hm-wrap">
-          <p>{org.name} — {org.city}</p>
+          <p>{org.name} — {org.address}</p>
+          <p dir="ltr">{org.email}</p>
+          <p className="hm-socials">
+            {org.socials.map((x) => (
+              <a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer">{x.name}</a>
+            ))}
+          </p>
           <p>
             <a href={org.siteUrl} target="_blank" rel="noopener noreferrer">موقع الأعضاء والمنتسبين</a>
             {" · "}
