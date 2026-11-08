@@ -6,8 +6,11 @@ import { dateLabel, money, monthLabel } from "../../lib/format";
 import { Badge, Button, Card, ConfirmButton, Empty } from "../../ui";
 import { ReceiptButton } from "../ReceiptButton";
 
-/** كل ما ينتظر قرار اللجنة: طلبات الانتساب، والدفعات والتبرعات التي أبلغ عنها أصحابها */
-export function RequestsAdmin() {
+/**
+ * كل ما ينتظر القرار: طلبات المستخدمين الجدد، والدفعات والتبرعات التي أبلغ عنها أصحابها.
+ * المشرف (supervisorListId) يرى طلبات المستخدمين الجدد فقط، ومن يقبله يُضاف إلى قائمته مباشرة.
+ */
+export function RequestsAdmin({ supervisorListId }: { supervisorListId?: string } = {}) {
   const db = useDb();
   const toast = useToast();
   const [listFor, setListFor] = useState<Record<string, string>>({});
@@ -18,7 +21,8 @@ export function RequestsAdmin() {
 
   return (
     <div className="ad-stack">
-      <Card title={<>طلبات انتساب جديدة <Badge tone="warn">{pendingMembers.length}</Badge></>}>
+      <Card title={<>طلبات المستخدمين الجدد <Badge tone="warn">{pendingMembers.length}</Badge></>}>
+        {supervisorListId && <p className="ad-muted ad-small">من تقبله يُضاف إلى قائمتك: <b>{db.lists.find((l) => l.id === supervisorListId)?.name}</b>.</p>}
         {pendingMembers.length === 0 ? <Empty icon="check" title="لا توجد طلبات انتساب جديدة" /> : (
           <div className="ad-requests">
             {pendingMembers.map((m) => (
@@ -30,11 +34,13 @@ export function RequestsAdmin() {
                   <span className="ad-muted">الانتساب المقترح: {m.pledge ? money(m.pledge) : "حسب القدرة"} · سجّل في {dateLabel(m.createdAt)}</span>
                 </div>
                 <div className="ad-request__actions">
-                  <select className="ui-input" aria-label={`قائمة ${m.fullName}`} value={listFor[m.id] ?? ""} onChange={(e) => setListFor({ ...listFor, [m.id]: e.target.value })}>
-                    <option value="">اختر القائمة</option>
-                    {db.lists.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.supervisor})</option>)}
-                  </select>
-                  <Button small icon="check" onClick={async () => { await setMemberStatus(m.id, "approved", listFor[m.id] || undefined); toast(`تم قبول ${m.fullName}`); }}>قبول</Button>
+                  {!supervisorListId && (
+                    <select className="ui-input" aria-label={`قائمة ${m.fullName}`} value={listFor[m.id] ?? ""} onChange={(e) => setListFor({ ...listFor, [m.id]: e.target.value })}>
+                      <option value="">اختر القائمة</option>
+                      {db.lists.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.supervisor})</option>)}
+                    </select>
+                  )}
+                  <Button small icon="check" onClick={async () => { await setMemberStatus(m.id, "approved", supervisorListId ?? (listFor[m.id] || undefined)); toast(`تم قبول ${m.fullName}`); }}>{supervisorListId ? "قبول في قائمتي" : "قبول"}</Button>
                   <ConfirmButton label="رفض" confirmLabel="تأكيد الرفض" onConfirm={async () => { await setMemberStatus(m.id, "rejected"); toast("تم رفض الطلب"); }} />
                 </div>
               </div>
@@ -43,6 +49,7 @@ export function RequestsAdmin() {
         )}
       </Card>
 
+      {!supervisorListId && <>
       <Card title={<>دفعات انتساب بانتظار التأكيد <Badge tone="warn">{pendingPayments.length}</Badge></>}>
         {pendingPayments.length === 0 ? <Empty icon="check" title="لا توجد دفعات تنتظر التأكيد" /> : (
           <div className="ui-table-wrap">
@@ -93,6 +100,7 @@ export function RequestsAdmin() {
           </div>
         )}
       </Card>
+      </>}
     </div>
   );
 }

@@ -17,6 +17,8 @@ export interface Member {
   address?: string; // المقاطعة / الحي
   listId?: string; // قائمة المنتسب (يحددها المشرف)
   pledge?: number; // مبلغ الانتساب الشهري الذي يختاره حسب قدرته (اختياري)
+  /** بصمة كلمة السر (SHA-256) — لا تُحفظ كلمة السر نفسها */
+  pinHash?: string;
   status: MemberStatus;
   createdAt: string; // ISO
   approvedAt?: string;

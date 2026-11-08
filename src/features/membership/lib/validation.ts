@@ -29,3 +29,10 @@ export function validateAmount(v: string | number, { required = true } = {}): st
 }
 
 export const toAmount = (v: string | number) => Number(String(v ?? "").replace(/[,\s]/g, "")) || 0;
+
+export function validatePin(v: string): string | null {
+  const p = v.trim();
+  if (!p) return "اختر كلمة سر";
+  if (p.length < 4) return "كلمة السر 4 أحرف أو أرقام على الأقل";
+  return null;
+}

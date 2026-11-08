@@ -1,56 +1,19 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { membershipConfig as cfg } from "../../config";
 import { useDb } from "../../hooks/useDb";
-import { commitment, confirmed, findMember, memberMonths, reportPayment, sum, updatePledge } from "../../services/api";
+import { commitment, confirmed, memberMonths, reportPayment, sum, updatePledge } from "../../services/api";
 import { dateLabel, lastMonths, memberStatusLabel, money, monthLabel, recordStatusLabel, statusTone } from "../../lib/format";
-import { toAmount, validateAmount, validatePhone } from "../../lib/validation";
+import { toAmount, validateAmount } from "../../lib/validation";
+import type { Member } from "../../types";
 import { compressImage } from "../../lib/image";
 import { Badge, Button, Card, Empty, Field, Modal, Notice } from "../../ui";
-import { memberSession } from "../session";
 import { useToast } from "../../../../shared/toast";
 
-export function StatusPage({ go }: { go: (to: string) => void }) {
-  const db = useDb();
-  const [memberId, setMemberId] = useState(memberSession.get());
-  const member = db.members.find((m) => m.id === memberId) ?? null;
-
-  if (!member) return <MemberLogin onLogin={(id) => { memberSession.set(id); setMemberId(id); }} go={go} />;
-  return <MemberDashboard memberId={member.id} onLogout={() => { memberSession.clear(); setMemberId(null); }} go={go} />;
+export function StatusPage({ member, go }: { member: Member; go: (to: string) => void }) {
+  return <MemberDashboard memberId={member.id} go={go} />;
 }
 
-function MemberLogin({ onLogin, go }: { onLogin: (id: string) => void; go: (to: string) => void }) {
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const pe = validatePhone(phone);
-    if (pe) return setError(pe);
-    if (!code.trim()) return setError("أدخل رقم المنتسب");
-    const m = findMember(phone, code);
-    if (!m) return setError("لم نجد منتسباً بهذا الهاتف ورقم المنتسب. تأكد من البيانات.");
-    onLogin(m.id);
-  };
-  return (
-    <div className="pt-narrow pt-stack">
-      <div>
-        <h1 className="pt-h1">وضعيتي</h1>
-        <p className="pt-muted">ادخل برقم هاتفك ورقم المنتسب الذي حصلت عليه عند التسجيل.</p>
-      </div>
-      <Card>
-        <form className="pt-stack" onSubmit={submit} noValidate>
-          <Field label="رقم الهاتف">{(id) => <input id={id} value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" dir="ltr" autoComplete="tel" />}</Field>
-          <Field label="رقم المنتسب" hint="مثال: AWN-0012 أو 12">{(id) => <input id={id} value={code} onChange={(e) => setCode(e.target.value)} dir="ltr" autoCapitalize="characters" />}</Field>
-          {error && <p className="ui-error" role="alert">{error}</p>}
-          <Button type="submit" block>دخول</Button>
-        </form>
-      </Card>
-      <p className="pt-center pt-muted">لست مسجلاً بعد؟ <a className="pt-link" href="#/register" onClick={() => go("register")}>سجّل الآن</a></p>
-    </div>
-  );
-}
-
-function MemberDashboard({ memberId, onLogout, go }: { memberId: string; onLogout: () => void; go: (to: string) => void }) {
+function MemberDashboard({ memberId, go }: { memberId: string; go: (to: string) => void }) {
   const db = useDb();
   const member = db.members.find((m) => m.id === memberId)!;
   const list = db.lists.find((l) => l.id === member.listId);
@@ -84,9 +47,6 @@ function MemberDashboard({ memberId, onLogout, go }: { memberId: string; onLogou
         {member.status === "pending" && <Notice>طلبك قيد المراجعة من اللجنة الانتسابية. ستظهر قائمتك ومشرفك هنا بعد القبول.</Notice>}
         {member.status === "rejected" && <Notice tone="warn">لم يُقبل طلبك. للاستفسار تواصل مع الجمعية على <b dir="ltr">{cfg.phone}</b>.</Notice>}
         {member.status === "suspended" && <Notice tone="warn">عضويتك موقوفة حالياً. تواصل مع مشرف قائمتك أو مع الجمعية.</Notice>}
-        <div className="pt-member__actions">
-          <Button variant="ghost" small icon="logout" onClick={onLogout}>خروج</Button>
-        </div>
       </Card>
 
       {(member.status === "approved" || member.status === "suspended") && (

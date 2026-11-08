@@ -20,17 +20,17 @@ export function HomePage({ go }: { go: (to: string) => void }) {
           <p className="pt-motto">«{cfg.motto}»</p>
           <p className="pt-lead">{cfg.message}</p>
           <div className="pt-hero__actions">
-            <Button icon="userPlus" onClick={() => go("register")}>سجّل منتسباً جديداً</Button>
-            <Button variant="ghost" icon="users" onClick={() => go("status")}>تابع وضعيتي</Button>
+            <Button icon="users" onClick={() => go("status")}>وضعيتي وانتسابي</Button>
+            <Button variant="ghost" icon="heart" onClick={() => go("campaigns")}>الحملات</Button>
           </div>
         </div>
       </section>
 
       <section>
-        <h2 className="pt-h2">كيف يتم الانتساب؟</h2>
+        <h2 className="pt-h2">كيف يسير الانتساب؟</h2>
         <ol className="pt-steps">
-          <li><span>1</span><div><b>سجّل بياناتك</b><p>املأ الاستمارة واحصل على رقم المنتسب.</p></div></li>
-          <li><span>2</span><div><b>تراجع اللجنة طلبك</b><p>بعد القبول تُضاف إلى قائمة لها مشرف يتابع انتسابك.</p></div></li>
+          <li><span>1</span><div><b>سجّلت بياناتك</b><p>وحصلت على رقم المنتسب وكلمة السر.</p></div></li>
+          <li><span>2</span><div><b>قُبل طلبك</b><p>وأُضفت إلى قائمة لها مشرف يتابع انتسابك.</p></div></li>
           <li><span>3</span><div><b>انتسب شهرياً حسب قدرتك</b><p>ادفع للمشرف أو عبر التطبيقات البنكية، وتابع كل أشهرك من «وضعيتي».</p></div></li>
         </ol>
       </section>

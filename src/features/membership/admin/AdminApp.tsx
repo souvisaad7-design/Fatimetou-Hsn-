@@ -28,7 +28,7 @@ const NAV: Array<{ id: string; label: string; icon: IconName; supervisor?: boole
   { id: "dashboard", label: "لوحة المعلومات", icon: "grid" },
   { id: "mylist", label: "قائمتي", icon: "check", supervisor: true },
   { id: "reminders", label: "التذكيرات", icon: "bell", supervisor: true },
-  { id: "requests", label: "الطلبات", icon: "inbox" },
+  { id: "requests", label: "الطلبات", icon: "inbox", supervisor: true },
   { id: "members", label: "المنتسبون", icon: "users" },
   { id: "payments", label: "الانتساب الشهري", icon: "wallet" },
   { id: "lists", label: "القوائم والمشرفون", icon: "list" },
@@ -104,7 +104,7 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
   const [menu, setMenu] = useState(false);
   const db = useDb();
   const stats = dashboardStats(db);
-  const badges: Record<string, number> = { requests: stats.pending + stats.pendingPayments + stats.pendingDonations };
+  const badges: Record<string, number> = { requests: supervisor ? stats.pending : stats.pending + stats.pendingPayments + stats.pendingDonations };
   const nav = supervisor ? NAV.filter((n) => n.supervisor) : NAV;
   const current = nav.find((n) => n.id === page) ?? nav[0];
   const list = supervisor ? db.lists.find((l) => l.id === supervisor) : undefined;
@@ -145,7 +145,7 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
         <main className="ad-content">
           {current.id === "mylist" ? <MyList fixedListId={supervisor} />
             : current.id === "reminders" ? <Reminders fixedListId={supervisor} />
-            : current.id === "requests" ? <RequestsAdmin />
+            : current.id === "requests" ? <RequestsAdmin supervisorListId={supervisor} />
             : current.id === "members" ? <MembersAdmin openId={params[0]} go={go} />
             : current.id === "payments" ? <PaymentsAdmin />
             : current.id === "lists" ? <ListsAdmin go={go} />

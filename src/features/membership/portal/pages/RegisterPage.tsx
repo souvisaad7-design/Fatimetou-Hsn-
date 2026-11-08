@@ -1,21 +1,18 @@
 import { useState, type FormEvent } from "react";
-import { copyText, useToast } from "../../../../shared/toast";
 import { membershipConfig as cfg } from "../../config";
 import { registerMember } from "../../services/api";
-import { validateAmount, validateName, validateNni, validatePhone, toAmount } from "../../lib/validation";
+import { validateAmount, validateName, validateNni, validatePhone, validatePin, toAmount } from "../../lib/validation";
 import type { Member } from "../../types";
-import { Button, Card, Field, Notice } from "../../ui";
-import { memberSession } from "../session";
+import { Button, Card, Field } from "../../ui";
 
-const empty = { fullName: "", phone: "", nni: "", gender: "ذكر" as Member["gender"], birthDate: "", occupation: cfg.occupations[0], institution: "", address: "", pledge: "" };
+const empty = { fullName: "", phone: "", pin: "", pin2: "", nni: "", gender: "ذكر" as Member["gender"], birthDate: "", occupation: cfg.occupations[0], institution: "", address: "", pledge: "" };
 
-export function RegisterPage({ go }: { go: (to: string) => void }) {
-  const toast = useToast();
+/** استمارة المستخدم الجديد؛ بعد الإرسال يبقى الطلب «قيد المراجعة» حتى تقبله اللجنة أو المشرف */
+export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; onBack: () => void }) {
   const [f, setF] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [pledgeOk, setPledgeOk] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<Member | null>(null);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
     setF((v) => ({ ...v, [k]: e.target.value }));
     if (errors[k]) setErrors((x) => ({ ...x, [k]: null }));
@@ -26,6 +23,8 @@ export function RegisterPage({ go }: { go: (to: string) => void }) {
     const errs = {
       fullName: validateName(f.fullName),
       phone: validatePhone(f.phone),
+      pin: validatePin(f.pin),
+      pin2: f.pin && f.pin !== f.pin2 ? "كلمتا السر غير متطابقتين" : null,
       nni: validateNni(f.nni),
       pledge: validateAmount(f.pledge, { required: false }),
       agree: pledgeOk ? null : "يجب الموافقة على التعهد",
@@ -35,9 +34,7 @@ export function RegisterPage({ go }: { go: (to: string) => void }) {
     setBusy(true);
     try {
       const m = await registerMember({ ...f, pledge: f.pledge ? toAmount(f.pledge) : undefined });
-      memberSession.set(m.id);
-      setDone(m);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      onDone(m);
     } catch (err) {
       setErrors({ phone: (err as Error).message });
     } finally {
@@ -45,25 +42,12 @@ export function RegisterPage({ go }: { go: (to: string) => void }) {
     }
   }
 
-  if (done) {
-    return (
-      <Card className="pt-success">
-        <div className="pt-success__mark">✓</div>
-        <h1>تم تسجيل طلبك</h1>
-        <p>احفظ رقم المنتسب، فستحتاجه مع رقم هاتفك لمتابعة وضعيتك.</p>
-        <div className="pt-code num" dir="ltr">{done.code}</div>
-        <Button variant="soft" icon="copy" onClick={async () => toast((await copyText(done.code)) ? "تم نسخ رقم المنتسب" : done.code)}>نسخ الرقم</Button>
-        <Notice>طلبك الآن <b>قيد المراجعة</b>. بعد قبوله تُضاف إلى قائمة ومشرف يتابع انتسابك الشهري.</Notice>
-        <Button block icon="users" onClick={() => go("status")}>الذهاب إلى وضعيتي</Button>
-      </Card>
-    );
-  }
-
   return (
     <div className="pt-stack">
       <div>
-        <h1 className="pt-h1">التسجيل في الجمعية</h1>
-        <p className="pt-muted">املأ بياناتك كما في بطاقة التعريف. القبول يخضع لمراجعة اللجنة الانتسابية.</p>
+        <button type="button" className="pt-back" onClick={onBack}>→ رجوع</button>
+        <h1 className="pt-h1">مستخدم جديد</h1>
+        <p className="pt-muted">املأ بياناتك كما في بطاقة التعريف. يُراجع طلبك من اللجنة الانتسابية أو المشرف، ولا تدخل الموقع إلا بعد قبوله.</p>
       </div>
       <Card>
         <form className="ui-form" onSubmit={submit} noValidate>
@@ -72,6 +56,12 @@ export function RegisterPage({ go }: { go: (to: string) => void }) {
           </Field>
           <Field label="رقم الهاتف" hint="8 أرقام" error={errors.phone}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.phone} onChange={set("phone")} inputMode="tel" dir="ltr" autoComplete="tel" placeholder="22 33 44 55" />}
+          </Field>
+          <Field label="كلمة السر" hint="4 أحرف أو أرقام على الأقل، للدخول لاحقاً" error={errors.pin}>
+            {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin} onChange={set("pin")} autoComplete="new-password" dir="ltr" />}
+          </Field>
+          <Field label="تأكيد كلمة السر" error={errors.pin2}>
+            {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin2} onChange={set("pin2")} autoComplete="new-password" dir="ltr" />}
           </Field>
           <Field label="الرقم الوطني" optional error={errors.nni}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.nni} onChange={set("nni")} inputMode="numeric" dir="ltr" maxLength={10} />}
@@ -112,7 +102,7 @@ export function RegisterPage({ go }: { go: (to: string) => void }) {
             {errors.agree && <p className="ui-error" role="alert">{errors.agree}</p>}
           </div>
           <div className="ui-field--full">
-            <Button type="submit" block icon="userPlus" disabled={busy}>{busy ? "جارٍ التسجيل..." : "إرسال طلب الانتساب"}</Button>
+            <Button type="submit" block icon="userPlus" disabled={busy}>{busy ? "جارٍ التسجيل..." : "إرسال الطلب"}</Button>
           </div>
         </form>
       </Card>

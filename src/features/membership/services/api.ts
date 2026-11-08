@@ -15,8 +15,17 @@ const done = <T,>(v: T) => Promise.resolve(v);
 
 /* ======================= المنتسبون ======================= */
 
+/** بصمة كلمة السر مع رقم الهاتف (لا نحفظ كلمة السر نفسها) */
+export async function hashPin(phone: string, pin: string): Promise<string> {
+  const data = new TextEncoder().encode(`awn:${cleanPhone(phone)}:${pin.trim()}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export interface RegistrationInput {
   fullName: string;
+  /** كلمة السر التي يختارها المنتسب للدخول لاحقاً */
+  pin?: string;
   phone: string;
   nni?: string;
   gender: Member["gender"];
@@ -27,10 +36,11 @@ export interface RegistrationInput {
   pledge?: number;
 }
 
-export function registerMember(input: RegistrationInput): Promise<Member> {
+export async function registerMember(input: RegistrationInput): Promise<Member> {
   const phone = cleanPhone(input.phone);
   const existing = store.get().members.find((m) => m.phone === phone && m.status !== "rejected");
-  if (existing) return Promise.reject(new Error(`هذا الرقم مسجّل من قبل برقم المنتسب ${existing.code}.`));
+  if (existing) throw new Error("هذا الرقم مسجّل من قبل. اختر «لدي حساب» للدخول.");
+  const pinHash = input.pin ? await hashPin(phone, input.pin) : undefined;
 
   let created!: Member;
   store.update((db) => {
@@ -47,12 +57,30 @@ export function registerMember(input: RegistrationInput): Promise<Member> {
       institution: input.institution?.trim() || undefined,
       address: input.address?.trim() || undefined,
       pledge: input.pledge || undefined,
+      pinHash,
       status: "pending",
       createdAt: now(),
     };
     return { ...db, counter, members: [created, ...db.members] };
   });
-  return done(created);
+  return created;
+}
+
+/**
+ * دخول المنتسب برقم هاتفه وكلمة السر.
+ * من سُجّل قبل إضافة كلمات السر (أو أضافته اللجنة يدوياً) يدخل برقم المنتسب بدلها.
+ */
+export async function loginMember(phone: string, secret: string): Promise<Member | null> {
+  const p = cleanPhone(phone);
+  const candidates = store.get().members.filter((m) => m.phone === p).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  for (const m of candidates) {
+    if (m.pinHash) {
+      if ((await hashPin(p, secret)) === m.pinHash) return m;
+    } else if (findMember(p, secret)?.id === m.id) {
+      return m;
+    }
+  }
+  return null;
 }
 
 /** دخول المنتسب إلى صفحته برقم الهاتف ورقم المنتسب */
