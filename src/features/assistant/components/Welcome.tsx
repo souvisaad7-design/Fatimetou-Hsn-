@@ -1,0 +1,22 @@
+import { Icon } from "../../../shared/Icon";
+import { assistantConfig as cfg } from "../config";
+
+export function Welcome({ onAsk }: { onAsk: (q: string) => void }) {
+  return (
+    <div className="ast-welcome">
+      <img className="ast-welcome__logo" src={cfg.org.logo} alt="" width={72} height={72} />
+      <h2>كيف يمكنني مساعدتك؟</h2>
+      <div className="ast-welcome__msg">
+        {cfg.assistant.welcome.map((line) => <p key={line}>{line}</p>)}
+      </div>
+      <div className="ast-suggestions">
+        {cfg.assistant.suggestions.map((s) => (
+          <button key={s.text} type="button" className="ast-suggestion" onClick={() => onAsk(s.text)}>
+            <span className="ast-suggestion__icon"><Icon name={s.icon} size={18} /></span>
+            <span>{s.text}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

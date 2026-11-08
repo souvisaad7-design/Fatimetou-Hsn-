@@ -1,0 +1,49 @@
+/* =========================================================
+   هوية الألوان والخطوط — مصدر واحد لكل صفحات الموقع.
+   عدّل --brand و --accent لتطابق الهوية الرسمية لجمعية عون وسند.
+   ========================================================= */
+:root {
+  --brand: #0d6b62;
+  --brand-strong: #0a554e;
+  --brand-ink: #ffffff;
+  --brand-soft: #e4f1ef;
+  --accent: #c98a24;
+  --accent-soft: #f7ecd6;
+
+  --bg: #f6f9f8;
+  --surface: #ffffff;
+  --sidebar: #eef4f2;
+  --ink: #15211f;
+  --muted: #5b6b67;
+  --line: #dbe4e1;
+
+  --ok: #1f7a4d;
+  --warn: #a86a10;
+  --danger: #b4382c;
+
+  --f-display: "El Messiri", "Tajawal", Tahoma, sans-serif;
+  --f-body: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+
+  --radius: 14px;
+  --shadow: 0 12px 32px -20px rgba(13, 60, 55, 0.45);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --brand: #3fb3a5; --brand-strong: #5ec6b9; --brand-ink: #05211e; --brand-soft: #173431;
+  --accent: #e8b04f; --accent-soft: #2e2615;
+  --bg: #0f1716; --surface: #162120; --sidebar: #121c1b; --ink: #e6eeec; --muted: #98aaa6; --line: #24332f;
+  --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
+  --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand: #3fb3a5; --brand-strong: #5ec6b9; --brand-ink: #05211e; --brand-soft: #173431;
+    --accent: #e8b04f; --accent-soft: #2e2615;
+    --bg: #0f1716; --surface: #162120; --sidebar: #121c1b; --ink: #e6eeec; --muted: #98aaa6; --line: #24332f;
+    --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
+    --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8);
+    color-scheme: dark;
+  }
+}
