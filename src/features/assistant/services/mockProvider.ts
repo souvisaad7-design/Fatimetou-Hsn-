@@ -3,6 +3,7 @@ import { mockKnowledge } from "../data/mockKnowledge";
 import { matchIntent } from "../lib/matchIntent";
 import type { ChatProvider } from "../types";
 import { resolveActions, sleep } from "./utils";
+import { matchChannelVideos } from "../lib/videoMatch";
 import { searchVideos } from "./videoSearch";
 
 /** أسئلة لا معنى لعرض فيديو معها (معلومة قصيرة أو تحية) */
@@ -19,7 +20,12 @@ export const mockProvider: ChatProvider = {
     const intent = matchIntent(lastQuestion, mockKnowledge);
     // البحث عن فيديو مناسب يجري بالتوازي مع كتابة الرد
     const skipVideos = intent.playlist || NO_VIDEO.has(intent.id) || intent.id.startsWith("lead-");
-    const videosPromise = skipVideos ? Promise.resolve([]) : searchVideos(lastQuestion, signal);
+    const videosPromise = intent.playlist
+      ? // مع معرض القناة: إن ذكر السؤال فيديو بعينه (مثل «السقاية رقم 36») يبدأ المشغّل به
+        Promise.resolve(matchChannelVideos(lastQuestion, 1).map((v) => ({ id: v.id, title: v.title })))
+      : skipVideos
+        ? Promise.resolve([])
+        : searchVideos(lastQuestion, signal);
     const [min, max] = cfg.mock.thinkingMs;
     await sleep(min + Math.random() * (max - min), signal);
 

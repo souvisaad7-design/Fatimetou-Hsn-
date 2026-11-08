@@ -201,6 +201,28 @@
 .ast-playlist { max-width: none; }
 .ast-playlist__intro { font-weight: 700; margin-bottom: 8px; }
 
+/* معرض كل فيديوهات القناة */
+.ast-gallery { margin-top: 14px; }
+.ast-gallery__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.ast-gallery__count { font-weight: 700; color: var(--ink); }
+.ast-gallery__all, .ast-gallery__more {
+  background: var(--brand-soft); color: var(--brand); border: 0; border-radius: 999px;
+  padding: 6px 14px; font: 700 0.85rem var(--f-body); cursor: pointer;
+}
+.ast-gallery__more { display: block; width: 100%; margin-top: 12px; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; }
+.ast-gallery__search {
+  width: 100%; margin-bottom: 12px; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.95rem;
+}
+.ast-gallery__search:focus { outline: none; border-color: var(--brand); }
+.ast-gallery__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px 10px; }
+.ast-gallery__empty { color: var(--muted); font-size: 0.9rem; }
+.ast-video__thumb.is-playing .ast-video__thumb-img { border-color: var(--pink); }
+.ast-video__duration {
+  position: absolute; bottom: 6px; left: 6px; background: rgba(0, 0, 0, 0.75); color: #fff;
+  font-size: 0.72rem; line-height: 1; padding: 4px 6px; border-radius: 6px; direction: ltr;
+}
+
 /* زر «فيديوهات الجمعية» في شاشة الترحيب */
 .ast-videos-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;

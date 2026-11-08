@@ -31,7 +31,7 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
     <BotShell error={message.error}>
       <div className="ast-msg__body"><Markdown text={message.content} /></div>
 
-      {message.playlist && <PlaylistCard />}
+      {message.playlist && <PlaylistCard startId={message.videos?.[0]?.id} />}
       {!message.playlist && !!message.videos?.length && <VideoCard videos={message.videos} />}
 
       {links.length > 0 && (

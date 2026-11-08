@@ -1,0 +1,31 @@
+# تحديث قائمة فيديوهات قناة الجمعية أسبوعياً (دون أي API)، ثم إعادة نشر الموقع إذا تغيّرت
+name: Update channel videos
+
+on:
+  schedule:
+    - cron: "17 5 * * 1" # كل اثنين 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/update-channel-videos.mjs
+      - name: Commit and redeploy if changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then echo "لا فيديوهات جديدة"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "تحديث قائمة فيديوهات القناة"
+          git push
+          gh workflow run deploy.yml --ref main

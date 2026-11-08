@@ -1,12 +1,21 @@
 import { assistantConfig as cfg } from "../config";
+import { matchChannelVideos } from "../lib/videoMatch";
 import type { VideoResult } from "../types";
 
 /**
- * يبحث في فيديوهات الجمعية عبر /api/youtube/search.
- * لا يرمي أخطاء أبداً: عند أي فشل يرجع قائمة فارغة، فيكمل البوت رده نصياً.
+ * يبحث عن فيديوهات الجمعية المناسبة للسؤال:
+ * أولاً في دالة الخادم /api/youtube/search إن كانت متاحة (على Vercel)،
+ * وإلا في قائمة فيديوهات القناة المحفوظة في الموقع (دون أي API).
+ * لا يرمي أخطاء أبداً: إذا لم يوجد شيء يرجع قائمة فارغة، فيكمل البوت رده نصياً.
  */
 export async function searchVideos(question: string, signal?: AbortSignal): Promise<VideoResult[]> {
   if (!cfg.videos.enabled || question.trim().length < 2) return [];
+  const remote = await searchRemote(question, signal);
+  if (remote.length) return remote;
+  return matchChannelVideos(question).map((v) => ({ id: v.id, title: v.title }));
+}
+
+async function searchRemote(question: string, signal?: AbortSignal): Promise<VideoResult[]> {
   // GitHub Pages استضافة ثابتة بلا دوال خادم: نبحث فقط إذا ضُبط رابط كامل لمشروع Vercel
   const relative = !/^https?:\/\//.test(cfg.videos.searchUrl);
   if (relative && window.location.hostname.endsWith("github.io")) return [];
