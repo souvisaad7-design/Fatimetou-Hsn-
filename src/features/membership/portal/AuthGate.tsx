@@ -7,78 +7,167 @@ import { loginMember } from "../services/api";
 import { dateLabel, memberStatusLabel, statusTone } from "../lib/format";
 import { validatePhone } from "../lib/validation";
 import type { Member } from "../types";
-import { Badge, Button, Card, Field, Notice } from "../ui";
+import { Badge, Button, Card, Notice } from "../ui";
 import { RegisterPage } from "./pages/RegisterPage";
 
 /**
  * بوابة الدخول: أول ما يراه أي زائر قبل دخول الموقع.
- * «لدي حساب» ← الدخول، «مستخدم جديد» ← التسجيل (يبقى الطلب بانتظار قبول اللجنة أو المشرف).
+ * شاشة «تسجيل الدخول» (الهاتف وكلمة المرور)، ومنها «إنشاء حساب جديد» ← طلب ينتظر قبول اللجنة أو المشرف.
  */
 export function AuthGate({ onLogin }: { onLogin: (m: Member) => void }) {
-  const [view, setView] = useState<"choose" | "login" | "register">("choose");
-
-  return (
-    <div className="pt-gate">
-      <div className="pt-gate__box">
-        {view === "choose" && (
-          <div className="pt-gate__choose">
-            <img src={org.logoFull} alt={cfg.orgName} width={640} height={380} className="pt-gate__logo" />
-            <h1>مرحباً بك في {cfg.committeeName}</h1>
-            <p className="pt-muted">«{cfg.motto}»</p>
-            <button type="button" className="pt-gate__option" onClick={() => setView("login")}>
-              <span className="pt-gate__icon"><Icon name="users" size={26} /></span>
-              <span><b>لدي حساب</b><small>الدخول برقم الهاتف وكلمة السر</small></span>
-            </button>
-            <button type="button" className="pt-gate__option pt-gate__option--new" onClick={() => setView("register")}>
-              <span className="pt-gate__icon"><Icon name="userPlus" size={26} /></span>
-              <span><b>مستخدم جديد</b><small>إنشاء حساب وإرسال طلب انتساب</small></span>
-            </button>
-          </div>
-        )}
-        {view === "login" && <LoginForm onLogin={onLogin} onBack={() => setView("choose")} onRegister={() => setView("register")} />}
-        {view === "register" && <RegisterPage onDone={onLogin} onBack={() => setView("choose")} />}
+  const [view, setView] = useState<"login" | "register">("login");
+  if (view === "register") {
+    return (
+      <div className="pt-gate">
+        <div className="pt-gate__box"><RegisterPage onDone={onLogin} onBack={() => setView("login")} /></div>
       </div>
-    </div>
-  );
+    );
+  }
+  return <LoginScreen onLogin={onLogin} onRegister={() => setView("register")} />;
 }
 
-function LoginForm({ onLogin, onBack, onRegister }: { onLogin: (m: Member) => void; onBack: () => void; onRegister: () => void }) {
+function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; onRegister: () => void }) {
   const [phone, setPhone] = useState("");
   const [secret, setSecret] = useState("");
+  const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [contact, setContact] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const pe = validatePhone(phone);
     if (pe) return setError(pe);
-    if (!secret.trim()) return setError("أدخل كلمة السر");
+    if (!secret.trim()) return setError("أدخل كلمة المرور");
     setBusy(true);
     const m = await loginMember(phone, secret);
     setBusy(false);
-    if (!m) return setError("رقم الهاتف أو كلمة السر غير صحيحة.");
+    if (!m) return setError("رقم الهاتف أو كلمة المرور غير صحيحة.");
     onLogin(m);
   };
 
   return (
-    <div className="pt-stack">
-      <div>
-        <button type="button" className="pt-back" onClick={onBack}>→ رجوع</button>
-        <h1 className="pt-h1">لدي حساب</h1>
-        <p className="pt-muted">ادخل برقم هاتفك وكلمة السر التي اخترتها عند التسجيل.</p>
-      </div>
-      <Card>
-        <form className="pt-stack" onSubmit={submit} noValidate>
-          <Field label="رقم الهاتف">{(id) => <input id={id} value={phone} onChange={(e) => { setPhone(e.target.value); setError(null); }} inputMode="tel" dir="ltr" autoComplete="tel" />}</Field>
-          <Field label="كلمة السر" hint="إن لم تختر كلمة سر من قبل، أدخل رقم المنتسب (مثل AWN-0012)">
-            {(id) => <input id={id} type="password" value={secret} onChange={(e) => { setSecret(e.target.value); setError(null); }} autoComplete="current-password" dir="ltr" />}
-          </Field>
-          {error && <p className="ui-error" role="alert">{error}</p>}
-          <Button type="submit" block disabled={busy}>{busy ? "جارٍ الدخول..." : "دخول"}</Button>
+    <div className="lg">
+      <header className="lg-hero">
+        <MosqueSilhouette />
+        <img src={org.logoFull} alt={cfg.orgName} width={640} height={380} className="lg-hero__logo" />
+        <svg className="lg-wave" viewBox="0 0 400 90" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 40 C 90 95, 170 0, 260 30 S 380 70, 400 20 L400 90 L0 90 Z" fill="var(--lg-coral)" opacity="0.55" />
+          <path d="M0 60 C 100 100, 190 20, 280 50 S 380 80, 400 45 L400 90 L0 90 Z" fill="var(--lg-bg)" />
+        </svg>
+      </header>
+
+      <main className="lg-body">
+        <h1>تسجيل الدخول</h1>
+        <p className="lg-sub">أهلاً بك في جمعية عون وسند</p>
+
+        <form className="lg-form" onSubmit={submit} noValidate>
+          <label className="lg-field">
+            <span className="visually-hidden">رقم الهاتف</span>
+            <input
+              value={phone}
+              onChange={(e) => { setPhone(e.target.value); setError(null); }}
+              placeholder="رقم الهاتف"
+              inputMode="tel"
+              autoComplete="tel"
+              aria-invalid={!!error && !phone ? true : undefined}
+            />
+            <Icon name="phone" className="lg-field__icon" />
+          </label>
+
+          <label className="lg-field">
+            <span className="visually-hidden">كلمة المرور</span>
+            <button type="button" className="lg-field__toggle" onClick={() => setShow((v) => !v)} aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}>
+              <Icon name={show ? "eye" : "eyeOff"} />
+            </button>
+            <input
+              type={show ? "text" : "password"}
+              value={secret}
+              onChange={(e) => { setSecret(e.target.value); setError(null); }}
+              placeholder="كلمة المرور"
+              autoComplete="current-password"
+            />
+            <Icon name="lock" className="lg-field__icon" />
+          </label>
+
+          {error && <p className="lg-error" role="alert">{error}</p>}
+
+          <button type="submit" className="lg-btn" disabled={busy}>{busy ? "جارٍ الدخول..." : "دخول"}</button>
         </form>
-      </Card>
-      <p className="pt-center pt-muted">ليس لديك حساب؟ <button type="button" className="pt-inline-btn" onClick={onRegister}>مستخدم جديد</button></p>
+
+        <p className="lg-or">أو تسجيل عبر</p>
+        <button type="button" className="lg-btn lg-btn--outline" onClick={onRegister}>
+          <Icon name="userPlus" /> إنشاء حساب جديد
+        </button>
+
+        <button type="button" className="lg-contact" onClick={() => setContact((v) => !v)} aria-expanded={contact}>
+          <Icon name="headset" size={18} /> تواصل معنا
+        </button>
+        {contact && (
+          <div className="lg-contact__box">
+            <p>للتواصل مع اللجنة الانتسابية:</p>
+            <b className="num" dir="ltr">{cfg.phone}</b>
+            <div className="lg-contact__links">
+              <a href={`tel:${cfg.phone}`}>اتصال</a>
+              <a href={`https://wa.me/${cfg.phone}`} target="_blank" rel="noopener noreferrer">واتساب</a>
+            </div>
+          </div>
+        )}
+        <p className="lg-hint">من سُجّل قبل إضافة كلمات المرور يدخل برقم المنتسب، مثل <bdi dir="ltr" style={{ whiteSpace: "nowrap" }}>AWN-0012</bdi>.</p>
+      </main>
+
+      <Leaves />
     </div>
+  );
+}
+
+/** رسم مسجد بسيط في خلفية الرأس */
+function MosqueSilhouette() {
+  return (
+    <svg className="lg-mosque" viewBox="0 0 220 130" aria-hidden="true">
+      <g fill="currentColor">
+        {/* المئذنتان */}
+        <rect x="18" y="38" width="12" height="92" rx="2" />
+        <path d="M16 40 L24 14 L32 40 Z" />
+        <rect x="16" y="56" width="16" height="4" rx="1" />
+        <rect x="190" y="30" width="12" height="100" rx="2" />
+        <path d="M188 32 L196 4 L204 32 Z" />
+        <rect x="188" y="50" width="16" height="4" rx="1" />
+        {/* القبة الكبرى */}
+        <path d="M70 86 C 70 50, 150 50, 150 86 Z" />
+        <path d="M106 52 L110 38 L114 52 Z" />
+        {/* قبتان صغيرتان */}
+        <path d="M40 98 C 40 76, 76 76, 76 98 Z" />
+        <path d="M144 98 C 144 76, 180 76, 180 98 Z" />
+        {/* المبنى */}
+        <rect x="36" y="86" width="148" height="44" />
+        <rect x="64" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
+        <rect x="105" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
+        <rect x="146" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
+      </g>
+    </svg>
+  );
+}
+
+/** أوراق زخرفية في زاويتي الشاشة */
+function Leaves() {
+  const leaf = "M0 0 C 18 -22, 50 -22, 64 0 C 50 22, 18 22, 0 0 Z";
+  return (
+    <>
+      <svg className="lg-leaves lg-leaves--start" viewBox="0 0 120 120" aria-hidden="true">
+        <g fill="currentColor">
+          <path d={leaf} transform="translate(10 100) rotate(-55)" />
+          <path d={leaf} transform="translate(30 112) rotate(-20) scale(.8)" />
+          <path d={leaf} transform="translate(4 70) rotate(-85) scale(.7)" />
+        </g>
+      </svg>
+      <svg className="lg-leaves lg-leaves--end" viewBox="0 0 120 120" aria-hidden="true">
+        <g fill="currentColor">
+          <path d={leaf} transform="translate(110 100) rotate(-125)" />
+          <path d={leaf} transform="translate(90 114) rotate(-160) scale(.8)" />
+        </g>
+      </svg>
+    </>
   );
 }
 
