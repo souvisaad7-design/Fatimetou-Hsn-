@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>بوابة لجنة الانتساب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: شريط علوي ثابت، ثم بطاقة الانتساب كقلب الصفحة (مراحل + استمارة جنباً إلى جنب)، ثم الاستعلام والأسئلة والتواصل */
+:root{
+  --bg:#f5f7f4; --surface:#ffffff; --ink:#14261f; --muted:#5b6b63; --line:#dbe3dd;
+  --brand:#0f5a43; --brand-ink:#ffffff; --brand-soft:#e3efe9; --gold:#b9852b; --gold-soft:#f6ecd8;
+  --ok:#1f7a4d; --warn:#a86a10; --err:#b3362c;
+  --f-display:"El Messiri","Tajawal",Tahoma,sans-serif;
+  --f-body:"Tajawal",Tahoma,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1714; --surface:#15221d; --ink:#e7efe9; --muted:#9db0a6; --line:#26372f;
+  --brand:#3fae86; --brand-ink:#06140f; --brand-soft:#1a3329; --gold:#e0b25c; --gold-soft:#2e2615;
+  --ok:#5cc58f; --warn:#e3a54a; --err:#ef7a6e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1714; --surface:#15221d; --ink:#e7efe9; --muted:#9db0a6; --line:#26372f;
+  --brand:#3fae86; --brand-ink:#06140f; --brand-soft:#1a3329; --gold:#e0b25c; --gold-soft:#2e2615;
+  --ok:#5cc58f; --warn:#e3a54a; --err:#ef7a6e; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;direction:rtl}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.35;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.5rem,3vw,2rem)}
+h3{font-size:1.15rem}
+p{margin:0}
+a{color:var(--brand)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.8rem;font-weight:600;color:var(--gold);letter-spacing:.02em}
+
+/* Header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:16px;min-height:64px;flex-wrap:wrap;padding-block:8px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);margin-inline-end:auto}
+.logo svg{width:36px;height:36px;flex:none}
+.logo b{font-family:var(--f-display);font-size:1.2rem;display:block;line-height:1.2}
+.logo small{color:var(--muted);font-size:.75rem}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;font-weight:500;font-size:.95rem}
+nav a:hover{background:var(--brand-soft);color:var(--brand)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 1rem var(--f-body);border:0;border-radius:var(--r);padding:11px 22px;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s}
+.btn-primary{background:var(--brand);color:var(--brand-ink)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--brand);border:1.5px solid var(--brand)}
+@media (max-width:720px){nav{display:none}}
+
+/* Hero */
+.hero{padding-block:56px 40px}
+.hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);margin-block:8px 16px}
+.hero h1 em{font-style:normal;color:var(--brand)}
+.hero p.lead{color:var(--muted);font-size:1.1rem;max-width:34em}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.deadline{display:flex;gap:12px;align-items:center;margin-top:28px;padding:12px 16px;background:var(--gold-soft);border-radius:var(--r);width:fit-content;max-width:100%;font-size:.95rem}
+.deadline strong{color:var(--gold)}
+.card-id{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 18px 40px -24px rgba(15,90,67,.35);position:relative;overflow:hidden}
+.card-id::after{content:"";position:absolute;inset:auto auto -60px -60px;width:180px;height:180px;border-radius:50%;background:var(--brand-soft)}
+.card-id .top{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}
+.card-id .name{font-family:var(--f-display);font-size:1.4rem;margin-block:18px 4px}
+.card-id dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:16px 0 0;font-size:.9rem;position:relative;z-index:1}
+.card-id dt{color:var(--muted)} .card-id dd{margin:0;font-weight:600}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}
+@media (max-width:820px){.hero-grid{grid-template-columns:1fr}.hero{padding-block:32px}}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-block:1px solid var(--line);background:var(--surface)}
+.stats div{padding:20px 16px;text-align:center;border-inline-start:1px solid var(--line)}
+.stats div:first-child{border-inline-start:0}
+.stats b{display:block;font-family:var(--f-display);font-size:1.7rem;color:var(--brand)}
+.stats span{color:var(--muted);font-size:.85rem}
+@media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.stats div:nth-child(3){border-inline-start:0}.stats div:nth-child(n+3){border-top:1px solid var(--line)}}
+
+section{padding-block:64px}
+.sec-head{display:flex;flex-direction:column;gap:6px;margin-bottom:28px;max-width:40em}
+.sec-head p{color:var(--muted)}
+
+/* Join: steps + form */
+.join{display:grid;grid-template-columns:320px 1fr;gap:32px;align-items:start}
+@media (max-width:900px){.join{grid-template-columns:1fr}}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:4px;position:sticky;top:96px}
+.steps li{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:12px;border-radius:var(--r)}
+.steps li .n{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;border:1.5px solid var(--line);color:var(--muted);background:var(--surface)}
+.steps li.on{background:var(--surface)}
+.steps li.on .n{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.steps li.done .n{background:var(--brand-soft);color:var(--brand);border-color:var(--brand-soft)}
+.steps li p{font-size:.85rem;color:var(--muted)}
+.docs{margin-top:16px;padding:16px;border:1px dashed var(--line);border-radius:var(--r);font-size:.9rem}
+.docs ul{margin:8px 0 0;padding-inline-start:18px;color:var(--muted)}
+@media (max-width:900px){.steps{position:static;grid-template-columns:repeat(4,1fr)}.steps li{grid-template-columns:1fr;justify-items:center;text-align:center;padding:8px 4px}.steps li p{display:none}.steps li h3{font-size:.85rem}}
+
+form{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px;min-width:0}
+fieldset{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+fieldset legend{font-family:var(--f-display);font-size:1.25rem;margin-bottom:18px;padding:0}
+.full{grid-column:1/-1}
+@media (max-width:560px){fieldset{grid-template-columns:1fr}form{padding:20px}}
+label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}
+label .opt{color:var(--muted);font-weight:400}
+input,select,textarea{width:100%;font:inherit;font-size:1rem;padding:10px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err)}
+.hint{font-size:.8rem;color:var(--muted);margin-top:4px}
+.err{font-size:.8rem;color:var(--err);margin-top:4px;min-height:1.2em}
+input[dir="ltr"]{text-align:right}
+.choice{display:flex;gap:10px;flex-wrap:wrap}
+.choice label{display:flex;align-items:center;gap:8px;font-weight:500;border:1.5px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;margin:0}
+.choice input{width:auto;accent-color:var(--brand)}
+.choice label:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+.check input{width:auto;margin-top:6px;accent-color:var(--brand)}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:16px;text-align:center;color:var(--muted);font-size:.9rem;cursor:pointer;background:var(--bg)}
+.drop.has{border-color:var(--brand);color:var(--brand)}
+.form-nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.review{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;font-size:.95rem}
+.review dt{color:var(--muted)} .review dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.success{text-align:center;padding-block:24px;display:grid;gap:12px;justify-items:center}
+.success .mark{width:64px;height:64px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center}
+.ref{font-family:var(--f-display);font-size:1.6rem;letter-spacing:.06em;color:var(--brand);direction:ltr}
+
+/* Status */
+.status-box{display:grid;grid-template-columns:1fr 1fr;gap:32px;background:var(--brand);color:var(--brand-ink);border-radius:20px;padding:36px}
+.status-box p{opacity:.85}
+.status-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.status-form input{flex:1 1 200px;background:var(--surface);color:var(--ink);border-color:transparent;direction:ltr;text-align:right}
+.status-form .btn{background:var(--gold);color:#1b1306}
+.result{background:var(--surface);color:var(--ink);border-radius:14px;padding:20px;min-width:0}
+.timeline{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:0}
+.timeline li{display:grid;grid-template-columns:20px 1fr;gap:12px;padding-bottom:14px;position:relative}
+.timeline li::before{content:"";width:12px;height:12px;border-radius:50%;margin-top:7px;background:var(--line)}
+.timeline li.done::before{background:var(--ok)}
+.timeline li.now::before{background:var(--warn);box-shadow:0 0 0 4px var(--gold-soft)}
+.timeline li:not(:last-child)::after{content:"";position:absolute;right:5px;top:22px;bottom:0;width:2px;background:var(--line)}
+.timeline small{color:var(--muted);display:block}
+@media (max-width:820px){.status-box{grid-template-columns:1fr;padding:24px}}
+
+/* News */
+.news{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.news article{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.news time{font-size:.8rem;color:var(--muted)}
+.news p{color:var(--muted);font-size:.95rem}
+@media (max-width:860px){.news{grid-template-columns:1fr}}
+
+/* FAQ */
+.faq{display:grid;gap:10px;max-width:820px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 20px}
+summary{cursor:pointer;font-weight:600;padding-block:14px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--brand);font-size:1.3rem;line-height:1}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);padding-bottom:16px}
+
+/* Contact & footer */
+.contact{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.contact div{border-top:3px solid var(--brand);padding-top:14px}
+.contact p{color:var(--muted)}
+.copy{font:inherit;font-size:.8rem;border:1px solid var(--line);background:transparent;color:var(--brand);border-radius:6px;padding:2px 8px;cursor:pointer;margin-inline-start:6px}
+@media (max-width:760px){.contact{grid-template-columns:1fr}}
+footer{border-top:1px solid var(--line);padding-block:24px;color:var(--muted);font-size:.85rem;background:var(--surface)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;font-size:.9rem;z-index:20}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#top" aria-label="لجنة الانتساب - الرئيسية">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="var(--brand)"/><path d="M12 27c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="var(--brand-ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="20" cy="13.5" r="4" fill="var(--gold)"/></svg>
+      <span><b>لجنة الانتساب</b><small>البوابة الرقمية للعضوية</small></span>
+    </a>
+    <nav aria-label="القائمة الرئيسية">
+      <a href="#join">طلب الانتساب</a>
+      <a href="#status">متابعة الطلب</a>
+      <a href="#news">الإعلانات</a>
+      <a href="#faq">الأسئلة الشائعة</a>
+      <a href="#contact">اتصل بنا</a>
+    </nav>
+    <a class="btn btn-primary" href="#join">انتسب الآن</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">حملة الانتساب ٢٠٢٦ مفتوحة</span>
+        <h1>عضويتك تبدأ <em>بخطوة واحدة</em></h1>
+        <p class="lead">قدّم طلب انتسابك إلكترونياً في دقائق، وتابع حالته حتى استلام بطاقة العضوية من مكتب الانتساب في ولايتك.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#join">ابدأ طلب الانتساب</a>
+          <a class="btn btn-ghost" href="#status">لدي رقم طلب</a>
+        </div>
+        <div class="deadline"><span>آخر أجل لاستقبال الطلبات</span><strong class="num">٣١ ديسمبر ٢٠٢٦</strong></div>
+      </div>
+      <div class="card-id" aria-label="نموذج بطاقة العضوية">
+        <div class="top"><span>بطاقة عضوية</span><span class="tag">نموذج</span></div>
+        <div class="name">محمد عبد الله</div>
+        <span style="color:var(--muted);font-size:.9rem">منتسب جديد</span>
+        <dl>
+          <dt>رقم العضوية</dt><dd class="num" dir="ltr" style="text-align:right">INT-2026-04817</dd>
+          <dt>الولاية</dt><dd>نواكشوط الغربية</dd>
+          <dt>الوحدة القاعدية</dt><dd>تفرغ زينة ٣</dd>
+          <dt>تاريخ الانتساب</dt><dd class="num">١٢ / ١١ / ٢٠٢٦</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats" aria-label="أرقام الحملة (أرقام توضيحية)">
+    <div><b class="num">٤٨٬٢١٠</b><span>منتسب مسجّل</span></div>
+    <div><b class="num">١٥</b><span>ولاية مغطاة</span></div>
+    <div><b class="num">٣٢٠</b><span>مكتب انتساب</span></div>
+    <div><b class="num">٧٢ ساعة</b><span>متوسط معالجة الطلب</span></div>
+  </div>
+
+  <section id="join">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">طلب الانتساب</span>
+        <h2>أربع مراحل لإتمام طلبك</h2>
+        <p>املأ البيانات بدقة كما وردت في بطاقة التعريف الوطنية. يمكنك الرجوع لأي مرحلة قبل الإرسال.</p>
+      </div>
+      <div class="join">
+        <div>
+          <ol class="steps" id="steps">
+            <li class="on"><span class="n num">١</span><div><h3>البيانات الشخصية</h3><p>الاسم، الرقم الوطني، تاريخ الميلاد</p></div></li>
+            <li><span class="n num">٢</span><div><h3>السكن والوحدة</h3><p>الولاية، المقاطعة، الوحدة القاعدية</p></div></li>
+            <li><span class="n num">٣</span><div><h3>الوثائق</h3><p>صورة بطاقة التعريف وصورة شخصية</p></div></li>
+            <li><span class="n num">٤</span><div><h3>المراجعة والإرسال</h3><p>تأكيد البيانات والتعهد</p></div></li>
+          </ol>
+          <div class="docs">
+            <strong>الوثائق المطلوبة</strong>
+            <ul>
+              <li>بطاقة تعريف وطنية سارية</li>
+              <li>صورة شخصية حديثة بخلفية فاتحة</li>
+              <li>رقم هاتف فعّال لاستلام الإشعارات</li>
+            </ul>
+          </div>
+        </div>
+
+        <form id="f" novalidate>
+          <!-- Step 1 -->
+          <fieldset data-step="0">
+            <legend>البيانات الشخصية</legend>
+            <div><label for="fname">الاسم الشخصي</label><input id="fname" name="fname" autocomplete="given-name" required value="محمد"><div class="err"></div></div>
+            <div><label for="lname">اسم العائلة / الأب</label><input id="lname" name="lname" autocomplete="family-name" required value="عبد الله"><div class="err"></div></div>
+            <div><label for="nni">الرقم الوطني للتعريف</label><input id="nni" name="nni" inputmode="numeric" dir="ltr" maxlength="10" required pattern="\d{10}" placeholder="10 أرقام"><div class="err"></div></div>
+            <div><label for="dob">تاريخ الميلاد</label><input id="dob" name="dob" type="date" required><div class="hint">يشترط بلوغ ١٨ سنة</div><div class="err"></div></div>
+            <div class="full"><label>الجنس</label>
+              <div class="choice"><label><input type="radio" name="sex" id="sex-m" value="ذكر" checked> ذكر</label><label><input type="radio" name="sex" id="sex-f" value="أنثى"> أنثى</label></div>
+            </div>
+            <div><label for="phone">رقم الهاتف</label><input id="phone" name="phone" type="tel" inputmode="tel" dir="ltr" required placeholder="مثال: 22 33 44 55" pattern="[234]\d{7}"><div class="hint">٨ أرقام تبدأ بـ ٢ أو ٣ أو ٤</div><div class="err"></div></div>
+            <div><label for="email">البريد الإلكتروني <span class="opt">(اختياري)</span></label><input id="email" name="email" type="email" dir="ltr" autocomplete="email"><div class="err"></div></div>
+            <div class="full"><label for="job">المهنة</label>
+              <select id="job" name="job"><option>طالب</option><option>موظف عمومي</option><option>قطاع خاص</option><option>مهنة حرة</option><option>متقاعد</option><option>بدون عمل</option></select></div>
+          </fieldset>
+
+          <!-- Step 2 -->
+          <fieldset data-step="1" hidden>
+            <legend>السكن والوحدة القاعدية</legend>
+            <div><label for="wilaya">الولاية</label>
+              <select id="wilaya" name="wilaya" required><option value="">اختر الولاية</option></select><div class="err"></div></div>
+            <div><label for="moughataa">المقاطعة</label><input id="moughataa" name="moughataa" required><div class="err"></div></div>
+            <div><label for="commune">البلدية</label><input id="commune" name="commune" required><div class="err"></div></div>
+            <div><label for="unit">الوحدة القاعدية <span class="opt">(إن وجدت)</span></label><input id="unit" name="unit" placeholder="سيتم تحديدها من المكتب إن تُركت فارغة"></div>
+            <div class="full"><label for="address">العنوان التفصيلي <span class="opt">(اختياري)</span></label><textarea id="address" name="address" rows="2"></textarea></div>
+            <div class="full"><label>كيف عرفت عن الحملة؟</label>
+              <div class="choice">
+                <label><input type="radio" name="src" id="src1" value="منسق محلي" checked> منسق محلي</label>
+                <label><input type="radio" name="src" id="src2" value="وسائل التواصل"> وسائل التواصل</label>
+                <label><input type="radio" name="src" id="src3" value="صديق أو قريب"> صديق أو قريب</label>
+                <label><input type="radio" name="src" id="src4" value="الإذاعة والتلفزيون"> الإذاعة والتلفزيون</label>
+              </div></div>
+          </fieldset>
+
+          <!-- Step 3 -->
+          <fieldset data-step="2" hidden>
+            <legend>الوثائق</legend>
+            <div class="full"><label for="idcard">صورة بطاقة التعريف (الوجهان)</label>
+              <label class="drop" for="idcard" id="idcard-drop">اضغط لاختيار ملف — JPG أو PNG أو PDF حتى ٥ ميغابايت</label>
+              <input id="idcard" name="idcard" type="file" accept="image/*,application/pdf" hidden><div class="err"></div></div>
+            <div class="full"><label for="photo">صورة شخصية</label>
+              <label class="drop" for="photo" id="photo-drop">اضغط لاختيار صورة — خلفية فاتحة ووجه واضح</label>
+              <input id="photo" name="photo" type="file" accept="image/*" hidden><div class="err"></div></div>
+            <div class="full"><label for="sponsor">رقم عضوية المزكّي <span class="opt">(اختياري)</span></label><input id="sponsor" name="sponsor" dir="ltr" placeholder="INT-2026-00000"></div>
+          </fieldset>
+
+          <!-- Step 4 -->
+          <fieldset data-step="3" hidden>
+            <legend>مراجعة البيانات</legend>
+            <dl class="review full" id="review"></dl>
+            <div class="full"><label class="check" for="pledge"><input type="checkbox" id="pledge" name="pledge"> أتعهد بصحة البيانات المقدمة، وأقرّ باطلاعي على النظام الأساسي والنظام الداخلي والتزامي بهما.</label><div class="err" id="pledge-err"></div></div>
+          </fieldset>
+
+          <div class="success" id="done" hidden>
+            <div class="mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+            <h3>تم تسجيل طلبك</h3>
+            <p style="color:var(--muted)">احتفظ برقم الطلب لمتابعة حالته. ستصلك رسالة نصية عند قبوله لتحديد موعد استلام البطاقة.</p>
+            <div class="ref" id="refno"></div>
+            <button type="button" class="btn btn-ghost" id="track-new">متابعة هذا الطلب</button>
+            <p class="hint">هذه واجهة تجريبية: الطلب لا يُرسل إلى أي خادم حتى يتم ربطها بقاعدة بيانات اللجنة.</p>
+          </div>
+
+          <div class="form-nav" id="fnav">
+            <button type="button" class="btn btn-ghost" id="prev" hidden>السابق</button>
+            <span></span>
+            <button type="submit" class="btn btn-primary" id="next">التالي</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="status" style="padding-top:0">
+    <div class="wrap">
+      <div class="status-box">
+        <div>
+          <span class="eyebrow" style="color:var(--gold)">متابعة الطلب</span>
+          <h2 style="margin-top:6px">أين وصل طلب انتسابك؟</h2>
+          <p style="margin-top:10px">أدخل رقم الطلب الذي ظهر لك بعد الإرسال. جرّب الرقم التجريبي <span dir="ltr">INT-2026-04817</span>.</p>
+          <form class="status-form" id="sf" style="background:none;border:0;padding:0">
+            <label for="q" class="sr" hidden>رقم الطلب</label>
+            <input id="q" placeholder="INT-2026-00000" value="INT-2026-04817" aria-label="رقم الطلب">
+            <button class="btn" type="submit">استعلام</button>
+          </form>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="news" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">الإعلانات</span><h2>آخر مستجدات اللجنة</h2></div>
+      <div class="news">
+        <article><time class="num">٠٥ نوفمبر ٢٠٢٦</time><h3>تمديد ساعات عمل مكاتب الانتساب</h3><p>تفتح المكاتب أبوابها من التاسعة صباحاً حتى الثامنة مساءً طيلة أيام الأسبوع، بما فيها عطلة نهاية الأسبوع.</p></article>
+        <article><time class="num">٢٨ أكتوبر ٢٠٢٦</time><h3>انطلاق الانتساب الإلكتروني</h3><p>أصبح بإمكان المواطنين تقديم طلباتهم عبر هذه البوابة دون الحاجة للتنقل إلا عند استلام البطاقة.</p></article>
+        <article><time class="num">١٥ أكتوبر ٢٠٢٦</time><h3>تكوين منسقي الوحدات القاعدية</h3><p>اختتام الدورة التكوينية لمنسقي الوحدات في الولايات الداخلية حول إجراءات التسجيل والتحقق.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">الأسئلة الشائعة</span><h2>قبل أن تسأل</h2></div>
+      <div class="faq">
+        <details open><summary>من يحق له الانتساب؟</summary><p>كل مواطن بلغ ١٨ سنة، يحمل بطاقة تعريف وطنية سارية، وغير منتسب لهيئة مماثلة.</p></details>
+        <details><summary>هل الانتساب مجاني؟</summary><p>تقديم الطلب مجاني. تُحدَّد الاشتراكات السنوية وفق النظام الداخلي ويتم إبلاغ المنتسب بها عند استلام البطاقة.</p></details>
+        <details><summary>كم تستغرق معالجة الطلب؟</summary><p>من يومين إلى خمسة أيام عمل. تصلك رسالة نصية عند قبول الطلب مع عنوان المكتب وموعد الاستلام.</p></details>
+        <details><summary>أخطأت في بياناتي بعد الإرسال، ماذا أفعل؟</summary><p>توجه إلى أقرب مكتب انتساب برقم طلبك وبطاقة تعريفك، أو اتصل بالرقم الأخضر لتصحيح البيانات قبل اعتماد الطلب.</p></details>
+        <details><summary>هل يمكنني تغيير الوحدة القاعدية لاحقاً؟</summary><p>نعم، عند تغيير محل السكن يمكنك طلب النقل إلى وحدة أخرى عبر لجنة الانتساب في ولايتك.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">اتصل بنا</span><h2>نحن هنا للمساعدة</h2></div>
+      <div class="contact">
+        <div><h3>الرقم الأخضر</h3><p><span class="num" dir="ltr" id="tel">80 00 00 00</span><button class="copy" data-copy="tel" type="button">نسخ</button></p><p>مجاني، من ٨ صباحاً إلى ١٠ مساءً</p></div>
+        <div><h3>البريد الإلكتروني</h3><p><span dir="ltr" id="mail">contact@intisab.example</span><button class="copy" data-copy="mail" type="button">نسخ</button></p><p>نرد خلال ٢٤ ساعة</p></div>
+        <div><h3>المقر المركزي</h3><p>لجنة الانتساب الوطنية، نواكشوط</p><p>من الاثنين إلى الجمعة</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© ٢٠٢٦ لجنة الانتساب. جميع الحقوق محفوظة.</span><span>واجهة تجريبية — البيانات والأرقام للتوضيح</span></div></footer>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  const ar = n => String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+  const wilayas = ["نواكشوط الغربية","نواكشوط الشمالية","نواكشوط الجنوبية","الحوض الشرقي","الحوض الغربي","العصابة","كوركول","البراكنة","الترارزة","آدرار","داخلت نواذيبو","تكانت","كيدي ماغا","تيرس زمور","إينشيري"];
+  const ws = document.getElementById('wilaya');
+  wilayas.forEach(w=>{const o=document.createElement('option');o.value=o.textContent=w;ws.appendChild(o)});
+
+  const toast = msg => {const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,2400)};
+
+  const f = document.getElementById('f');
+  const sets = [...f.querySelectorAll('fieldset')];
+  const stepsEl = [...document.querySelectorAll('#steps li')];
+  const prev = document.getElementById('prev'), next = document.getElementById('next');
+  let step = 0;
+
+  const msgs = {
+    fname:'اكتب اسمك الشخصي', lname:'اكتب اسم العائلة أو الأب',
+    nni:'الرقم الوطني يتكون من ١٠ أرقام', dob:'أدخل تاريخ ميلادك',
+    phone:'أدخل ٨ أرقام تبدأ بـ ٢ أو ٣ أو ٤', email:'صيغة البريد غير صحيحة',
+    wilaya:'اختر الولاية', moughataa:'اكتب اسم المقاطعة', commune:'اكتب اسم البلدية',
+    idcard:'أرفق صورة بطاقة التعريف', photo:'أرفق صورة شخصية'
+  };
+
+  function setErr(el,msg){
+    const box = el.closest('div').querySelector('.err');
+    el.setAttribute('aria-invalid', msg?'true':'false');
+    if(box) box.textContent = msg||'';
+  }
+  function validate(i){
+    let ok = true;
+    sets[i].querySelectorAll('input[id],select[id]').forEach(el=>{
+      if(el.type==='radio'||el.type==='checkbox') return;
+      let m='';
+      const v = el.value.trim();
+      if(el.type==='file'){ if(!el.files.length) m=msgs[el.id]; else if(el.files[0].size>5e6) m='حجم الملف يتجاوز ٥ ميغابايت'; }
+      else if(el.required && !v) m = msgs[el.id];
+      else if(v && el.pattern && !new RegExp('^'+el.pattern+'$').test(v.replace(/\s/g,''))) m = msgs[el.id];
+      else if(v && el.type==='email' && !el.checkValidity()) m = msgs.email;
+      else if(el.id==='dob' && v){
+        const age = (Date.now()-new Date(v))/31557600000;
+        if(age<18) m='يجب أن يكون عمرك ١٨ سنة على الأقل';
+      }
+      setErr(el,m); if(m && ok){ok=false; el.focus();}
+    });
+    if(i===3){
+      const p=document.getElementById('pledge'), e=document.getElementById('pledge-err');
+      e.textContent = p.checked?'':'يجب الموافقة على التعهد لإرسال الطلب';
+      if(!p.checked) ok=false;
+    }
+    return ok;
+  }
+  function render(){
+    sets.forEach((s,i)=>s.hidden=i!==step);
+    stepsEl.forEach((li,i)=>{li.classList.toggle('on',i===step);li.classList.toggle('done',i<step)});
+    prev.hidden = step===0;
+    next.textContent = step===3 ? 'إرسال الطلب' : 'التالي';
+    if(step===3) fillReview();
+  }
+  function fillReview(){
+    const d = new FormData(f);
+    const rows = [
+      ['الاسم الكامل', d.get('fname')+' '+d.get('lname')],
+      ['الرقم الوطني', d.get('nni')], ['تاريخ الميلاد', d.get('dob')],
+      ['الجنس', d.get('sex')], ['الهاتف', d.get('phone')], ['المهنة', d.get('job')],
+      ['الولاية', d.get('wilaya')], ['المقاطعة / البلدية', d.get('moughataa')+' — '+d.get('commune')],
+      ['الوحدة القاعدية', d.get('unit')||'يحددها المكتب'],
+      ['الوثائق', [document.getElementById('idcard').files[0]?.name, document.getElementById('photo').files[0]?.name].filter(Boolean).join('، ')]
+    ];
+    const r = document.getElementById('review'); r.textContent='';
+    rows.forEach(([k,v])=>{const dt=document.createElement('dt');dt.textContent=k;const dd=document.createElement('dd');dd.textContent=v||'—';r.append(dt,dd)});
+  }
+  ['idcard','photo'].forEach(id=>{
+    const inp=document.getElementById(id), drop=document.getElementById(id+'-drop');
+    const orig=drop.textContent;
+    inp.addEventListener('change',()=>{const fl=inp.files[0];drop.textContent=fl?('✓ '+fl.name):orig;drop.classList.toggle('has',!!fl);setErr(inp,'')});
+  });
+  prev.addEventListener('click',()=>{step--;render()});
+
+  const store = {}; // طلبات هذه الجلسة فقط
+  let lastRef = null;
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    if(!validate(step)) return;
+    if(step<3){step++;render();f.scrollIntoView({block:'start'});return}
+    lastRef = 'INT-2026-' + String(Math.floor(10000+Math.random()*89999));
+    store[lastRef] = {name:document.getElementById('fname').value+' '+document.getElementById('lname').value, wilaya:document.getElementById('wilaya').value, stage:1};
+    sets.forEach(s=>s.hidden=true); document.getElementById('fnav').hidden=true;
+    stepsEl.forEach(li=>{li.classList.remove('on');li.classList.add('done')});
+    document.getElementById('refno').textContent = lastRef;
+    document.getElementById('done').hidden=false;
+  });
+  document.getElementById('track-new').addEventListener('click',()=>{
+    document.getElementById('q').value=lastRef; lookup(); document.getElementById('status').scrollIntoView();
+  });
+
+  // Status lookup
+  const sample = {'INT-2026-04817':{name:'محمد عبد الله',wilaya:'نواكشوط الغربية',stage:3}};
+  const stages = [['استلام الطلب','تم تسجيل الطلب في المنظومة'],['التحقق من الهوية','مطابقة الرقم الوطني والوثائق'],['اعتماد الوحدة القاعدية','مصادقة لجنة المقاطعة'],['طباعة البطاقة','جاهزة للاستلام من مكتب الولاية']];
+  const res = document.getElementById('result');
+  function lookup(){
+    const k = document.getElementById('q').value.trim().toUpperCase();
+    const rec = store[k]||sample[k];
+    res.textContent='';
+    if(!rec){
+      res.innerHTML='<h3>لم نجد هذا الرقم</h3><p style="color:var(--muted);margin-top:6px">تأكد من كتابة الرقم بالصيغة INT-2026-00000، أو اتصل بالرقم الأخضر.</p>';
+      return;
+    }
+    const h=document.createElement('h3'); h.textContent=rec.name;
+    const s=document.createElement('p'); s.style.color='var(--muted)'; s.textContent=rec.wilaya+' · رقم الطلب '+k;
+    const ol=document.createElement('ol'); ol.className='timeline';
+    stages.forEach(([t,d],i)=>{
+      const li=document.createElement('li'); li.className = i<rec.stage?'done':(i===rec.stage?'now':'');
+      const div=document.createElement('div'); div.innerHTML='<strong></strong><small></small>';
+      div.firstChild.textContent=t+(i===rec.stage?' — قيد المعالجة':''); div.lastChild.textContent=d;
+      li.append(div); ol.append(li);
+    });
+    res.append(h,s,ol);
+  }
+  document.getElementById('sf').addEventListener('submit',e=>{e.preventDefault();lookup()});
+  lookup();
+
+  document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+    const el=document.getElementById(b.dataset.copy), txt=el.textContent;
+    const fallback=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('حدّد النص، انسخه يدوياً')};
+    try{navigator.clipboard.writeText(txt).then(()=>toast('تم النسخ'),fallback)}catch(_){fallback()}
+  }));
+  render();
+})();
+</script>
+</body>
+</html>
