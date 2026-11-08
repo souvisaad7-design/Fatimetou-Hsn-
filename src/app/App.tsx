@@ -4,7 +4,7 @@ import { clearReloadFlag, ErrorBoundary } from "./ErrorBoundary";
 import { routes } from "./routes";
 
 // تحميل كل قسم عند الحاجة فقط لتسريع فتح الموقع
-const MembershipPage = lazy(() => import("../features/membership/MembershipPage"));
+const HomePage = lazy(() => import("../features/home/HomePage"));
 const AssistantPage = lazy(() => import("../features/assistant/AssistantPage"));
 
 function Loading() {
@@ -27,7 +27,7 @@ export function App() {
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path={routes.home} element={<MembershipPage />} />
+          <Route path={routes.home} element={<HomePage />} />
           <Route path={routes.assistant} element={<AssistantPage />} />
           <Route path="*" element={<Navigate to={routes.home} replace />} />
         </Routes>

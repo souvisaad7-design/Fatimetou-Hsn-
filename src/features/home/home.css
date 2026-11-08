@@ -1,0 +1,88 @@
+/* الصفحة الرئيسية — عمود واحد، أزرار كبيرة، أقسام قليلة */
+.hm { min-height: 100%; }
+.hm-wrap {
+  max-width: 720px; margin-inline: auto;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+}
+.hm h2 { font-size: clamp(1.45rem, 5vw, 1.9rem); margin-bottom: 10px; }
+.hm h3 { font-size: 1.15rem; }
+
+/* الشريط العلوي */
+.hm-top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.hm-top__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; }
+.hm-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hm-brand img { border-radius: 10px; flex: none; }
+.hm-brand b { font-family: var(--f-display); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-top__ask {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  color: var(--brand); text-decoration: none; font-weight: 700; font-size: 0.95rem;
+  padding: 7px 14px; border-radius: 999px; background: var(--brand-soft);
+}
+
+/* البداية */
+.hm-hero { padding-block: 28px 36px; text-align: center; }
+.hm-hero__logo { width: min(300px, 78vw); height: auto; border-radius: 24px; box-shadow: var(--shadow); }
+.hm-slogan { font-family: var(--f-display); font-size: clamp(1.35rem, 5.5vw, 1.8rem); color: var(--brand); margin-top: 18px; }
+.hm-lead { color: var(--muted); font-size: 1.05rem; margin-top: 6px; }
+
+.hm-actions { display: grid; gap: 12px; margin-top: 26px; max-width: 420px; margin-inline: auto; }
+.hm-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 54px; padding: 12px 20px; border-radius: 14px;
+  font: 700 1.05rem var(--f-body); text-decoration: none; cursor: pointer;
+  background: var(--surface); color: var(--brand); border: 2px solid var(--brand);
+  transition: transform 0.15s, background 0.15s;
+}
+.hm-btn:active { transform: scale(0.98); }
+.hm-btn--main { background: var(--brand); color: var(--brand-ink); }
+.hm-btn--light { background: var(--pink); color: var(--navy); border-color: var(--pink); min-height: 48px; }
+
+/* الأقسام */
+.hm-section { padding-block: 36px; }
+.hm-section--soft { background: var(--brand-soft); }
+.hm-text { color: var(--muted); font-size: 1.02rem; }
+.hm-text b { color: var(--ink); }
+.hm-quote {
+  margin: 18px 0; padding: 0; text-align: center;
+  font-family: var(--f-quote); font-size: 1.5rem; color: var(--accent); line-height: 1.6;
+}
+
+.hm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+.hm-prices { list-style: none; margin: 12px 0 0; padding: 0; }
+.hm-prices li {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.hm-prices li:last-child { border-bottom: 0; }
+.hm-prices small { color: var(--muted); font-weight: 400; font-size: 0.82rem; }
+.hm-prices b { color: var(--brand); font-size: 1.1rem; white-space: nowrap; }
+.hm-note { color: var(--muted); font-size: 0.88rem; margin-top: 8px; }
+
+.hm-tags { list-style: none; margin: 14px 0 18px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.hm-tags li {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 14px; font-size: 0.95rem;
+}
+
+/* ساهم معنا */
+.hm-donate {
+  background: var(--navy); color: #fff; border: 1px solid var(--line); border-radius: 22px;
+  padding: 28px 20px; text-align: center;
+}
+.hm-donate p { opacity: 0.9; }
+.hm-phone {
+  font-family: var(--f-display); font-size: clamp(2.2rem, 11vw, 3rem); letter-spacing: 0.06em;
+  color: var(--pink); margin: 6px 0 16px;
+}
+.hm-donate__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 360px; margin-inline: auto; }
+.hm-motto { font-family: var(--f-quote); font-size: 1.2rem; margin-top: 18px; }
+
+.hm-footer {
+  border-top: 1px solid var(--line); padding-block: 22px calc(22px + env(safe-area-inset-bottom, 0px));
+  text-align: center; color: var(--muted); font-size: 0.9rem;
+}
+.hm-footer a { color: var(--brand); }

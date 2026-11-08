@@ -1,14 +1,17 @@
 /* =========================================================
-   هوية جمعية عون وسند الخيرية — مأخوذة من الشعار الرسمي:
-   كحلي #29244c  +  ورديّ مرجاني #f4b2a6
+   الهوية البصرية الرسمية لجمعية عون وسند الخيرية:
+   كحلي #27244F  +  وردي #F4AA9C
+   الخطوط: El Messiri للعناوين، Cairo للنصوص، Amiri للآيات والأحاديث
    ========================================================= */
 :root {
-  --brand: #2e2858;          /* الكحلي: الأزرار وفقاعة المستخدم والعناوين البارزة */
-  --brand-strong: #1f1a40;
+  --navy: #27244f;           /* ألوان الهوية الثابتة (لا تتغير مع الوضع الداكن) */
+  --pink: #f4aa9c;
+  --brand: #27244f;          /* الكحلي: الأزرار وفقاعة المستخدم والعناوين البارزة */
+  --brand-strong: #1b1938;
   --brand-ink: #ffffff;      /* النص فوق اللون الأساسي */
   --brand-soft: #ecebf6;     /* خلفيات خفيفة للعناصر النشطة */
-  --coral: #f4b2a6;          /* المرجاني: تعبئة الأزرار الثانوية والزخارف */
-  --coral-ink: #29244c;      /* النص فوق المرجاني */
+  --coral: #f4aa9c;          /* الوردي: تعبئة الأزرار الثانوية والزخارف */
+  --coral-ink: #27244f;      /* النص فوق المرجاني */
   --accent: #b9533f;         /* مرجاني داكن مقروء للنصوص الصغيرة */
   --accent-soft: #fdebe7;
 
@@ -23,8 +26,9 @@
   --warn: #a86a10;
   --danger: #b4382c;
 
-  --f-display: "El Messiri", "Tajawal", Tahoma, sans-serif;
-  --f-body: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+  --f-display: "El Messiri", "Cairo", Tahoma, sans-serif;
+  --f-body: "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --f-quote: "Amiri", "Traditional Arabic", serif;
 
   --radius: 14px;
   --shadow: 0 12px 32px -20px rgba(41, 36, 76, 0.5);
@@ -34,8 +38,8 @@
 
 /* الوضع الداكن: خلفية بكحلي الشعار، والمرجاني لوناً أساسياً */
 :root[data-theme="dark"] {
-  --brand: #f4b2a6; --brand-strong: #f8c7be; --brand-ink: #29244c; --brand-soft: #2f2a55;
-  --coral: #f4b2a6; --coral-ink: #29244c; --accent: #f4b2a6; --accent-soft: #3a2f4f;
+  --brand: #f4aa9c; --brand-strong: #f8c2b7; --brand-ink: #27244f; --brand-soft: #2f2a55;
+  --coral: #f4aa9c; --coral-ink: #27244f; --accent: #f4aa9c; --accent-soft: #3a2f4f;
   --bg: #17142e; --surface: #201c3d; --sidebar: #1b1835; --ink: #eeebf7; --muted: #a9a4c4; --line: #322d57;
   --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
   --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8); --scrim: rgba(5, 4, 15, 0.6);
@@ -43,8 +47,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --brand: #f4b2a6; --brand-strong: #f8c7be; --brand-ink: #29244c; --brand-soft: #2f2a55;
-    --coral: #f4b2a6; --coral-ink: #29244c; --accent: #f4b2a6; --accent-soft: #3a2f4f;
+    --brand: #f4aa9c; --brand-strong: #f8c2b7; --brand-ink: #27244f; --brand-soft: #2f2a55;
+    --coral: #f4aa9c; --coral-ink: #27244f; --accent: #f4aa9c; --accent-soft: #3a2f4f;
     --bg: #17142e; --surface: #201c3d; --sidebar: #1b1835; --ink: #eeebf7; --muted: #a9a4c4; --line: #322d57;
     --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
     --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8); --scrim: rgba(5, 4, 15, 0.6);

@@ -1,6 +1,3 @@
-/** تحويل الأرقام اللاتينية إلى أرقام عربية مشرقية: 2026 → ٢٠٢٦ */
-export const toArabicDigits = (value: string | number) => String(value).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]);
-
 /** توحيد النص العربي للمطابقة: إزالة التشكيل وتوحيد الألف والياء والتاء المربوطة */
 export function normalizeArabic(text: string): string {
   return String(text)

@@ -10,17 +10,18 @@
  *   VITE_ASSISTANT_API=/api/assistant/chat
  *   VITE_MEMBERSHIP_URL=https://...
  */
+import { org } from "../../shared/org";
+
 const env = import.meta.env;
 
 export const assistantConfig = {
   provider: (env.VITE_ASSISTANT_PROVIDER as "mock" | "http") || "mock",
 
   org: {
-    name: "جمعية عون وسند الخيرية",
-    shortName: "عون وسند",
-    nameLatin: "Awn wa Sanad",
-    logo: `${env.BASE_URL}awn-logo.png`, // رمز الشعار (للأيقونات والصور الصغيرة)
-    logoFull: `${env.BASE_URL}awn-logo-full.png`, // الشعار الكامل مع اسم الجمعية
+    name: org.name,
+    shortName: org.shortName,
+    logo: org.logo, // رمز الشعار (للأيقونات والصور الصغيرة)
+    logoFull: org.logoFull, // الشعار الكامل مع اسم الجمعية
   },
 
   assistant: {
@@ -41,13 +42,12 @@ export const assistantConfig = {
   },
 
   /**
-   * الربط المستقبلي بموقع انتساب الجمعية.
-   * اتركه null حتى يصبح الموقع جاهزاً؛ عند تعيينه يظهر زر "الانتقال إلى صفحة الانتساب"
-   * تحت ردود الانتساب، ورابط في الشريط الجانبي.
+   * موقع الجمعية (نظام الأعضاء والمنتسبين).
+   * يظهر زر "الانتقال إلى موقع الانتساب" تحت ردود الانتساب، ورابط في الشريط الجانبي.
    */
   membership: {
-    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || null,
-    label: "الانتقال إلى صفحة الانتساب",
+    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || org.siteUrl,
+    label: "الانتقال إلى موقع الانتساب",
   },
 
   api: {
