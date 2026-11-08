@@ -1,13 +1,11 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { routes } from "../../app/routes";
 import { Icon } from "../../shared/Icon";
 import { org } from "../../shared/org";
 import { copyText, useToast } from "../../shared/toast";
 import { institute, instituteFocus, membershipMotto, program } from "./data";
 import "./home.css";
 
-/** الصفحة الرئيسية: بسيطة، بثلاثة أزرار واضحة (تبرّع، انتسب، اسأل) */
+/** الصفحة الرئيسية: بسيطة، بزرين واضحين (تبرّع، انتسب) — موقع مستقل عن المساعد الذكي */
 export default function HomePage() {
   const toast = useToast();
 
@@ -26,9 +24,6 @@ export default function HomePage() {
             <img src={org.logo} alt="" width={46} height={46} />
             <b>{org.name}</b>
           </span>
-          <Link className="hm-top__ask" to={routes.assistant}>
-            <Icon name="chat" size={18} /> المساعد
-          </Link>
         </div>
       </header>
 
@@ -47,9 +42,6 @@ export default function HomePage() {
               <a className="hm-btn" href={org.siteUrl} target="_blank" rel="noopener noreferrer">
                 <Icon name="userPlus" /> انتسب إلى الجمعية
               </a>
-              <Link className="hm-btn" to={routes.assistant}>
-                <Icon name="chat" /> اسأل المساعد الذكي
-              </Link>
             </div>
           </div>
         </section>
@@ -118,11 +110,6 @@ export default function HomePage() {
             {org.socials.map((x) => (
               <a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer">{x.name}</a>
             ))}
-          </p>
-          <p>
-            <a href={org.siteUrl} target="_blank" rel="noopener noreferrer">موقع الأعضاء والمنتسبين</a>
-            {" · "}
-            <Link to={routes.assistant}>المساعد الذكي</Link>
           </p>
         </div>
       </footer>

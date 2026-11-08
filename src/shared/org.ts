@@ -2,7 +2,8 @@
  * معلومات جمعية عون وسند الخيرية الأساسية — مصدر واحد لكل الموقع.
  * المرجع الكامل: docs/assistant-knowledge-base.md
  */
-const base = import.meta.env.BASE_URL;
+import logoUrl from "../assets/awn-logo.png";
+import logoFullUrl from "../assets/awn-logo-full.png";
 
 export const org = {
   name: "جمعية عون وسند الخيرية",
@@ -11,7 +12,7 @@ export const org = {
   slogan: "عون للمحتاج وسند للضعيف",
   /** رقم الجمعية للتواصل ودفع الانتساب والتبرعات */
   phone: "32203250",
-  /** موقع الجمعية: نظام الأعضاء والمنتسبين والمالية ولوحة الإدارة والانتخابات */
+  /** موقع الجمعية — لا يُفتح إلا من أزرار الانتساب */
   siteUrl: "https://aoun-sand.vercel.app/",
   /** من موقع الجمعية الرسمي */
   license: { number: "FA 010000210303202510407", date: "2025-03-05" },
@@ -26,6 +27,6 @@ export const org = {
   ],
   /** تطبيقات الدفع المعتمدة في موقع الجمعية للتحويل إلى رقم الجمعية */
   paymentApps: ["بنكيلي", "مصرفي", "السداد", "بيم بانك", "غازا بي", "كليك"],
-  logo: `${base}awn-logo.png`,
-  logoFull: `${base}awn-logo-full.png`,
+  logo: logoUrl,
+  logoFull: logoFullUrl,
 } as const;

@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-import { routes } from "../../../app/routes";
 import { Icon } from "../../../shared/Icon";
 import { assistantConfig as cfg } from "../config";
 import type { Conversation } from "../types";
@@ -21,13 +19,13 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
     <>
       <aside className={`ast-sidebar${open ? " is-open" : ""}`} id="ast-sidebar" aria-label="المحادثات">
         <div className="ast-sidebar__head">
-          <Link className="ast-brand" to={routes.assistant} onClick={onNew}>
+          <button type="button" className="ast-brand" onClick={onNew} aria-label="محادثة جديدة">
             <img src={cfg.org.logo} alt="" width={36} height={36} />
             <span>
               <b>{cfg.org.shortName}</b>
               <small>{cfg.assistant.name}</small>
             </span>
-          </Link>
+          </button>
           <button className="ast-icon-btn ast-only-mobile" type="button" aria-label="إغلاق القائمة" onClick={onClose}>
             <Icon name="close" />
           </button>
@@ -61,9 +59,6 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
               <Icon name="userPlus" /> الانتساب إلى الجمعية
             </a>
           )}
-          <Link className="ast-side-link" to={routes.home}>
-            <Icon name="home" /> الصفحة الرئيسية
-          </Link>
           <button className="ast-side-link" type="button" onClick={onToggleTheme}>
             <Icon name={theme === "dark" ? "sun" : "moon"} /> {theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}
           </button>

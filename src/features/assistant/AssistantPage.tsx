@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Icon } from "../../shared/Icon";
 import { useTheme } from "../../shared/useTheme";
 import { Composer } from "./components/Composer";
@@ -17,7 +16,6 @@ export default function AssistantPage() {
   const { theme, toggle } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
-  const [params, setParams] = useSearchParams();
 
   const messages = chat.conversation?.messages ?? [];
   const empty = messages.length === 0 && !chat.pending;
@@ -26,15 +24,16 @@ export default function AssistantPage() {
     document.title = `${cfg.assistant.name} | ${cfg.org.name}`;
   }, []);
 
-  // فتح المساعد بسؤال جاهز من صفحة أخرى: #/assistant?q=كيف أنتسب
-  const preset = params.get("q");
-  const handledPreset = useRef<string | null>(null);
+  // فتح المساعد بسؤال جاهز: assistant/?q=كيف أنتسب
+  const handledPreset = useRef(false);
   useEffect(() => {
-    if (!preset || handledPreset.current === preset) return;
-    handledPreset.current = preset;
-    setParams({}, { replace: true });
+    if (handledPreset.current) return;
+    handledPreset.current = true;
+    const preset = new URLSearchParams(window.location.search).get("q");
+    if (!preset) return;
+    window.history.replaceState(null, "", window.location.pathname);
     chat.startWith(preset.slice(0, 500));
-  }, [preset, chat, setParams]);
+  }, [chat]);
 
   // التمرير لآخر رسالة عند وصول محتوى جديد (إذا كان المستخدم قريباً من الأسفل)
   const stick = useRef(true);
