@@ -70,7 +70,7 @@
 .ast-topbar__title { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .ast-topbar__title img { border-radius: 9px; }
 .ast-topbar__title > div { min-width: 0; }
-.ast-topbar h1 { font-size: 1.05rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ast-topbar h1 { font-size: 1.05rem; line-height: 1.3; }
 .ast-status { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
 .ast-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--brand-soft); }
 

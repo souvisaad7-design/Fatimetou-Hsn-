@@ -23,7 +23,7 @@ export default function HomePage() {
       <header className="hm-top">
         <div className="hm-wrap hm-top__row">
           <span className="hm-brand">
-            <img src={org.logo} alt="" width={40} height={40} />
+            <img src={org.logo} alt="" width={46} height={46} />
             <b>{org.name}</b>
           </span>
           <Link className="hm-top__ask" to={routes.assistant}>
