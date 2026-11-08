@@ -39,7 +39,7 @@ export interface RegistrationInput {
 export async function registerMember(input: RegistrationInput): Promise<Member> {
   const phone = cleanPhone(input.phone);
   const existing = store.get().members.find((m) => m.phone === phone && m.status !== "rejected");
-  if (existing) throw new Error("هذا الرقم مسجّل من قبل. اختر «لدي حساب» للدخول.");
+  if (existing) throw new Error("هذا الرقم مسجّل من قبل. ارجع إلى «تسجيل الدخول» وادخل برقمك وكلمة المرور.");
   const pinHash = input.pin ? await hashPin(phone, input.pin) : undefined;
 
   let created!: Member;
