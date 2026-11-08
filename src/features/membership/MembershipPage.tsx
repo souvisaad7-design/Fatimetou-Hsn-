@@ -43,7 +43,7 @@ export default function MembershipPage() {
       <header>
         <div className="wrap bar">
           <button type="button" className="logo" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="لجنة الانتساب - أعلى الصفحة">
-            <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="var(--brand)" /><path d="M12 27c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="var(--brand-ink)" strokeWidth="2.6" fill="none" strokeLinecap="round" /><circle cx="20" cy="13.5" r="4" fill="var(--accent)" /></svg>
+            <img src={`${import.meta.env.BASE_URL}awn-logo.png`} alt="" width={40} height={40} />
             <span><b>لجنة الانتساب</b><small>البوابة الرقمية للعضوية</small></span>
           </button>
           <nav aria-label="القائمة الرئيسية">

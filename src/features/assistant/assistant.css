@@ -90,7 +90,7 @@
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;
   animation: ast-rise 0.5s ease both;
 }
-.ast-welcome__logo { border-radius: 20px; box-shadow: var(--shadow); }
+.ast-welcome__logo { width: min(240px, 64vw); height: auto; border-radius: 22px; box-shadow: var(--shadow); }
 .ast-welcome h2 { margin-top: 6px; font-size: clamp(1.5rem, 4vw, 2rem); }
 .ast-welcome__msg { color: var(--muted); max-width: 36em; }
 .ast-welcome__msg p:first-child { color: var(--ink); font-weight: 700; margin-bottom: 4px; }
@@ -151,7 +151,7 @@
 .ast-msg__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .ast-action {
   display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
-  background: var(--accent); color: #2a1c02; font-weight: 700; font-size: 0.92rem; padding: 8px 16px; border-radius: 10px;
+  background: var(--coral); color: var(--coral-ink); font-weight: 700; font-size: 0.92rem; padding: 8px 16px; border-radius: 10px;
 }
 .ast-action:hover { filter: brightness(1.05); }
 
@@ -200,7 +200,7 @@
     transform: translateX(100%); transition: transform 0.25s ease; box-shadow: var(--shadow);
   }
   .ast-sidebar.is-open { transform: none; }
-  .ast-scrim { position: fixed; inset: 0; background: rgba(5, 20, 18, 0.45); z-index: 30; }
+  .ast-scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 30; }
 }
 @media (max-width: 560px) {
   .ast-suggestions { grid-template-columns: 1fr; }

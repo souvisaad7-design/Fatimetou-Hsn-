@@ -70,6 +70,5 @@ VITE_MEMBERSHIP_URL=https://join.example.org
 
 ## قبل النشر الرسمي
 
-- استبدل `public/awn-logo.svg` بشعار الجمعية الرسمي.
-- عدّل الألوان في `src/styles/tokens.css` لتطابق الهوية.
+- الشعار في `public/` (`awn-logo.png` للرمز و `awn-logo-full.png` للشعار الكامل)، والألوان في `src/styles/tokens.css`.
 - راجع المحتوى التجريبي في `src/features/assistant/data/mockKnowledge.ts` و `src/features/membership/data.ts`.

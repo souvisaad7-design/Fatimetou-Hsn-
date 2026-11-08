@@ -4,7 +4,7 @@ import { assistantConfig as cfg } from "../config";
 export function Welcome({ onAsk }: { onAsk: (q: string) => void }) {
   return (
     <div className="ast-welcome">
-      <img className="ast-welcome__logo" src={cfg.org.logo} alt="" width={72} height={72} />
+      <img className="ast-welcome__logo" src={cfg.org.logoFull} alt={cfg.org.name} width={640} height={380} />
       <h2>كيف يمكنني مساعدتك؟</h2>
       <div className="ast-welcome__msg">
         {cfg.assistant.welcome.map((line) => <p key={line}>{line}</p>)}

@@ -1,21 +1,23 @@
 /* =========================================================
-   هوية الألوان والخطوط — مصدر واحد لكل صفحات الموقع.
-   عدّل --brand و --accent لتطابق الهوية الرسمية لجمعية عون وسند.
+   هوية جمعية عون وسند الخيرية — مأخوذة من الشعار الرسمي:
+   كحلي #29244c  +  ورديّ مرجاني #f4b2a6
    ========================================================= */
 :root {
-  --brand: #0d6b62;
-  --brand-strong: #0a554e;
-  --brand-ink: #ffffff;
-  --brand-soft: #e4f1ef;
-  --accent: #c98a24;
-  --accent-soft: #f7ecd6;
+  --brand: #2e2858;          /* الكحلي: الأزرار وفقاعة المستخدم والعناوين البارزة */
+  --brand-strong: #1f1a40;
+  --brand-ink: #ffffff;      /* النص فوق اللون الأساسي */
+  --brand-soft: #ecebf6;     /* خلفيات خفيفة للعناصر النشطة */
+  --coral: #f4b2a6;          /* المرجاني: تعبئة الأزرار الثانوية والزخارف */
+  --coral-ink: #29244c;      /* النص فوق المرجاني */
+  --accent: #b9533f;         /* مرجاني داكن مقروء للنصوص الصغيرة */
+  --accent-soft: #fdebe7;
 
-  --bg: #f6f9f8;
+  --bg: #f8f7fc;
   --surface: #ffffff;
-  --sidebar: #eef4f2;
-  --ink: #15211f;
-  --muted: #5b6b67;
-  --line: #dbe4e1;
+  --sidebar: #f0eff8;
+  --ink: #1d1a33;
+  --muted: #615d7a;
+  --line: #e2e0ee;
 
   --ok: #1f7a4d;
   --warn: #a86a10;
@@ -25,25 +27,27 @@
   --f-body: "Tajawal", "Segoe UI", Tahoma, sans-serif;
 
   --radius: 14px;
-  --shadow: 0 12px 32px -20px rgba(13, 60, 55, 0.45);
+  --shadow: 0 12px 32px -20px rgba(41, 36, 76, 0.5);
+  --scrim: rgba(20, 17, 40, 0.5);
   color-scheme: light;
 }
 
+/* الوضع الداكن: خلفية بكحلي الشعار، والمرجاني لوناً أساسياً */
 :root[data-theme="dark"] {
-  --brand: #3fb3a5; --brand-strong: #5ec6b9; --brand-ink: #05211e; --brand-soft: #173431;
-  --accent: #e8b04f; --accent-soft: #2e2615;
-  --bg: #0f1716; --surface: #162120; --sidebar: #121c1b; --ink: #e6eeec; --muted: #98aaa6; --line: #24332f;
+  --brand: #f4b2a6; --brand-strong: #f8c7be; --brand-ink: #29244c; --brand-soft: #2f2a55;
+  --coral: #f4b2a6; --coral-ink: #29244c; --accent: #f4b2a6; --accent-soft: #3a2f4f;
+  --bg: #17142e; --surface: #201c3d; --sidebar: #1b1835; --ink: #eeebf7; --muted: #a9a4c4; --line: #322d57;
   --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
-  --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8);
+  --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8); --scrim: rgba(5, 4, 15, 0.6);
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --brand: #3fb3a5; --brand-strong: #5ec6b9; --brand-ink: #05211e; --brand-soft: #173431;
-    --accent: #e8b04f; --accent-soft: #2e2615;
-    --bg: #0f1716; --surface: #162120; --sidebar: #121c1b; --ink: #e6eeec; --muted: #98aaa6; --line: #24332f;
+    --brand: #f4b2a6; --brand-strong: #f8c7be; --brand-ink: #29244c; --brand-soft: #2f2a55;
+    --coral: #f4b2a6; --coral-ink: #29244c; --accent: #f4b2a6; --accent-soft: #3a2f4f;
+    --bg: #17142e; --surface: #201c3d; --sidebar: #1b1835; --ink: #eeebf7; --muted: #a9a4c4; --line: #322d57;
     --ok: #5cc58f; --warn: #e3a54a; --danger: #f07c70;
-    --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8);
+    --shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.8); --scrim: rgba(5, 4, 15, 0.6);
     color-scheme: dark;
   }
 }

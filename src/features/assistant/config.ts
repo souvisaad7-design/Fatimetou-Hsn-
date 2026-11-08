@@ -19,7 +19,8 @@ export const assistantConfig = {
     name: "جمعية عون وسند الخيرية",
     shortName: "عون وسند",
     nameLatin: "Awn wa Sanad",
-    logo: `${env.BASE_URL}awn-logo.svg`,
+    logo: `${env.BASE_URL}awn-logo.png`, // رمز الشعار (للأيقونات والصور الصغيرة)
+    logoFull: `${env.BASE_URL}awn-logo-full.png`, // الشعار الكامل مع اسم الجمعية
   },
 
   assistant: {
