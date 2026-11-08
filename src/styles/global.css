@@ -32,3 +32,21 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* رسالة التحميل أو الخطأ (بدل الصفحة الفارغة) */
+.app-message {
+  min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));
+  text-align: center; color: var(--muted);
+}
+.app-message h1 { color: var(--ink); font-size: 1.4rem; }
+.app-message button {
+  background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 12px;
+  padding: 11px 22px; font-weight: 700; cursor: pointer;
+}
+.app-spinner {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--brand);
+  animation: app-spin 0.8s linear infinite;
+}
+@keyframes app-spin { to { transform: rotate(360deg); } }
