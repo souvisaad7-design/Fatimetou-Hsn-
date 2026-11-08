@@ -100,7 +100,19 @@ export function deleteMember(id: string): Promise<void> {
   return done(undefined);
 }
 
+/** المنتسب يغيّر مبلغ انتسابه الشهري متى شاء («انتسب حسب قدرتك») */
+export function updatePledge(memberId: string, pledge?: number): Promise<void> {
+  store.update((db) => ({ ...db, members: db.members.map((m) => (m.id === memberId ? { ...m, pledge: pledge || undefined } : m)) }));
+  return done(undefined);
+}
+
 /* ======================= القوائم والمشرفون ======================= */
+
+/** دخول المشرف برقم هاتفه المسجّل في قائمته */
+export function findSupervisorList(phone: string): MemberList | null {
+  const p = cleanPhone(phone);
+  return store.get().lists.find((l) => l.supervisorPhone === p) ?? null;
+}
 
 export function saveList(list: Omit<MemberList, "id"> & { id?: string }): Promise<MemberList> {
   const item: MemberList = { ...list, id: list.id ?? uid() };
@@ -128,6 +140,7 @@ export interface PaymentInput {
   amount: number | string;
   method: string;
   reference?: string;
+  receipt?: string;
 }
 
 /** المنتسب يبلغ عن دفعة (تبقى بانتظار تأكيد اللجنة) */
@@ -148,6 +161,7 @@ function addPayment(input: PaymentInput, source: Payment["source"], status: Reco
     amount: toAmount(input.amount),
     method: input.method,
     reference: input.reference?.trim() || undefined,
+    receipt: input.receipt || undefined,
     status,
     source,
     createdAt: now(),
@@ -266,6 +280,34 @@ export function memberMonths(db: Database, member: Member, count = 6) {
       month < start ? "before" : rows.some((p) => p.status === "confirmed") ? "paid" : rows.length ? "pending" : "unpaid";
     return { month, state, amount: sum(confirmed(rows)) } as const;
   });
+}
+
+/**
+ * الالتزام: نسبة الأشهر المدفوعة من الأشهر المستحقة (منذ الاعتماد، في آخر 12 شهراً).
+ * يُقاس الانتظام لا قيمة المبلغ: من يدفع 100 كل شهر ملتزم مثل من يدفع 1000.
+ */
+export function commitment(db: Database, member: Member) {
+  const months = memberMonths(db, member, 12).filter((m) => m.state !== "before");
+  const paid = months.filter((m) => m.state === "paid").length;
+  // الأشهر المتتالية غير المدفوعة حتى الشهر الحالي
+  let streakUnpaid = 0;
+  for (let i = months.length - 1; i >= 0 && months[i].state === "unpaid"; i--) streakUnpaid++;
+  let streakPaid = 0;
+  for (let i = months.length - 1; i >= 0 && months[i].state === "paid"; i--) streakPaid++;
+  return { due: months.length, paid, pct: months.length ? Math.round((paid / months.length) * 100) : 0, streakUnpaid, streakPaid };
+}
+
+/** من لم يدفع شهره الحالي، ومن تأخر عدداً من الأشهر المتتالية (للتذكير وتنبيه المشرفين) */
+export function reminderLists(db: Database, listId?: string) {
+  const month = currentMonth();
+  const approved = db.members.filter((m) => m.status === "approved" && (!listId || m.listId === listId));
+  const settled = new Set(db.payments.filter((p) => p.month === month && p.status !== "rejected").map((p) => p.memberId));
+  const unpaidThisMonth = approved.filter((m) => !settled.has(m.id));
+  const late = approved
+    .map((m) => ({ member: m, months: commitment(db, m).streakUnpaid }))
+    .filter((x) => x.months >= cfg.lateAfterMonths)
+    .sort((a, b) => b.months - a.months);
+  return { month, unpaidThisMonth, late };
 }
 
 export function dashboardStats(db: Database) {

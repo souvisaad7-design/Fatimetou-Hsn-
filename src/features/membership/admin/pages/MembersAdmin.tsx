@@ -2,12 +2,13 @@ import { useMemo, useState } from "react";
 import { normalizeArabic } from "../../../../shared/arabic";
 import { useToast } from "../../../../shared/toast";
 import { useDb } from "../../hooks/useDb";
-import { confirmed, deleteMember, memberMonths, setMemberStatus, setPaymentStatus, sum } from "../../services/api";
+import { commitment, confirmed, deleteMember, memberMonths, setMemberStatus, setPaymentStatus, sum } from "../../services/api";
 import { currentMonth, dateLabel, memberStatusLabel, money, monthLabel, recordStatusLabel, statusTone } from "../../lib/format";
 import { downloadCsv } from "../../lib/csv";
 import type { MemberStatus } from "../../types";
 import { Badge, Button, Card, ConfirmButton, Empty, Modal } from "../../ui";
 import { MemberFormModal, PaymentFormModal } from "../forms";
+import { ReceiptButton } from "../ReceiptButton";
 
 export function MembersAdmin({ openId, go }: { openId?: string; go: (to: string) => void }) {
   const db = useDb();
@@ -52,7 +53,7 @@ export function MembersAdmin({ openId, go }: { openId?: string; go: (to: string)
         {rows.length === 0 ? <Empty icon="users" title="لا يوجد منتسبون بهذه الشروط" /> : (
           <div className="ui-table-wrap">
             <table className="ui-table ad-clickable">
-              <thead><tr><th>الرقم</th><th>الاسم</th><th>الهاتف</th><th>القائمة</th><th>الحالة</th><th>{monthLabel(month)}</th></tr></thead>
+              <thead><tr><th>الرقم</th><th>الاسم</th><th>الهاتف</th><th>القائمة</th><th>الحالة</th><th>{monthLabel(month)}</th><th>الالتزام</th></tr></thead>
               <tbody>
                 {rows.map((m) => (
                   <tr key={m.id} onClick={() => go(`members/${m.id}`)} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && go(`members/${m.id}`)}>
@@ -62,6 +63,7 @@ export function MembersAdmin({ openId, go }: { openId?: string; go: (to: string)
                     <td>{db.lists.find((l) => l.id === m.listId)?.name ?? <span className="ad-muted">—</span>}</td>
                     <td><Badge tone={statusTone(m.status)}>{memberStatusLabel[m.status]}</Badge></td>
                     <td>{m.status === "approved" ? (paid.has(m.id) ? <Badge tone="ok">مدفوع</Badge> : <Badge tone="bad">غير مدفوع</Badge>) : <span className="ad-muted">—</span>}</td>
+                    <td className="num">{m.status === "approved" ? `${commitment(db, m).pct}%` : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -136,7 +138,7 @@ function MemberDetail({ id, onClose }: { id: string; onClose: () => void }) {
                         <td>{p.method}{p.reference && <span className="ad-muted num" dir="ltr"> · {p.reference}</span>}</td>
                         <td>{p.source === "member" ? "أبلغ عنها المنتسب" : "سجّلها المشرف"}</td>
                         <td><Badge tone={statusTone(p.status)}>{recordStatusLabel[p.status]}</Badge></td>
-                        <td>{p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}</td>
+                        <td><div className="ui-row-actions"><ReceiptButton src={p.receipt} />{p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}</div></td>
                       </tr>
                     ))}
                   </tbody>

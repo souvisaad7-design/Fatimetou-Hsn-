@@ -39,6 +39,8 @@ export interface Payment {
   amount: number;
   method: string;
   reference?: string;
+  /** صورة الإيصال (مضغوطة) يرفعها المنتسب كإثبات للدفع */
+  receipt?: string;
   status: RecordStatus;
   source: "member" | "admin"; // أبلغ عنها المنتسب أم سجّلها المشرف
   createdAt: string;

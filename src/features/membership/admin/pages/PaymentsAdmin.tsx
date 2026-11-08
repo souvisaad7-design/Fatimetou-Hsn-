@@ -5,6 +5,7 @@ import { currentMonth, lastMonths, money, monthLabel, recordStatusLabel, statusT
 import { downloadCsv } from "../../lib/csv";
 import { Badge, Button, Card, ConfirmButton, Empty, Progress, Stat } from "../../ui";
 import { PaymentFormModal } from "../forms";
+import { ReceiptButton } from "../ReceiptButton";
 
 /** متابعة الانتساب الشهري: من دفع ومن لم يدفع في كل شهر، حسب القائمة */
 export function PaymentsAdmin() {
@@ -77,6 +78,7 @@ export function PaymentsAdmin() {
                     <td>{p.source === "member" ? "المنتسب" : "المشرف"}</td>
                     <td><Badge tone={statusTone(p.status)}>{recordStatusLabel[p.status]}</Badge></td>
                     <td><div className="ui-row-actions">
+                      <ReceiptButton src={p.receipt} />
                       {p.status === "pending" && <Button small onClick={() => setPaymentStatus(p.id, "confirmed")}>تأكيد</Button>}
                       <ConfirmButton label="حذف" icon="trash" onConfirm={() => deletePayment(p.id)} />
                     </div></td>

@@ -51,6 +51,8 @@ export function seedDatabase(): Database {
     months.forEach((month, j) => {
       // بعض الأشهر غير مدفوعة لإظهار المتأخرات
       if ((Number(m.id.slice(1)) + j) % 4 === 0) return;
+      // مثال لمنتسب متأخر شهرين (لتظهر قائمة «المتأخرين» في التذكيرات)
+      if (m.id === "m4" && j >= 1) return;
       payments.push({
         id: `p${p++}`, memberId: m.id, month, amount: m.pledge ?? 500,
         method: j % 2 ? "بنكيلي" : "نقداً عبر المشرف", status: "confirmed", source: "admin", createdAt: iso(60 - j * 25),

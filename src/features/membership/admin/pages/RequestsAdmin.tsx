@@ -4,6 +4,7 @@ import { useDb } from "../../hooks/useDb";
 import { setDonationStatus, setMemberStatus, setPaymentStatus } from "../../services/api";
 import { dateLabel, money, monthLabel } from "../../lib/format";
 import { Badge, Button, Card, ConfirmButton, Empty } from "../../ui";
+import { ReceiptButton } from "../ReceiptButton";
 
 /** كل ما ينتظر قرار اللجنة: طلبات الانتساب، والدفعات والتبرعات التي أبلغ عنها أصحابها */
 export function RequestsAdmin() {
@@ -56,6 +57,7 @@ export function RequestsAdmin() {
                     <td>{p.method}</td>
                     <td className="num" dir="ltr">{p.reference ?? "—"}</td>
                     <td><div className="ui-row-actions">
+                      <ReceiptButton src={p.receipt} />
                       <Button small icon="check" onClick={async () => { await setPaymentStatus(p.id, "confirmed"); toast("تم تأكيد الدفعة"); }}>تأكيد</Button>
                       <ConfirmButton label="رفض" onConfirm={() => setPaymentStatus(p.id, "rejected")} />
                     </div></td>
