@@ -1,7 +1,7 @@
 import { Icon } from "../../../shared/Icon";
 import { assistantConfig as cfg } from "../config";
 import type { Conversation } from "../types";
-import { setAutoSpeak, speechSupported, useAutoSpeak } from "../lib/speech";
+import { getChosenVoice, setAutoSpeak, setChosenVoice, speechSupported, useAutoSpeak, useVoicesVersion, voicesFor } from "../lib/speech";
 
 interface Props {
   open: boolean;
@@ -66,6 +66,7 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
               <Icon name="volume" /> قراءة الردود بالصوت: {autoSpeak ? "مفعّلة" : "متوقفة"}
             </button>
           )}
+          {speechSupported && <VoicePicker />}
           <button className="ast-side-link" type="button" onClick={onToggleTheme}>
             <Icon name={theme === "dark" ? "sun" : "moon"} /> {theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}
           </button>
@@ -74,5 +75,23 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
       </aside>
       {open && <div className="ast-scrim" onClick={onClose} />}
     </>
+  );
+}
+
+/** اختيار صوت القراءة من الأصوات العربية الموجودة في الجهاز (تُجرَّب عند الاختيار) */
+function VoicePicker() {
+  useVoicesVersion();
+  const voices = voicesFor("ar");
+  if (voices.length < 2) return null;
+  const current = voices.find((v) => v.voiceURI === getChosenVoice())?.voiceURI ?? voices[0].voiceURI;
+  return (
+    <label className="ast-voice">
+      <span><Icon name="volume" size={16} /> صوت القراءة</span>
+      <select value={current} onChange={(e) => setChosenVoice(e.target.value)}>
+        {voices.map((v) => (
+          <option key={v.voiceURI} value={v.voiceURI}>{v.name.replace(/\s*\(.*\)\s*/, " ").replace(/Microsoft|Google|Online/gi, "").trim() || v.name}</option>
+        ))}
+      </select>
+    </label>
   );
 }

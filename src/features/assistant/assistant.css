@@ -280,3 +280,6 @@
 }
 
 .ast-tool.is-speaking { background: var(--brand-soft); color: var(--brand); }
+.ast-voice { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; font-size: 0.85rem; color: var(--muted); }
+.ast-voice span { display: inline-flex; align-items: center; gap: 6px; }
+.ast-voice select { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; }

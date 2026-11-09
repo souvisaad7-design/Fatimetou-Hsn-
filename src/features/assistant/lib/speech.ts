@@ -28,11 +28,37 @@ function toSpoken(text: string): string {
     .trim();
 }
 
+const VOICE_KEY = "awn:assistant:voice";
+let chosenVoice = (() => { try { return localStorage.getItem(VOICE_KEY) || ""; } catch { return ""; } })();
+
+/** أصوات هادئة وواضحة (غالباً نسائية أو «طبيعية») تُفضَّل، والأصوات الرجالية العميقة تُؤخَّر */
+const SOFT = /natural|neural|online|enhanced|premium|google|laila|layla|mariam|maryam|amira|salma|zariyah|hoda|fatima|sana|noura|rana|amany|denise|amelie|audrey|julie|marie|celine|lea/i;
+const HEAVY = /majed|maged|tarik|naayf|hamed|shakir|bassel|omar|hamdan|thomas|henri|paul|jacques/i;
+const isFemale = (v: SpeechSynthesisVoice) => /female|femme|أنثى/i.test(v.name);
+
+function score(v: SpeechSynthesisVoice): number {
+  let n = 0;
+  if (SOFT.test(v.name)) n += 4;
+  if (isFemale(v)) n += 3;
+  if (/natural|neural|enhanced|premium/i.test(v.name)) n += 3;
+  if (HEAVY.test(v.name)) n -= 5;
+  if (v.localService) n += 1; // أسرع وأوضح غالباً
+  return n;
+}
+
+export const voicesFor = (lang: "ar" | "fr") =>
+  (synth?.getVoices() ?? []).filter((v) => v.lang.toLowerCase().startsWith(lang)).sort((a, b) => score(b) - score(a));
+
 function pickVoice(lang: "ar" | "fr"): SpeechSynthesisVoice | undefined {
-  const voices = synth?.getVoices() ?? [];
-  const mine = voices.filter((v) => v.lang.toLowerCase().startsWith(lang));
-  // نفضّل الأصوات الطبيعية (Google / Online / Natural) ثم أي صوت باللغة
-  return mine.find((v) => /google|natural|online/i.test(v.name)) ?? mine[0];
+  const list = voicesFor(lang);
+  return (lang === "ar" && list.find((v) => v.voiceURI === chosenVoice)) || list[0];
+}
+
+export const getChosenVoice = () => chosenVoice;
+export function setChosenVoice(uri: string) {
+  chosenVoice = uri;
+  try { localStorage.setItem(VOICE_KEY, uri); } catch { /* تجاهل */ }
+  speak("السلام عليكم ومرحبا بيك! أنا مساعد عون وسند.");
 }
 
 export function stopSpeaking() {
@@ -54,7 +80,10 @@ export function speak(text: string) {
   u.lang = lang === "fr" ? "fr-FR" : "ar-SA";
   const voice = pickVoice(lang);
   if (voice) { u.voice = voice; u.lang = voice.lang; }
-  u.rate = lang === "ar" ? 0.95 : 1;
+  // نبرة أخف قليلاً وسرعة طبيعية: صوت مريح وواضح
+  u.pitch = 1.1;
+  u.rate = 1;
+  u.volume = 1;
   const done = () => { if (speakingText === text) { speakingText = null; emit(); } };
   u.onend = done;
   u.onerror = done;
@@ -64,7 +93,9 @@ export function speak(text: string) {
 }
 
 // بعض المتصفحات تحمّل قائمة الأصوات متأخرة
-synth?.addEventListener?.("voiceschanged", () => {});
+let voicesVersion = 0;
+synth?.addEventListener?.("voiceschanged", () => { voicesVersion++; emit(); });
+export const useVoicesVersion = () => useSyncExternalStore(subscribe, () => voicesVersion, () => 0);
 
 export function setAutoSpeak(on: boolean) {
   autoSpeak = on;
