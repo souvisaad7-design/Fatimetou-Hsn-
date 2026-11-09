@@ -278,3 +278,5 @@
   .ast-msg__avatar { width: 28px; height: 28px; }
   .ast-status { display: none; }
 }
+
+.ast-tool.is-speaking { background: var(--brand-soft); color: var(--brand); }

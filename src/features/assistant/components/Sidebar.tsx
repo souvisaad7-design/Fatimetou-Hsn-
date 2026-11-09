@@ -1,6 +1,7 @@
 import { Icon } from "../../../shared/Icon";
 import { assistantConfig as cfg } from "../config";
 import type { Conversation } from "../types";
+import { setAutoSpeak, speechSupported, useAutoSpeak } from "../lib/speech";
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew, onSelect, onDelete, onClose }: Props) {
+  const autoSpeak = useAutoSpeak();
   return (
     <>
       <aside className={`ast-sidebar${open ? " is-open" : ""}`} id="ast-sidebar" aria-label="المحادثات">
@@ -58,6 +60,11 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
             <a className="ast-side-link" href={cfg.membership.url}>
               <Icon name="userPlus" /> الانتساب إلى الجمعية
             </a>
+          )}
+          {speechSupported && (
+            <button className="ast-side-link" type="button" onClick={() => setAutoSpeak(!autoSpeak)} aria-pressed={autoSpeak}>
+              <Icon name="volume" /> قراءة الردود بالصوت: {autoSpeak ? "مفعّلة" : "متوقفة"}
+            </button>
           )}
           <button className="ast-side-link" type="button" onClick={onToggleTheme}>
             <Icon name={theme === "dark" ? "sun" : "moon"} /> {theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}

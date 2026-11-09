@@ -3,6 +3,7 @@ import { Icon } from "../../../shared/Icon";
 import { copyText, useToast } from "../../../shared/toast";
 import { assistantConfig as cfg } from "../config";
 import { Markdown } from "../lib/Markdown";
+import { speak, speechSupported, stopSpeaking, useSpeakingText } from "../lib/speech";
 import type { ChatMessage } from "../types";
 import { PlaylistCard } from "./PlaylistCard";
 import { VideoCard } from "./VideoCard";
@@ -26,6 +27,7 @@ interface BotProps {
 export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: BotProps) {
   const toast = useToast();
   const links = (message.actions ?? []).filter((a) => a.url);
+  const speaking = useSpeakingText() === message.content;
 
   return (
     <BotShell error={message.error}>
@@ -53,6 +55,16 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
           >
             <Icon name="copy" size={16} /> نسخ
           </button>
+          {speechSupported && !message.error && (
+            <button
+              type="button"
+              className={`ast-tool${speaking ? " is-speaking" : ""}`}
+              onClick={() => (speaking ? stopSpeaking() : speak(message.content))}
+              aria-pressed={speaking}
+            >
+              <Icon name={speaking ? "stop" : "volume"} size={16} /> {speaking ? "إيقاف" : "استمع"}
+            </button>
+          )}
           {isLast && onRegenerate && (
             <button type="button" className="ast-tool" onClick={onRegenerate}>
               <Icon name="retry" size={16} /> {message.error ? "إعادة المحاولة" : "إعادة التوليد"}

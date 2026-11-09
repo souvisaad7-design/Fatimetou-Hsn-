@@ -1,3 +1,4 @@
+import { getAutoSpeak, speak } from "../lib/speech";
 import { useCallback, useRef, useState } from "react";
 import { sendChat } from "../services/chatService";
 import type { ChatMessage } from "../types";
@@ -32,6 +33,7 @@ export function useAssistant() {
           },
         });
         store.addMessage(conversationId, { role: "assistant", ...reply });
+        if (getAutoSpeak()) speak(reply.content);
       } catch (err) {
         if ((err as Error).name === "AbortError") {
           if (partial.trim()) store.addMessage(conversationId, { role: "assistant", content: `${partial}\n\n_تم إيقاف الرد._` });
