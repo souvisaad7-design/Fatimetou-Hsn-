@@ -195,30 +195,22 @@
 
 /* ===== اختيار اللغة ===== */
 .lang-switch {
-  display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px;
-  background: var(--surface, #fff); border: 1px solid var(--line, #dcd8ea);
-  box-shadow: 0 4px 14px -10px rgba(41, 36, 76, 0.5); direction: ltr;
+  display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 4px 2px;
+  font: 600 0.74rem var(--f-body); line-height: 1; color: var(--muted, #6b6785); cursor: pointer;
+  opacity: 0.85; transition: opacity 0.15s, color 0.15s;
 }
-.lang-switch button {
-  border: 0; background: transparent; color: var(--ink, #27244f); cursor: pointer;
-  font: 700 0.85rem var(--f-body); padding: 6px 14px; border-radius: 999px; min-height: 32px; line-height: 1;
-  transition: background 0.15s, color 0.15s;
-}
-.lang-switch button:hover:not(.is-active) { background: color-mix(in srgb, var(--pink, #e8577a) 14%, transparent); }
-.lang-switch button.is-active { background: var(--brand, #27244f); color: var(--brand-ink, #fff); }
-.lang-switch button:focus-visible { outline: 2px solid var(--pink, #e8577a); outline-offset: 2px; }
-.lang-switch--compact button { padding: 5px 10px; font-size: 0.78rem; min-height: 28px; }
+.lang-switch:hover { opacity: 1; color: var(--ink, #27244f); text-decoration: underline; text-underline-offset: 3px; }
+.lang-switch:focus-visible { outline: 2px solid var(--pink, #e8577a); outline-offset: 2px; border-radius: 4px; }
 .lg-lang {
   position: absolute; z-index: 3; top: calc(10px + env(safe-area-inset-top, 0px));
   inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
 }
-.lg-lang .lang-switch { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); box-shadow: none; }
-.lg-lang .lang-switch button { color: #fff; }
-.lg-lang .lang-switch button.is-active { background: #fff; color: var(--lg-hero, #27244f); }
-.lg-hero { padding-top: calc(52px + env(safe-area-inset-top, 0px)); }
-.pt-gate { grid-template-rows: auto 1fr; gap: 12px; }
+.lg-lang .lang-switch, .lg-lang .lang-switch:hover { color: rgba(255, 255, 255, 0.85); }
+.lg-lang .lang-switch:hover { color: #fff; }
+.lg-hero { padding-top: calc(30px + env(safe-area-inset-top, 0px)); }
+.pt-gate { grid-template-rows: auto 1fr; gap: 4px; }
 .pt-gate__lang { justify-self: end; align-self: start; }
-.app-message .lang-switch { margin-bottom: 12px; }
+.app-message .lang-switch { margin-bottom: 8px; }
 
 /* ===== زر المساعد الذكي العائم ===== */
 .pt-fab {
