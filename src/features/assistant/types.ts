@@ -54,6 +54,13 @@ export interface ChatProvider {
   send(request: ChatRequest): Promise<ChatReply>;
 }
 
+/** نص الرد بلغات المساعد الثلاث: الحسانية (افتراضياً) والفصحى والفرنسية */
+export interface LangText {
+  has: string;
+  ar: string;
+  fr: string;
+}
+
 export interface Intent {
   id: string;
   priority?: number;
@@ -63,14 +70,24 @@ export interface Intent {
   /** لا يُطابق إذا احتوى السؤال على إحدى هذه الكلمات */
   excludes?: string[];
   keywords: string[];
-  answer: string;
+  answer: LangText;
+  /** أسئلة مقترحة بعد الرد (مفاتيح من قائمة الأسئلة الجاهزة) */
   followups?: string[];
   actions?: ReplyAction[];
   /** يعرض مشغّل قائمة فيديوهات القناة مع الرد */
   playlist?: boolean;
+  /** لا يُبحث عن فيديو مع هذا الرد */
+  noVideo?: boolean;
 }
 
 export interface KnowledgeBase {
   intents: Intent[];
-  fallback: Omit<Intent, "id" | "keywords">;
+  /** الأسئلة الجاهزة بالألسن الثلاثة، تُستعمل كمقترحات بعد الردود */
+  questions: Record<string, LangText>;
+  /** كلمات تدل على أن السؤال عن الجمعية */
+  topicWords: string[];
+  /** «ما عندي خبر عن ذاك...» */
+  unknown: Omit<Intent, "id" | "keywords">;
+  /** سؤال خارج موضوع الجمعية */
+  offTopic: Omit<Intent, "id" | "keywords">;
 }

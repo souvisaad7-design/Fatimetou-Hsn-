@@ -10,7 +10,7 @@ import { VideoCard } from "./VideoCard";
 export function UserMessage({ content }: { content: string }) {
   return (
     <article className="ast-msg ast-msg--user">
-      <div className="ast-msg__body">{content}</div>
+      <div className="ast-msg__body" dir="auto">{content}</div>
     </article>
   );
 }
@@ -29,7 +29,7 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
 
   return (
     <BotShell error={message.error}>
-      <div className="ast-msg__body"><Markdown text={message.content} /></div>
+      <div className="ast-msg__body" dir="auto"><Markdown text={message.content} /></div>
 
       {message.playlist && <PlaylistCard startId={message.videos?.[0]?.id} />}
       {!message.playlist && !!message.videos?.length && <VideoCard videos={message.videos} />}
