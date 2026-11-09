@@ -92,7 +92,8 @@ src/
 
 - القاموس `src/features/assistant/data/hassaniyaLexicon.json` (4645 كلمة) مبني من مجموعة البيانات
   [hassan-IA/dah](https://huggingface.co/datasets/hassan-IA/dah) على Hugging Face (3002 جملة بالحسانية بالحرفين العربي واللاتيني).
-- لإعادة بنائه: `NODE_USE_ENV_PROXY=1 node scripts/build-hassaniya-lexicon.mjs` (أو دون المتغير خارج الخادم الوسيط).
+- السكربت `scripts/build-hassaniya-lexicon.mjs` يقرأ أجزاء البيانات من `datasets-server.huggingface.co/splits` وجملها من `/rows`، فتدخل الأجزاء والجمل الجديدة تلقائياً عند إعادة تشغيله (ويرجع إلى ملف CSV إن تعذّر ذلك).
+- لإعادة بنائه: `node scripts/build-hassaniya-lexicon.mjs` (وخلف خادم وسيط: `NODE_USE_ENV_PROXY=1`).
 - `src/features/assistant/lib/arabizi.ts`: يكتشف الحسانية اللاتينية ويحوّل كلماتها المعروفة إلى العربية. يُحمَّل القاموس فقط عند الكتابة بالحروف اللاتينية.
 - لم تُحدَّد رخصة لمجموعة البيانات على Hugging Face؛ يُستحسن أخذ إذن صاحبها قبل الاستعمال الواسع.
 

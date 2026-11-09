@@ -5,13 +5,17 @@
  *
  *   node scripts/build-hassaniya-lexicon.mjs
  *
+ * يقرأ أجزاء البيانات من /splits ثم جملها من /rows (خادم بيانات Hugging Face)، فإن أضاف صاحبها
+ * أجزاء أو جملاً جديدة تدخل تلقائياً. وإن تعذّر ذلك يرجع إلى ملف CSV الأصلي.
  * كل جملة مكتوبة بالحرفين بالترتيب نفسه، فإذا تساوى عدد الكلمات تُقابَل كلمة بكلمة.
  * الناتج: src/features/assistant/data/hassaniyaLexicon.json
  * يستعمله المساعد ليفهم من يكتب الحسانية بالحروف اللاتينية (مثل: chenhou jam3iya 3oun w sanad).
  */
 import { writeFile } from "node:fs/promises";
 
-const SOURCE = "https://huggingface.co/datasets/hassan-IA/dah/resolve/main/d1.csv";
+const DATASET = "hassan-IA/dah";
+const API = "https://datasets-server.huggingface.co";
+const CSV = `https://huggingface.co/datasets/${DATASET}/resolve/main/d1.csv`;
 const OUT = new URL("../src/features/assistant/data/hassaniyaLexicon.json", import.meta.url);
 
 /** قراءة CSV بسيطة تدعم الحقول بين علامتي تنصيص */
@@ -37,21 +41,65 @@ function parseCsv(text) {
   return rows;
 }
 
-const res = await fetch(SOURCE);
-if (!res.ok) throw new Error(`تعذّر تحميل البيانات: ${res.status}`);
-const [header, ...rows] = parseCsv(await res.text());
-const iAr = header.indexOf("hassaniya-ar");
-const iLat = header.indexOf("hassaniya-en");
-if (iAr < 0 || iLat < 0) throw new Error("تغيّرت أعمدة البيانات");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** طلب JSON مع إعادة المحاولة (خادم البيانات يحدّ عدد الطلبات أحياناً) */
+async function getJson(url, tries = 5) {
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return await res.json();
+      if (i >= tries - 1 || (res.status < 500 && res.status !== 429)) throw new Error(`${res.status} ${url}`);
+    } catch (err) {
+      if (i >= tries - 1) throw err;
+    }
+    await sleep(2000 * 2 ** i);
+  }
+}
+
+/** كل الجمل من كل الأجزاء: [{ ar, lat }] */
+async function fromDatasetServer() {
+  const { splits } = await getJson(`${API}/splits?dataset=${encodeURIComponent(DATASET)}`);
+  const all = [];
+  for (const { config, split } of splits) {
+    for (let offset = 0; ; offset += 100) {
+      const q = `dataset=${encodeURIComponent(DATASET)}&config=${config}&split=${split}&offset=${offset}&length=100`;
+      const page = await getJson(`${API}/rows?${q}`);
+      for (const { row } of page.rows) all.push({ ar: row["hassaniya-ar"] ?? "", lat: row["hassaniya-en"] ?? "" });
+      if (offset + 100 >= page.num_rows_total) break;
+      await sleep(250);
+    }
+    console.log(`  ${config}/${split}: ${all.length} جملة حتى الآن`);
+  }
+  return { rows: all, splits: splits.map((x) => x.split) };
+}
+
+async function fromCsv() {
+  const res = await fetch(CSV);
+  if (!res.ok) throw new Error(`تعذّر تحميل البيانات: ${res.status}`);
+  const [header, ...lines] = parseCsv(await res.text());
+  const iAr = header.indexOf("hassaniya-ar");
+  const iLat = header.indexOf("hassaniya-en");
+  if (iAr < 0 || iLat < 0) throw new Error("تغيّرت أعمدة البيانات");
+  return { rows: lines.map((r) => ({ ar: r[iAr] ?? "", lat: r[iLat] ?? "" })), splits: ["train (csv)"] };
+}
+
+let data;
+try {
+  data = await fromDatasetServer();
+} catch (err) {
+  console.warn(`خادم البيانات غير متاح (${err.message})، أستعمل ملف CSV`);
+  data = await fromCsv();
+}
+const { rows, splits } = data;
 const arabicWords = (s) => s.match(/[ء-يگڤٱ]+/g) ?? [];
 const latinWords = (s) => s.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
 const counts = new Map(); // latin → Map(arabic → n)
 let aligned = 0;
 for (const r of rows) {
-  const ar = arabicWords(r[iAr] ?? "");
-  const lat = latinWords(r[iLat] ?? "");
+  const ar = arabicWords(r.ar);
+  const lat = latinWords(r.lat);
   if (!ar.length || ar.length !== lat.length) continue;
   aligned++;
   lat.forEach((w, i) => {
@@ -70,7 +118,8 @@ for (const [w, m] of [...counts].sort(([a], [b]) => a.localeCompare(b))) {
 }
 
 const out = {
-  source: "https://huggingface.co/datasets/hassan-IA/dah",
+  source: `https://huggingface.co/datasets/${DATASET}`,
+  splits,
   sentences: rows.length,
   aligned,
   latin,
