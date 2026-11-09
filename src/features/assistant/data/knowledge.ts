@@ -91,7 +91,7 @@ const intents: Intent[] = [
   // ===== التحية والشكر =====
   {
     id: "greeting", priority: 0, maxWords: 5, noVideo: true,
-    keywords: ["السلام", "سلام", "مرحبا", "اهلا", "صباح", "مساء", "اشحالك", "شحالك", "لاباس", "كيف حالك", "bonjour", "salut", "bonsoir", "salam"],
+    keywords: ["salam", "slm", "esselam", "assalam", "labas", "chi6ra", "chtari", "chi tari", "السلام", "سلام", "مرحبا", "اهلا", "صباح", "مساء", "اشحالك", "شحالك", "لاباس", "كيف حالك", "bonjour", "salut", "bonsoir", "salam"],
     answer: T(
       "وعليكم السلام ومرحبا بيك! أنا مساعد عون وسند، شنهو تبغي تعرف على الجمعية؟",
       "وعليكم السلام ورحمة الله، أهلاً بك! أنا مساعد عون وسند، كيف يمكنني مساعدتك؟",
@@ -101,7 +101,7 @@ const intents: Intent[] = [
   },
   {
     id: "thanks", priority: 0, maxWords: 6, noVideo: true,
-    keywords: ["شكرا", "جزاك", "بارك الله", "مشكور", "الله يجازيك", "merci"],
+    keywords: ["chokran", "choukran", "chukran", "barak allah", "mechkour", "mechkur", "jazak", "شكرا", "جزاك", "بارك الله", "مشكور", "الله يجازيك", "merci"],
     answer: T(
       "العفو، الله يجازيك بالخير! الا عندك سؤال آخر على الجمعية، مرحبا بيك.",
       "العفو، وجزاك الله خيراً. إن كان لديك سؤال آخر عن الجمعية فأنا في الخدمة.",
@@ -112,7 +112,7 @@ const intents: Intent[] = [
   // ===== التعريف =====
   {
     id: "about", priority: 1, noVideo: true,
-    keywords: ["شنهي جمعيه", "ما هي جمعيه", "ماهي جمعيه", "عرفني", "تعريف", "نبذه", "عن الجمعيه", "عون وسند", "من انتم", "qu est ce que l association", "presentez", "c est quoi", "aoun"],
+    keywords: ["jam3iya", "jem3iya", "jam3ia", "jem3ia", "jam3iyat", "3oun w sanad", "3oun wa sanad", "3awn", "شنهي جمعيه", "ما هي جمعيه", "ماهي جمعيه", "عرفني", "تعريف", "نبذه", "عن الجمعيه", "عون وسند", "من انتم", "qu est ce que l association", "presentez", "c est quoi", "aoun"],
     answer: T(
       "جمعية عون وسند جمعية شبابية خيرية، أغلب أعضائها طلاب جامعيين، وشعارها **«عون للمحتاج وسند للضعيف»**. شنهو تبغي تعرف عليها؟",
       "جمعية عون وسند الخيرية جمعية شبابية خيرية، أغلب أعضائها طلاب جامعيون، وشعارها **«عون للمحتاج وسند للضعيف»**. ماذا تود أن تعرف عنها؟",
@@ -122,7 +122,7 @@ const intents: Intent[] = [
   },
   {
     id: "slogan", priority: 5, noVideo: true,
-    keywords: ["شعار", "devise", "slogan"],
+    keywords: ["chi3ar", "che3ar", "ci3ar", "شعار", "devise", "slogan"],
     answer: T(
       "شعار الجمعية: **«عون للمحتاج وسند للضعيف»**.",
       "شعار الجمعية هو: **«عون للمحتاج وسند للضعيف»**.",
@@ -132,7 +132,7 @@ const intents: Intent[] = [
   },
   {
     id: "goals", priority: 3, playlist: true,
-    keywords: ["هدف", "اهداف", "اهدافها", "غايه", "تسعي", "objectif", "but de", "mission"],
+    keywords: ["ahdaf", "2ahdaf", "hadaf", "ahdav", "hadav", "هدف", "اهداف", "اهدافها", "غايه", "تسعي", "objectif", "but de", "mission"],
     answer: T(
       "الجمعية تعمل على مساعدة الأسر المحتاجة، وتوفير الماء الصالح للشرب، ودعم التعليم والمحاظر، وبناء المساجد، وإفطار الصائمين، وتشجيع الشباب على التطوع. وهاذو فيديوهات من إنجازاتها 🎬",
       "تعمل الجمعية على مساعدة الأسر المحتاجة، وتوفير الماء الصالح للشرب، ودعم التعليم والمحاظر، وبناء المساجد، وإفطار الصائمين، وتشجيع الشباب على التطوع. وهذه فيديوهات من إنجازاتها 🎬",
@@ -144,7 +144,7 @@ const intents: Intent[] = [
   // ===== التواصل =====
   {
     id: "contact", priority: 4, noVideo: true,
-    keywords: ["تواصل", "نتواصل", "اتواصل", "اتصل", "نتصل", "رقم الجمعيه", "رقمكم", "رقم الهاتف", "رقم التواصل", "هاتف", "تلفون", "واتساب", "contact", "telephone", "numero", "appeler", "joindre", "whatsapp"],
+    keywords: ["raqm", "ragm", "nwasel", "ntwasel", "tewasel", "nettasel", "nitasel", "telephone", "تواصل", "نتواصل", "اتواصل", "اتصل", "نتصل", "رقم الجمعيه", "رقمكم", "رقم الهاتف", "رقم التواصل", "هاتف", "تلفون", "واتساب", "contact", "telephone", "numero", "appeler", "joindre", "whatsapp"],
     answer: T(
       `تقدر تتصل بالجمعية على الرقم **${PHONE}**، ومرحبا بيك.`,
       `يمكنك التواصل مع الجمعية على الرقم **${PHONE}**.`,
@@ -156,7 +156,7 @@ const intents: Intent[] = [
   // ===== المكتب التنفيذي =====
   {
     id: "office", priority: 6, noVideo: true,
-    keywords: ["المكتب التنفيذي", "المكتب", "القياده", "قياده الجمعيه", "bureau", "direction"],
+    keywords: ["maktab", "mekteb", "tenvidhi", "tanfidhi", "المكتب التنفيذي", "المكتب", "القياده", "قياده الجمعيه", "bureau", "direction"],
     answer: T(
       "المكتب التنفيذي: الرئيس **أحمد طالب / عمار**، والأمين العام **محمد أمبارك**.",
       "المكتب التنفيذي للجمعية: الرئيس **أحمد طالب / عمار**، والأمين العام **محمد أمبارك**.",
@@ -166,7 +166,7 @@ const intents: Intent[] = [
   },
   {
     id: "president", priority: 12, noVideo: true,
-    keywords: ["رئيس", "الرئيس", "رئيسكم", "president"],
+    keywords: ["ra2is", "rayis", "rayiss", "ra2iss", "raiis", "رئيس", "الرئيس", "رئيسكم", "president"],
     excludes: ["نائب", "لجنه", "لجان", "vice", "commission", "منتخب", "elus", "elu "],
     answer: T(
       "رئيس الجمعية هو **أحمد طالب / عمار**.",
@@ -183,7 +183,7 @@ const intents: Intent[] = [
   },
   {
     id: "secretary-general", priority: 12, noVideo: true,
-    keywords: ["الامين العام", "امين عام", "الامين", "secretaire general", "secretaire"],
+    keywords: ["amin 3am", "lamin l3am", "amine 3am", "el amin", "الامين العام", "امين عام", "الامين", "secretaire general", "secretaire"],
     answer: T(
       "الأمين العام للجمعية هو **محمد أمبارك**.",
       "الأمين العام للجمعية هو **محمد أمبارك**.",
@@ -195,7 +195,7 @@ const intents: Intent[] = [
   // ===== اللجان =====
   {
     id: "committees", priority: 6, noVideo: true,
-    keywords: ["لجان", "اللجان", "لجنه", "commissions", "comites", "commission"],
+    keywords: ["lijan", "lejna", "lajna", "ljan", "lajnat", "lejnat", "لجان", "اللجان", "لجنه", "commissions", "comites", "commission"],
     answer: T(
       "الجمعية عندها 8 لجان: الانتسابية، المالية، الإعلامية، الرقمية، التعليم، التنظيم والتنسيق، العلاقات الخارجية، والمرضى. وكل لجنة عندها **مسؤول اللجنة** و**نائب المسؤول**.",
       "للجمعية 8 لجان: اللجنة الانتسابية، والمالية، والإعلامية، والرقمية، ولجنة التعليم، ولجنة التنظيم والتنسيق، ولجنة العلاقات الخارجية، ولجنة المرضى. ولكل لجنة **مسؤول اللجنة** و**نائب المسؤول**.",
@@ -216,7 +216,7 @@ const intents: Intent[] = [
   // ===== الانتساب =====
   {
     id: "join", priority: 4, noVideo: true,
-    keywords: ["انتساب", "انتسب", "ننتسب", "نتنسب", "منتسب", "نسجل", "تسجيل", "عضويه", "ندخل الجمعيه", "adherer", "adhesion", "inscri", "devenir membre", "rejoindre"],
+    keywords: ["intisab", "ntisab", "entisab", "nentesb", "ntesb", "nentasab", "nentesbu", "tasjil", "nsejel", "nsajel", "3odwiya", "انتساب", "انتسب", "ننتسب", "نتنسب", "منتسب", "نسجل", "تسجيل", "عضويه", "ندخل الجمعيه", "adherer", "adhesion", "inscri", "devenir membre", "rejoindre"],
     answer: T(
       `المنتسبين مقسّمين على لوائح، وكل لائحة عندها مشرف يجمع الاشتراك كل شهر، والمبلغ حسب قدرتك. والمنتسب يقدر يصوّت فالانتخابات. للانتساب ولا أي سؤال عليه، اتصل بالجمعية على **${PHONE}**.`,
       `ينقسم المنتسبون إلى لوائح، ولكل لائحة مشرف يجمع الاشتراك كل شهر، والمبلغ حسب قدرتك. ويحق للمنتسب التصويت في الانتخابات. للانتساب أو لأي سؤال عنه، اتصل بالجمعية على **${PHONE}**.`,
@@ -227,7 +227,7 @@ const intents: Intent[] = [
   },
   {
     id: "amount", priority: 9, noVideo: true,
-    keywords: ["كم الاشتراك", "مبلغ", "الاشتراك", "اشتراك", "نخلص", "ندفع", "ادفع", "قدرتي", "قيمه الانتساب", "cotisation", "montant", "combien coute", "combien payer", "payer"],
+    keywords: ["ichtirak", "echtirak", "ishtirak", "ichtiraak", "mablagh", "meblegh", "9edech", "gedech", "gedde", "ndfa3", "nedve3", "nedfa3", "كم الاشتراك", "مبلغ", "الاشتراك", "اشتراك", "نخلص", "ندفع", "ادفع", "قدرتي", "قيمه الانتساب", "cotisation", "montant", "combien coute", "combien payer", "payer"],
     answer: T(
       "الاشتراك ماهو محدد، كل واحد يدفع حسب قدرتو: 10، ولا 20، حتى 10 آلاف. المهم تختار مبلغ تقدر تداوم عليه، والقليل الدايم خير من الكثير المنقطع.",
       "الاشتراك الشهري غير محدد، فكل واحد يدفع حسب قدرته: 10 أو 20 وحتى 10 آلاف. المهم أن تختار مبلغاً تستطيع المداومة عليه، فالقليل الدائم خير من الكثير المنقطع.",
@@ -237,7 +237,7 @@ const intents: Intent[] = [
   },
   {
     id: "lists", priority: 8, noVideo: true,
-    keywords: ["لائحه", "لوائح", "اللوائح", "مشرف", "المشرف", "liste", "superviseur"],
+    keywords: ["la2iha", "lawa2ih", "lewayi7", "mouchrif", "mochrif", "mechrif", "لائحه", "لوائح", "اللوائح", "مشرف", "المشرف", "liste", "superviseur"],
     answer: T(
       "المنتسبين مقسّمين على لوائح، وكل لائحة عندها مشرف يجمع الاشتراك كل شهر.",
       "ينقسم المنتسبون إلى لوائح، ولكل لائحة مشرف يجمع الاشتراك كل شهر.",
@@ -249,7 +249,7 @@ const intents: Intent[] = [
   // ===== الانتخابات =====
   {
     id: "elections", priority: 5, noVideo: true,
-    keywords: ["انتخاب", "انتخابات", "المناصب", "منتخب", "election", "postes", "elus"],
+    keywords: ["intikhab", "entikhab", "manasib", "انتخاب", "انتخابات", "المناصب", "منتخب", "election", "postes", "elus"],
     answer: T(
       "المناصب المنتخبة: الرئيس، نائب الرئيس، الأمين العام، ومسؤول ونائب لكل لجنة. الترشح والتصويت رقمي عبر نظام الجمعية، والعملية كاملة يديرها النظام ابلا تدخل بشري.",
       "المناصب المنتخبة هي: الرئيس، ونائب الرئيس، والأمين العام، ومسؤول ونائب لكل لجنة. ويتم الترشح والتصويت رقمياً عبر نظام الجمعية، ويدير النظام العملية كاملة دون تدخل بشري.",
@@ -259,7 +259,7 @@ const intents: Intent[] = [
   },
   {
     id: "stages", priority: 18, noVideo: true,
-    keywords: ["مراحل", "المراحل", "خطوات", "متي", "كم تدوم", "etapes", "deroulement", "duree"],
+    keywords: ["mara7il", "mera7el", "marahil", "مراحل", "المراحل", "خطوات", "متي", "كم تدوم", "etapes", "deroulement", "duree"],
     requires: ["انتخاب", "election", "تصويت", "vote", "ترشح", "مراحل", "etapes"],
     answer: T(
       "المراحل: الترشح، ثم حملات المترشحين (24 ساعة)، ثم التصويت (24 ساعة)، ثم النتائج تنشر وحدها.",
@@ -270,7 +270,7 @@ const intents: Intent[] = [
   },
   {
     id: "vote", priority: 10, noVideo: true,
-    keywords: ["تصويت", "نصوت", "اصوت", "يصوت", "صوت", "voter", "vote"],
+    keywords: ["nsawet", "nsewet", "tasweet", "taswit", "tesswit", "nsawt", "تصويت", "نصوت", "اصوت", "يصوت", "صوت", "voter", "vote"],
     answer: T(
       "التصويت رقمي عبر نظام الجمعية، ومفتوح للأعضاء والمنتسبين. يبدا بعد حملات المترشحين ويدوم 24 ساعة، والنتائج تطلع وحدها.",
       "التصويت رقمي عبر نظام الجمعية، ومفتوح للأعضاء والمنتسبين. يبدأ بعد حملات المترشحين ويدوم 24 ساعة، ثم تُنشر النتائج تلقائياً.",
@@ -280,7 +280,7 @@ const intents: Intent[] = [
   },
   {
     id: "candidacy", priority: 10, noVideo: true,
-    keywords: ["ترشح", "نترشح", "اترشح", "مترشح", "candidat", "candidature", "se presenter"],
+    keywords: ["tarachoh", "terechou7", "ntarach", "nterech", "nteressa7", "tarachou7", "mtarach", "ترشح", "نترشح", "اترشح", "مترشح", "candidat", "candidature", "se presenter"],
     answer: T(
       "الترشح مفتوح لكل الأعضاء، ويكون رقمياً عبر نظام الجمعية. بعدو تجي حملات المترشحين 24 ساعة، ثم التصويت 24 ساعة.",
       "الترشح مفتوح لكل الأعضاء، ويتم رقمياً عبر نظام الجمعية. تليه حملات المترشحين لمدة 24 ساعة، ثم التصويت لمدة 24 ساعة.",
@@ -290,7 +290,7 @@ const intents: Intent[] = [
   },
   {
     id: "results", priority: 10, noVideo: true,
-    keywords: ["النتائج", "نتائج", "resultat"],
+    keywords: ["nata2ij", "netayij", "nataij", "النتائج", "نتائج", "resultat"],
     answer: T(
       "النتائج تنشر تلقائياً بعد نهاية التصويت، والعملية كاملة يديرها النظام ابلا تدخل بشري.",
       "تُنشر النتائج تلقائياً بعد نهاية التصويت، ويدير النظام العملية كاملة دون تدخل بشري.",
@@ -302,7 +302,7 @@ const intents: Intent[] = [
   // ===== المعهد =====
   {
     id: "institute", priority: 7,
-    keywords: ["معهد", "المعهد", "المحجه", "البيضاء", "دروس", "institut", "mahajja"],
+    keywords: ["ma3had", "me3hed", "ma3ahad", "mahajja", "mahjja", "mahaja", "beydha", "baydha", "beida", "معهد", "المعهد", "المحجه", "البيضاء", "دروس", "institut", "mahajja"],
     answer: T(
       "معهد المحجة البيضاء فتحتو الجمعية، وبناوه الشباب بجهود تطوعية ابلا دعم خارجي. تشرف عليه لجنة التعليم، ويشرف على دروس شرعية فالأحياء.",
       "معهد المحجة البيضاء أنشأته الجمعية، وبناه الشباب بجهود تطوعية دون دعم خارجي. تشرف عليه لجنة التعليم، ويشرف بدوره على دروس شرعية في الأحياء.",
@@ -314,7 +314,7 @@ const intents: Intent[] = [
   // ===== الأنشطة والإنجازات =====
   {
     id: "activities", priority: 3, playlist: true,
-    keywords: ["نشاط", "انشطه", "الانشطه", "انجاز", "انجازات", "انجازاتها", "مشاريع", "مشروع", "شنهي تعملو", "activite", "realisation", "projet"],
+    keywords: ["nachat", "nechat", "anchita", "enchita", "injazat", "enjazat", "mechari3", "machari3", "نشاط", "انشطه", "الانشطه", "انجاز", "انجازات", "انجازاتها", "مشاريع", "مشروع", "شنهي تعملو", "activite", "realisation", "projet"],
     answer: T(
       "من أنشطة الجمعية: دورة تكوينية فالبرمجة وأدوات الذكاء الاصطناعي (20 مقعد، 3 أيام)، وتطبيق **«شفاء للناس»**، تطبيق طبي خيري تابع للجمعية. وهاذو فيديوهات من أنشطتها وإنجازاتها 🎬",
       "من أنشطة الجمعية: دورة تكوينية في البرمجة وأدوات الذكاء الاصطناعي (20 مقعداً، 3 أيام)، وتطبيق **«شفاء للناس»**، وهو تطبيق طبي خيري تابع للجمعية. وهذه فيديوهات من أنشطتها وإنجازاتها 🎬",
@@ -324,7 +324,7 @@ const intents: Intent[] = [
   },
   {
     id: "course", priority: 9, noVideo: true,
-    keywords: ["دوره", "تكوين", "برمجه", "الذكاء الاصطناعي", "formation", "programmation", "intelligence artificielle"],
+    keywords: ["dawra", "dewra", "barmaja", "bermeja", "takwin", "tekwin", "دوره", "تكوين", "برمجه", "الذكاء الاصطناعي", "formation", "programmation", "intelligence artificielle"],
     answer: T(
       `الجمعية عندها دورة تكوينية فالبرمجة وأدوات الذكاء الاصطناعي: 20 مقعد، 3 أيام. للتسجيل ولا التفاصيل، اتصل بالجمعية على **${PHONE}**.`,
       `لدى الجمعية دورة تكوينية في البرمجة وأدوات الذكاء الاصطناعي: 20 مقعداً، 3 أيام. للتسجيل أو التفاصيل، اتصل بالجمعية على **${PHONE}**.`,
@@ -334,7 +334,7 @@ const intents: Intent[] = [
   },
   {
     id: "app", priority: 9, noVideo: true,
-    keywords: ["شفاء", "تطبيق", "application", "chifa", "shifa"],
+    keywords: ["chifa", "chiva", "tatbi9", "tetbig", "شفاء", "تطبيق", "application", "chifa", "shifa"],
     answer: T(
       `**«شفاء للناس»** تطبيق طبي خيري تابع للجمعية. ما عندي تفاصيل أكثر عليه، اتصل بالجمعية على **${PHONE}**.`,
       `**«شفاء للناس»** تطبيق طبي خيري تابع للجمعية. لا تتوفر لدي تفاصيل أكثر عنه، يمكنك الاتصال بالجمعية على **${PHONE}**.`,
@@ -344,7 +344,7 @@ const intents: Intent[] = [
   },
   {
     id: "videos", priority: 15, playlist: true,
-    keywords: ["فيديو", "فيديوهات", "قناه", "يوتيوب", "youtube", "مقاطع", "مقطع", "اشاهد", "نشاهد", "شاهد", "فرجني", "video", "chaine"],
+    keywords: ["vidyo", "fidyo", "vidyowat", "videohat", "vidyohat", "فيديو", "فيديوهات", "قناه", "يوتيوب", "youtube", "مقاطع", "مقطع", "اشاهد", "نشاهد", "شاهد", "فرجني", "video", "chaine"],
     answer: T(
       "هاذو فيديوهات الجمعية على قناتها فيوتيوب، تقدر تتنقل بيناتهم من زر القائمة فالمشغّل 🎬",
       "هذه فيديوهات الجمعية على قناتها في يوتيوب، ويمكنك التنقل بينها من زر القائمة داخل المشغّل 🎬",
@@ -363,6 +363,7 @@ export const knowledge: KnowledgeBase = {
     "ترشح", "تصويت", "حمله", "حملات", "كفاله", "سقايه", "مشروع", "مساعده", "متطوع", "تطوع",
     "association", "adhe", "membre", "commission", "election", "vote", "institut", "activit", "cotisation", "don ",
     "president", "formation", "benevol", "campagne",
+    "jam3iya", "jem3iya", "3oun", "sanad", "intisab", "lejna", "lijan", "intikhab", "ma3had", "ichtirak", "echtirak",
   ],
   unknown: {
     answer: T(

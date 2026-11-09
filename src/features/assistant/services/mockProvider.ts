@@ -1,6 +1,7 @@
 import { assistantConfig as cfg } from "../config";
 import { knowledge } from "../data/knowledge";
 import { detectLang, type ReplyLang } from "../lib/detectLang";
+import { isArabizi, loadLexicon, toArabic } from "../lib/arabizi";
 import { isAboutAssociation, matchIntent, normalizeText } from "../lib/matchIntent";
 import type { ChatProvider, Intent, LangText } from "../types";
 import { resolveActions, sleep } from "./utils";
@@ -23,8 +24,17 @@ const VIDEO_ONLY: LangText = {
 /** مزوّد تجريبي: «مساعد عون وسند» يجيب بلغة السائل (الحسانية افتراضياً) من المعلومات الرسمية فقط */
 export const mockProvider: ChatProvider = {
   async send({ messages, signal, onToken }) {
-    const question = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
-    const lang: ReplyLang = detectLang(question);
+    const asked = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    let lang: ReplyLang = detectLang(asked);
+    let question = asked;
+    // الحسانية بالحروف اللاتينية (chenhou jam3iya...): تُحوَّل كلماتها المعروفة إلى العربية، ويُجاب بالحسانية
+    if (lang === "fr") {
+      const lex = await loadLexicon();
+      if (isArabizi(asked, lex)) {
+        lang = "has";
+        question = `${toArabic(asked, lex)} ${asked}`;
+      }
+    }
     const about = isAboutAssociation(question, knowledge);
 
     let reply: Reply | null = matchIntent(question, knowledge);
