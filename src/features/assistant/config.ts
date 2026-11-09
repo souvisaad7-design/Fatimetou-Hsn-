@@ -35,7 +35,7 @@ export const assistantConfig = {
       { text: "ما هي جمعية عون وسند الخيرية؟", icon: "info" },
       { text: "ما أهداف الجمعية؟", icon: "target" },
       { text: "كيف يمكنني المشاركة في الأنشطة؟", icon: "hands" },
-      { text: "ما أبرز مشاريع الجمعية؟", icon: "star" },
+      { text: "ما أبرز إنجازات الجمعية؟", icon: "star" },
       { text: "كيف يمكنني دعم مشاريع الجمعية؟", icon: "heart" },
       { text: "كيف أتواصل مع إدارة الجمعية؟", icon: "phone" },
     ] as const,
@@ -46,7 +46,7 @@ export const assistantConfig = {
    * عند ضبط VITE_MEMBERSHIP_URL يظهر زر تحت ردود الانتساب، ورابط في الشريط الجانبي.
    */
   membership: {
-    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || null,
+    url: (env.VITE_MEMBERSHIP_URL as string | undefined) || "../", // بوابة المنتسبين في الموقع نفسه
     label: "التسجيل في الجمعية",
   },
 

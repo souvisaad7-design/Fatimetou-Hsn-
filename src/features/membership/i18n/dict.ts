@@ -36,6 +36,8 @@ export const ar = {
   "nav.home": "الرئيسية",
   "nav.status": "وضعيتي",
   "nav.campaigns": "الحملات",
+  "nav.assistant": "المساعد الذكي",
+  "nav.assistantHint": "أهداف الجمعية وفيديوهات إنجازاتها",
 
   // الدخول
   "login.title": "تسجيل الدخول",
@@ -278,6 +280,8 @@ export const fr: Record<DictKey, string> = {
   "nav.home": "Accueil",
   "nav.status": "Ma situation",
   "nav.campaigns": "Campagnes",
+  "nav.assistant": "Assistant intelligent",
+  "nav.assistantHint": "Objectifs de l'association et vidéos de ses réalisations",
 
   "login.title": "Connexion",
   "login.phone": "Numéro de téléphone",

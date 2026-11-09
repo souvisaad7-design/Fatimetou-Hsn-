@@ -219,3 +219,20 @@
 .pt-gate { grid-template-rows: auto 1fr; gap: 12px; }
 .pt-gate__lang { justify-self: end; align-self: start; }
 .app-message .lang-switch { margin-bottom: 12px; }
+
+/* ===== زر المساعد الذكي العائم ===== */
+.pt-fab {
+  position: fixed; z-index: 40; inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px 7px 8px; padding-inline: 8px 16px;
+  border-radius: 999px; background: #27244f; color: #fff; text-decoration: none;
+  font: 700 0.92rem var(--f-body); box-shadow: 0 10px 24px -10px rgba(39, 36, 79, 0.75);
+  transition: transform 0.15s, filter 0.15s;
+}
+.pt-fab:hover { transform: translateY(-2px); filter: brightness(1.12); }
+.pt-fab:focus-visible { outline: 3px solid var(--pink, #e8577a); outline-offset: 3px; }
+.pt-fab img { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 3px; object-fit: contain; }
+@media (max-width: 760px) { .pt-fab--raised { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); } }
+@media (max-width: 420px) { .pt-fab span { font-size: 0.85rem; } }
+.lg-body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+.pt-gate { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }

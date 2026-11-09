@@ -55,7 +55,7 @@ export function Sidebar({ open, history, currentId, theme, onToggleTheme, onNew,
 
         <div className="ast-sidebar__foot">
           {cfg.membership.url && (
-            <a className="ast-side-link" href={cfg.membership.url} target="_blank" rel="noopener noreferrer">
+            <a className="ast-side-link" href={cfg.membership.url}>
               <Icon name="userPlus" /> الانتساب إلى الجمعية
             </a>
           )}

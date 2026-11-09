@@ -37,7 +37,7 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
       {links.length > 0 && (
         <div className="ast-msg__actions">
           {links.map((a) => (
-            <a key={a.url} className="ast-action" href={a.url} target="_blank" rel="noopener noreferrer">
+            <a key={a.url} className="ast-action" href={a.url} {...(/^https?:/.test(a.url ?? "") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
               <Icon name="link" size={18} /> {a.label ?? "فتح الرابط"}
             </a>
           ))}

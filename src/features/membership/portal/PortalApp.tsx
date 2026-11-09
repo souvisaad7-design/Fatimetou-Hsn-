@@ -38,9 +38,19 @@ export default function PortalApp() {
 
   if (db.status === "idle" || db.status === "loading") return <div className="app-message" aria-busy="true"><span className="app-spinner" aria-hidden="true" /><p>{t("common.loading")}</p></div>;
   if (db.status === "error" && !db.profile) return <div className="app-message" role="alert"><LangSwitch /><h1>{t("common.connError")}</h1><p>{db.error}</p><button type="button" onClick={() => void restoreSession()}>{t("common.retry")}</button></div>;
-  if (!member) return <AuthGate onLogin={login} />;
-  if (member.status !== "approved") return <WaitingScreen member={member} onLogout={logout} />;
-  return <PortalShell member={member} onLogout={logout} />;
+  if (!member) return <><AuthGate onLogin={login} /><AssistantFab /></>;
+  if (member.status !== "approved") return <><WaitingScreen member={member} onLogout={logout} /><AssistantFab /></>;
+  return <><PortalShell member={member} onLogout={logout} /><AssistantFab raised /></>;
+}
+
+/** زر عائم يفتح المساعد الذكي (أهداف الجمعية وفيديوهات إنجازاتها من قناتها على يوتيوب) */
+function AssistantFab({ raised = false }: { raised?: boolean }) {
+  return (
+    <a className={`pt-fab${raised ? " pt-fab--raised" : ""}`} href="./assistant/" title={t("nav.assistantHint")} aria-label={`${t("nav.assistant")} — ${t("nav.assistantHint")}`}>
+      <img src={org.logo} alt="" width={30} height={30} />
+      <span>{t("nav.assistant")}</span>
+    </a>
+  );
 }
 
 function PortalShell({ member, onLogout }: { member: Member; onLogout: () => void }) {
