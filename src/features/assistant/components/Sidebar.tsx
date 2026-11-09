@@ -85,7 +85,7 @@ function VoicePicker() {
   if (voices.length < 2) return null;
   const current = voices.find((v) => v.voiceURI === getChosenVoice())?.voiceURI ?? voices[0].voiceURI;
   return (
-    <label className="ast-voice">
+    <label className="ast-voice-pick">
       <span><Icon name="volume" size={16} /> صوت القراءة</span>
       <select value={current} onChange={(e) => setChosenVoice(e.target.value)}>
         {voices.map((v) => (

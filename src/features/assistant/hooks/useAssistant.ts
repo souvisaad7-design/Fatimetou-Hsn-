@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { sendChat } from "../services/chatService";
 import type { ChatMessage } from "../types";
 import { useConversations } from "./useConversations";
+import { isVoiceChatActive } from "./useVoiceChat";
 
 export interface PendingReply {
   conversationId: string;
@@ -33,7 +34,7 @@ export function useAssistant() {
           },
         });
         store.addMessage(conversationId, { role: "assistant", ...reply });
-        if (getAutoSpeak()) speak(reply.content);
+        if (getAutoSpeak() && !isVoiceChatActive()) speak(reply.content); // في المحادثة الصوتية تتولى useVoiceChat القراءة
       } catch (err) {
         if ((err as Error).name === "AbortError") {
           if (partial.trim()) store.addMessage(conversationId, { role: "assistant", content: `${partial}\n\n_تم إيقاف الرد._` });

@@ -79,6 +79,15 @@ export const assistantConfig = {
     timeoutMs: 4000,
   },
 
+  /**
+   * المحادثة الصوتية (زر الميكروفون): لغة التعرف على كلام الزائر.
+   * لا توجد حسانية في المتصفحات؛ العربية تفهمها جيداً. يتحول تلقائياً إلى الفرنسية إذا تكلم بها الزائر.
+   */
+  voice: {
+    arabicLang: (env.VITE_VOICE_LANG as string | undefined) || "ar-SA",
+    frenchLang: "fr-FR",
+  },
+
   mock: { thinkingMs: [500, 1100] as [number, number], tokenMs: 18 },
 
   storageKey: "awn:assistant:v1",

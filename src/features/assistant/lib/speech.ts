@@ -68,11 +68,20 @@ export function stopSpeaking() {
   emit();
 }
 
-export function speak(text: string) {
-  if (!synth) return;
+/** onDone: يُستدعى مرة واحدة عند انتهاء القراءة أو إيقافها (تستعمله المحادثة الصوتية لتستمع من جديد) */
+export function speak(text: string, onDone?: () => void) {
+  let finished = false;
+  let watchdog = 0;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    window.clearTimeout(watchdog);
+    onDone?.();
+  };
+  if (!synth) return finish();
   synth.cancel();
   const spoken = toSpoken(text);
-  if (!spoken) return;
+  if (!spoken) return finish();
   const latin = (spoken.match(/[a-zA-ZÀ-ÿ]/g) ?? []).length;
   const arabic = (spoken.match(/[؀-ۿ]/g) ?? []).length;
   const lang = latin > arabic ? "fr" : "ar";
@@ -84,12 +93,29 @@ export function speak(text: string) {
   u.pitch = 1.1;
   u.rate = 1;
   u.volume = 1;
-  const done = () => { if (speakingText === text) { speakingText = null; emit(); } };
+  const done = () => {
+    if (speakingText === text) { speakingText = null; emit(); }
+    finish();
+  };
   u.onend = done;
   u.onerror = done;
   speakingText = text;
   emit();
   synth.speak(u);
+  // بعض المتصفحات لا تُبلغ أحياناً بانتهاء القراءة؛ مهلة احتياطية حسب طول النص
+  if (onDone) watchdog = window.setTimeout(done, 6000 + spoken.length * 160);
+}
+
+/** على iPhone لا يُسمح بالقراءة إلا بعد ضغطة من الزائر: نطق صامت عند الضغط على الميكروفون يفتح الإذن */
+let primed = false;
+export function primeSpeech() {
+  if (!synth || primed) return;
+  primed = true;
+  try {
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    synth.speak(u);
+  } catch { /* تجاهل */ }
 }
 
 // بعض المتصفحات تحمّل قائمة الأصوات متأخرة

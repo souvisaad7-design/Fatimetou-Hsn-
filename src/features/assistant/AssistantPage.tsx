@@ -7,6 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Welcome } from "./components/Welcome";
 import { assistantConfig as cfg } from "./config";
 import { useAssistant } from "./hooks/useAssistant";
+import { useVoiceChat } from "./hooks/useVoiceChat";
 import "./assistant.css";
 
 const welcomeMessage = { content: cfg.assistant.welcome.join("\n") };
@@ -19,6 +20,7 @@ export default function AssistantPage() {
 
   const messages = chat.conversation?.messages ?? [];
   const empty = messages.length === 0 && !chat.pending;
+  const voice = useVoiceChat({ busy: chat.busy, messages, conversationId: chat.conversation?.id, onSend: chat.ask });
 
   useEffect(() => {
     document.title = `${cfg.assistant.name} | ${cfg.org.name}`;
@@ -53,11 +55,12 @@ export default function AssistantPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (sidebarOpen) setSidebarOpen(false);
+      else if (voice.state !== "off") voice.end();
       else chat.stop();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [sidebarOpen, chat]);
+  }, [sidebarOpen, chat, voice]);
 
   const closeAnd = <T extends unknown[]>(fn: (...a: T) => void) => (...a: T) => { fn(...a); setSidebarOpen(false); };
 
@@ -101,7 +104,7 @@ export default function AssistantPage() {
 
         <section className="ast-thread" ref={threadRef} onScroll={onScroll} aria-live="polite" aria-label="الرسائل">
           {empty ? (
-            <Welcome onAsk={chat.ask} />
+            <Welcome onAsk={chat.ask} onVoice={voice.toggle} />
           ) : (
             <div className="ast-messages">
               <BotMessage message={welcomeMessage} isWelcome />
@@ -123,7 +126,7 @@ export default function AssistantPage() {
           )}
         </section>
 
-        <Composer busy={chat.busy} onSend={chat.ask} onStop={chat.stop} focusKey={chat.conversation?.id} />
+        <Composer busy={chat.busy} onSend={chat.ask} onStop={chat.stop} focusKey={chat.conversation?.id} voice={voice} />
       </main>
     </div>
   );
