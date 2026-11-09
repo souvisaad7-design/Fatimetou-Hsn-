@@ -74,20 +74,17 @@ export function useLang() {
 /** زر اختيار اللغة: العربية | Français */
 export function LangSwitch({ className = "" }: { className?: string }) {
   const { lang: current } = useLang();
-  const next: Lang = current === "ar" ? "fr" : "ar";
-  // زر واحد صغير يعرض اللغة الأخرى: «Français» في العربية، و«العربية» في الفرنسية
-  return (
-    <button
-      type="button"
-      className={`lang-switch ${className}`}
-      lang={next}
-      onClick={() => setLang(next)}
-      aria-label={next === "fr" ? "Changer la langue : Français" : "تغيير اللغة: العربية"}
-    >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-      </svg>
-      {next === "fr" ? "Français" : "العربية"}
+  // كتابة صغيرة: «العربية | Français»؛ الضغط على اسم اللغة يحوّل الموقع إليها، واللغة الحالية بارزة
+  const item = (code: Lang, label: string) => (
+    <button type="button" lang={code} aria-pressed={current === code} className={current === code ? "is-active" : undefined} onClick={() => setLang(code)}>
+      {label}
     </button>
+  );
+  return (
+    <div className={`lang-switch ${className}`} role="group" aria-label={t("common.language")}>
+      {item("ar", "العربية")}
+      <span aria-hidden="true">|</span>
+      {item("fr", "Français")}
+    </div>
   );
 }
