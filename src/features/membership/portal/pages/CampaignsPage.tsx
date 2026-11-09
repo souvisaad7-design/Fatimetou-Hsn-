@@ -7,8 +7,10 @@ import { dateLabel, money } from "../../lib/format";
 import { validateAmount, validatePhone } from "../../lib/validation";
 import type { Campaign } from "../../types";
 import { Badge, Button, Empty, Field, Modal, Notice, Progress } from "../../ui";
+import { t, tServer, tValue, useLang } from "../../i18n";
 
 export function CampaignsPage() {
+  useLang();
   const db = useDb();
   const [donating, setDonating] = useState<Campaign | null>(null);
   const campaigns = [...db.campaigns].sort((a, b) => Number(b.active) - Number(a.active) || b.createdAt.localeCompare(a.createdAt));
@@ -16,11 +18,11 @@ export function CampaignsPage() {
   return (
     <div className="pt-stack">
       <div>
-        <h1 className="pt-h1">حملات التبرع</h1>
-        <p className="pt-muted">ساهم في حملات الجمعية، وتابع ما جُمع لكل حملة.</p>
+        <h1 className="pt-h1">{t("cp.title")}</h1>
+        <p className="pt-muted">{t("cp.intro")}</p>
       </div>
       {campaigns.length === 0 ? (
-        <Empty icon="heart" title="لا توجد حملات حالياً" />
+        <Empty icon="heart" title={t("cp.none")} />
       ) : (
         <div className="pt-campaigns">
           {campaigns.map((c) => {
@@ -30,15 +32,15 @@ export function CampaignsPage() {
               <article key={c.id} className={`pt-campaign${c.active ? "" : " is-closed"}`}>
                 <div className="pt-campaign__top">
                   <h3>{c.title}</h3>
-                  <Badge tone={c.active ? "ok" : "neutral"}>{c.active ? "جارية" : "منتهية"}</Badge>
+                  <Badge tone={c.active ? "ok" : "neutral"}>{c.active ? t("cp.active") : t("cp.ended")}</Badge>
                 </div>
                 <p className="pt-muted">{c.description}</p>
                 {c.goal > 0 && <Progress value={raised} max={c.goal} />}
                 <p className="pt-campaign__nums num">
-                  <b>{money(raised, false)}</b>{c.goal > 0 ? ` من ${money(c.goal)}` : ` ${cfg.currency}`} · {donors} متبرع
+                  <b>{money(raised, false)}</b>{c.goal > 0 ? ` ${t("home.raisedOf", { goal: money(c.goal) })}` : ` ${t("org.currency")}`} · {t("cp.donors", { n: donors })}
                 </p>
-                <p className="pt-muted pt-small">منذ {dateLabel(c.startDate)}{c.endDate ? ` حتى ${dateLabel(c.endDate)}` : ""}</p>
-                {c.active && <Button variant="pink" icon="heart" block onClick={() => setDonating(c)}>تبرّع لهذه الحملة</Button>}
+                <p className="pt-muted pt-small">{t("cp.since", { d: dateLabel(c.startDate) })}{c.endDate ? t("cp.until", { d: dateLabel(c.endDate) }) : ""}</p>
+                {c.active && <Button variant="pink" icon="heart" block onClick={() => setDonating(c)}>{t("cp.donateThis")}</Button>}
               </article>
             );
           })}
@@ -65,32 +67,32 @@ function DonateForm({ campaign, onClose }: { campaign: Campaign; onClose: () => 
     try {
       await addDonation({ campaignId: campaign.id, memberId: me?.id, ...f });
     } catch (err) {
-      setErrors({ amount: (err as Error).message });
+      setErrors({ amount: tServer((err as Error).message) });
       return;
     }
     setSent(true);
-    toast("شكراً لك! تم تسجيل تبرعك");
+    toast(t("cp.toast"));
   };
 
   return (
-    <Modal title={`تبرّع: ${campaign.title}`} onClose={onClose}>
+    <Modal title={t("cp.donateTitle", { title: campaign.title })} onClose={onClose}>
       {sent ? (
         <div className="pt-stack pt-center">
           <div className="pt-success__mark">✓</div>
-          <p><b>جزاك الله خيراً.</b> سيُؤكَّد تبرعك بعد أن تراجعه اللجنة.</p>
-          <Button block onClick={onClose}>إغلاق</Button>
+          <p><b>{t("cp.thanks")}</b> {t("cp.thanksText")}</p>
+          <Button block onClick={onClose}>{t("common.close")}</Button>
         </div>
       ) : (
         <form className="ui-form" onSubmit={submit} noValidate>
           <div className="ui-field--full">
-            <Notice>حوّل تبرعك إلى رقم الجمعية <b dir="ltr">{cfg.phone}</b> عبر التطبيق البنكي، ثم سجّل بياناته هنا.</Notice>
+            <Notice>{t("cp.notice", { phone: cfg.phone })}</Notice>
           </div>
-          <Field label="الاسم" optional hint="اتركه فارغاً ليظهر «فاعل خير»">{(id) => <input id={id} value={f.donorName} onChange={(e) => setF({ ...f, donorName: e.target.value })} />}</Field>
-          <Field label="الهاتف" optional error={errors.donorPhone}>{(id, d) => <input id={id} aria-describedby={d} value={f.donorPhone} onChange={(e) => setF({ ...f, donorPhone: e.target.value })} inputMode="tel" dir="ltr" />}</Field>
-          <Field label="المبلغ (أوقية قديمة)" error={errors.amount}>{(id, d) => <input id={id} aria-describedby={d} value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} inputMode="numeric" dir="ltr" />}</Field>
-          <Field label="طريقة الدفع">{(id) => <select id={id} value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>{cfg.paymentMethods.map((m) => <option key={m}>{m}</option>)}</select>}</Field>
-          <Field label="رقم العملية" optional full>{(id) => <input id={id} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} dir="ltr" />}</Field>
-          <div className="ui-field--full"><Button type="submit" variant="pink" block icon="heart">تسجيل التبرع</Button></div>
+          <Field label={t("cp.name")} optional hint={t("cp.nameHint")}>{(id) => <input id={id} value={f.donorName} onChange={(e) => setF({ ...f, donorName: e.target.value })} />}</Field>
+          <Field label={t("cp.phone")} optional error={errors.donorPhone}>{(id, d) => <input id={id} aria-describedby={d} value={f.donorPhone} onChange={(e) => setF({ ...f, donorPhone: e.target.value })} inputMode="tel" dir="ltr" />}</Field>
+          <Field label={t("cp.amount", { currency: t("org.currency") })} error={errors.amount}>{(id, d) => <input id={id} aria-describedby={d} value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} inputMode="numeric" dir="ltr" />}</Field>
+          <Field label={t("rp.method")}>{(id) => <select id={id} value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>{cfg.paymentMethods.map((m) => <option key={m} value={m}>{tValue("pay", m)}</option>)}</select>}</Field>
+          <Field label={t("rp.reference")} optional full>{(id) => <input id={id} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} dir="ltr" />}</Field>
+          <div className="ui-field--full"><Button type="submit" variant="pink" block icon="heart">{t("cp.submit")}</Button></div>
         </form>
       )}
     </Modal>

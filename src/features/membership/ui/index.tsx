@@ -1,6 +1,7 @@
 /** مكوّنات واجهة مشتركة بين بوابة المنتسبين ولوحة الإدارة */
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { Icon, type IconName } from "../../../shared/Icon";
+import { t } from "../i18n";
 import "./ui.css";
 
 type Variant = "primary" | "ghost" | "soft" | "danger" | "pink";
@@ -46,7 +47,7 @@ export function Field({
   return (
     <div className={`ui-field${full ? " ui-field--full" : ""}${error ? " has-error" : ""}`}>
       <label htmlFor={id}>
-        {label} {optional && <span className="ui-optional">(اختياري)</span>}
+        {label} {optional && <span className="ui-optional">{t("common.optional")}</span>}
       </label>
       {children(id, error ? errId : undefined)}
       {hint && !error && <p className="ui-hint">{hint}</p>}
@@ -122,7 +123,7 @@ export function Modal({ title, onClose, children, wide }: { title: string; onClo
       <div className={`ui-modal__box${wide ? " ui-modal__box--wide" : ""}`} role="dialog" aria-modal="true" aria-label={title} ref={ref}>
         <header className="ui-modal__head">
           <h2>{title}</h2>
-          <button type="button" className="ui-icon-btn" aria-label="إغلاق" onClick={onClose}><Icon name="close" /></button>
+          <button type="button" className="ui-icon-btn" aria-label={t("common.close")} onClick={onClose}><Icon name="close" /></button>
         </header>
         <div className="ui-modal__body">{children}</div>
       </div>
@@ -131,7 +132,7 @@ export function Modal({ title, onClose, children, wide }: { title: string; onClo
 }
 
 /** زر يطلب تأكيداً داخل الصفحة قبل تنفيذ إجراء حساس (حذف، رفض...) */
-export function ConfirmButton({ label, confirmLabel = "تأكيد", onConfirm, variant = "danger", icon, small = true }: {
+export function ConfirmButton({ label, confirmLabel = t("common.confirm"), onConfirm, variant = "danger", icon, small = true }: {
   label: string; confirmLabel?: string; onConfirm: () => void; variant?: Variant; icon?: IconName; small?: boolean;
 }) {
   const [asking, setAsking] = useState(false);
@@ -143,7 +144,7 @@ export function ConfirmButton({ label, confirmLabel = "تأكيد", onConfirm, v
   return asking ? (
     <span className="ui-confirm">
       <Button small={small} variant="danger" onClick={() => { setAsking(false); onConfirm(); }}>{confirmLabel}</Button>
-      <Button small={small} variant="ghost" onClick={() => setAsking(false)}>إلغاء</Button>
+      <Button small={small} variant="ghost" onClick={() => setAsking(false)}>{t("common.cancel")}</Button>
     </span>
   ) : (
     <Button small={small} variant={variant === "danger" ? "ghost" : variant} icon={icon} onClick={() => setAsking(true)}>{label}</Button>

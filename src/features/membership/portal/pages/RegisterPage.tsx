@@ -3,12 +3,14 @@ import { membershipConfig as cfg } from "../../config";
 import { registerMember } from "../../services/api";
 import { validateAmount, validateName, validateNni, validatePhone, validatePin, toAmount } from "../../lib/validation";
 import type { Member } from "../../types";
+import { t, tServer, tValue, useLang } from "../../i18n";
 import { Button, Card, Field } from "../../ui";
 
 const empty = { fullName: "", phone: "", pin: "", pin2: "", nni: "", gender: "ذكر" as Member["gender"], birthDate: "", occupation: cfg.occupations[0], institution: "", address: "", pledge: "" };
 
 /** استمارة المستخدم الجديد؛ بعد الإرسال يبقى الطلب «قيد المراجعة» حتى تقبله اللجنة أو المشرف */
 export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; onBack: () => void }) {
+  useLang();
   const [f, setF] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [pledgeOk, setPledgeOk] = useState(false);
@@ -24,10 +26,10 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
       fullName: validateName(f.fullName),
       phone: validatePhone(f.phone),
       pin: validatePin(f.pin),
-      pin2: f.pin && f.pin !== f.pin2 ? "كلمتا المرور غير متطابقتين" : null,
+      pin2: f.pin && f.pin !== f.pin2 ? t("reg.mismatch") : null,
       nni: validateNni(f.nni),
       pledge: validateAmount(f.pledge, { required: false }),
-      agree: pledgeOk ? null : "يجب الموافقة على التعهد",
+      agree: pledgeOk ? null : t("reg.agreeError"),
     };
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
@@ -36,7 +38,7 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
       const m = await registerMember({ ...f, pledge: f.pledge ? toAmount(f.pledge) : undefined });
       onDone(m);
     } catch (err) {
-      setErrors({ phone: (err as Error).message });
+      setErrors({ phone: tServer((err as Error).message) });
     } finally {
       setBusy(false);
     }
@@ -45,64 +47,64 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
   return (
     <div className="pt-stack">
       <div>
-        <button type="button" className="pt-back" onClick={onBack}>→ رجوع</button>
-        <h1 className="pt-h1">مستخدم جديد</h1>
-        <p className="pt-muted">املأ بياناتك كما في بطاقة التعريف. يُراجع طلبك من اللجنة الانتسابية أو المشرف، ولا تدخل الموقع إلا بعد قبوله.</p>
+        <button type="button" className="pt-back" onClick={onBack}>{t("common.back")}</button>
+        <h1 className="pt-h1">{t("reg.title")}</h1>
+        <p className="pt-muted">{t("reg.intro")}</p>
       </div>
       <Card>
         <form className="ui-form" onSubmit={submit} noValidate>
-          <Field label="الاسم الكامل" error={errors.fullName} full>
+          <Field label={t("reg.fullName")} error={errors.fullName} full>
             {(id, d) => <input id={id} aria-describedby={d} value={f.fullName} onChange={set("fullName")} autoComplete="name" />}
           </Field>
-          <Field label="رقم الهاتف" hint="8 أرقام" error={errors.phone}>
+          <Field label={t("reg.phone")} hint={t("reg.phoneHint")} error={errors.phone}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.phone} onChange={set("phone")} inputMode="tel" dir="ltr" autoComplete="tel" placeholder="22 33 44 55" />}
           </Field>
-          <Field label="كلمة المرور" hint="6 أحرف أو أرقام على الأقل، للدخول لاحقاً" error={errors.pin}>
+          <Field label={t("reg.password")} hint={t("reg.passwordHint")} error={errors.pin}>
             {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin} onChange={set("pin")} autoComplete="new-password" dir="ltr" />}
           </Field>
-          <Field label="تأكيد كلمة المرور" error={errors.pin2}>
+          <Field label={t("reg.password2")} error={errors.pin2}>
             {(id, d) => <input id={id} aria-describedby={d} type="password" value={f.pin2} onChange={set("pin2")} autoComplete="new-password" dir="ltr" />}
           </Field>
-          <Field label="الرقم الوطني" optional error={errors.nni}>
+          <Field label={t("reg.nni")} optional error={errors.nni}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.nni} onChange={set("nni")} inputMode="numeric" dir="ltr" maxLength={10} />}
           </Field>
-          <Field label="الجنس">
+          <Field label={t("reg.gender")}>
             {() => (
               <div className="ui-choices">
                 {(["ذكر", "أنثى"] as const).map((g) => (
-                  <label key={g} className="ui-choice"><input type="radio" name="gender" checked={f.gender === g} onChange={() => setF((v) => ({ ...v, gender: g }))} /> {g}</label>
+                  <label key={g} className="ui-choice"><input type="radio" name="gender" checked={f.gender === g} onChange={() => setF((v) => ({ ...v, gender: g }))} /> {tValue("gender", g)}</label>
                 ))}
               </div>
             )}
           </Field>
-          <Field label="تاريخ الميلاد" optional>
+          <Field label={t("reg.birthDate")} optional>
             {(id) => <input id={id} type="date" value={f.birthDate} onChange={set("birthDate")} />}
           </Field>
-          <Field label="الوضعية">
+          <Field label={t("reg.occupation")}>
             {(id) => (
               <select id={id} value={f.occupation} onChange={set("occupation")}>
-                {cfg.occupations.map((o) => <option key={o}>{o}</option>)}
+                {cfg.occupations.map((o) => <option key={o} value={o}>{tValue("occ", o)}</option>)}
               </select>
             )}
           </Field>
-          <Field label="الجامعة أو مكان العمل" optional>
+          <Field label={t("reg.institution")} optional>
             {(id) => <input id={id} value={f.institution} onChange={set("institution")} />}
           </Field>
-          <Field label="المقاطعة / الحي" optional>
-            {(id) => <input id={id} value={f.address} onChange={set("address")} placeholder="مثال: تفرغ زينة" />}
+          <Field label={t("reg.address")} optional>
+            {(id) => <input id={id} value={f.address} onChange={set("address")} placeholder={t("reg.addressPh")} />}
           </Field>
-          <Field label="مبلغ الانتساب الشهري الذي تستطيعه" optional hint={`بالأوقية القديمة — «${cfg.motto}»`} error={errors.pledge}>
-            {(id, d) => <input id={id} aria-describedby={d} value={f.pledge} onChange={set("pledge")} inputMode="numeric" dir="ltr" placeholder="مثال: 500" />}
+          <Field label={t("reg.pledge")} optional hint={t("reg.pledgeHint", { motto: t("org.motto") })} error={errors.pledge}>
+            {(id, d) => <input id={id} aria-describedby={d} value={f.pledge} onChange={set("pledge")} inputMode="numeric" dir="ltr" placeholder={t("reg.pledgePh")} />}
           </Field>
           <div className="ui-field ui-field--full">
             <label className="ui-check">
               <input type="checkbox" checked={pledgeOk} onChange={(e) => { setPledgeOk(e.target.checked); setErrors((x) => ({ ...x, agree: null })); }} />
-              أتعهد بصحة بياناتي، وبالالتزام بالنظام الداخلي للجمعية والمساهمة في أنشطتها حسب قدرتي.
+              {t("reg.agree")}
             </label>
             {errors.agree && <p className="ui-error" role="alert">{errors.agree}</p>}
           </div>
           <div className="ui-field--full">
-            <Button type="submit" block icon="userPlus" disabled={busy}>{busy ? "جارٍ التسجيل..." : "إرسال الطلب"}</Button>
+            <Button type="submit" block icon="userPlus" disabled={busy}>{busy ? t("reg.submitting") : t("reg.submit")}</Button>
           </div>
         </form>
       </Card>

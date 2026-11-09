@@ -134,7 +134,7 @@
   padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 96px; display: grid; place-items: center;
 }
 .lg-hero__logo { position: relative; z-index: 1; width: min(250px, 68vw); height: auto; display: block; }
-.lg-mosque { position: absolute; bottom: 22px; right: max(10px, env(safe-area-inset-right, 0px)); width: min(150px, 38vw); color: rgba(255, 255, 255, 0.14); }
+.lg-mosque { position: absolute; bottom: 22px; inset-inline-start: max(10px, env(safe-area-inset-right, 0px)); width: min(150px, 38vw); color: rgba(255, 255, 255, 0.14); }
 .lg-wave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; display: block; }
 
 .lg-body {
@@ -161,7 +161,6 @@
 .lg-field__toggle:hover { background: color-mix(in srgb, var(--lg-coral) 15%, transparent); }
 .lg-field input { order: 2; }
 
-.lg-field input { text-align: right; }
 :root[data-theme="dark"] .lg-field__toggle { color: var(--pink); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lg-field__toggle { color: var(--pink); } }
 
@@ -190,6 +189,33 @@
 .lg-hint { font-size: 0.75rem; color: color-mix(in srgb, var(--lg-ink) 50%, transparent); }
 
 .lg-leaves { position: absolute; bottom: 0; width: 120px; height: 120px; color: var(--lg-leaf); opacity: 0.7; pointer-events: none; }
-.lg-leaves--start { right: 0; }
-.lg-leaves--end { left: 0; }
-@media (min-width: 700px) { .lg-hero { padding-bottom: 110px; } .lg-wave { height: 90px; } .lg-mosque { width: 190px; right: 12%; } }
+.lg-leaves--start { inset-inline-start: 0; }
+.lg-leaves--end { inset-inline-end: 0; }
+@media (min-width: 700px) { .lg-hero { padding-bottom: 110px; } .lg-wave { height: 90px; } .lg-mosque { width: 190px; inset-inline-start: 12%; } }
+
+/* ===== اختيار اللغة ===== */
+.lang-switch {
+  display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px;
+  background: var(--surface, #fff); border: 1px solid var(--line, #dcd8ea);
+  box-shadow: 0 4px 14px -10px rgba(41, 36, 76, 0.5); direction: ltr;
+}
+.lang-switch button {
+  border: 0; background: transparent; color: var(--ink, #27244f); cursor: pointer;
+  font: 700 0.85rem var(--f-body); padding: 6px 14px; border-radius: 999px; min-height: 32px; line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-switch button:hover:not(.is-active) { background: color-mix(in srgb, var(--pink, #e8577a) 14%, transparent); }
+.lang-switch button.is-active { background: var(--brand, #27244f); color: var(--brand-ink, #fff); }
+.lang-switch button:focus-visible { outline: 2px solid var(--pink, #e8577a); outline-offset: 2px; }
+.lang-switch--compact button { padding: 5px 10px; font-size: 0.78rem; min-height: 28px; }
+.lg-lang {
+  position: absolute; z-index: 3; top: calc(10px + env(safe-area-inset-top, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+}
+.lg-lang .lang-switch { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); box-shadow: none; }
+.lg-lang .lang-switch button { color: #fff; }
+.lg-lang .lang-switch button.is-active { background: #fff; color: var(--lg-hero, #27244f); }
+.lg-hero { padding-top: calc(52px + env(safe-area-inset-top, 0px)); }
+.pt-gate { grid-template-rows: auto 1fr; gap: 12px; }
+.pt-gate__lang { justify-self: end; align-self: start; }
+.app-message .lang-switch { margin-bottom: 12px; }

@@ -1,16 +1,14 @@
-import { membershipConfig as cfg } from "../config";
+import { monthName, t } from "../i18n";
 import type { MemberStatus, RecordStatus } from "../types";
-
-const MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 /** 15000 → "15,000 أوقية قديمة" */
 export const money = (n: number, withUnit = true) =>
-  `${Math.round(n || 0).toLocaleString("en-US")}${withUnit ? ` ${cfg.currency}` : ""}`;
+  `${Math.round(n || 0).toLocaleString("en-US")}${withUnit ? ` ${t("org.currency")}` : ""}`;
 
 /** "2026-11" → "نوفمبر 2026" */
 export const monthLabel = (ym: string) => {
   const [y, m] = ym.split("-").map(Number);
-  return `${MONTHS[(m || 1) - 1]} ${y}`;
+  return `${monthName((m || 1) - 1)} ${y}`;
 };
 
 export const currentMonth = () => new Date().toISOString().slice(0, 7);
@@ -31,18 +29,19 @@ export const dateLabel = (iso?: string) => {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 };
 
-export const memberStatusLabel: Record<MemberStatus, string> = {
-  pending: "قيد المراجعة",
-  approved: "منتسب معتمد",
-  rejected: "مرفوض",
-  suspended: "موقوف",
-};
+/** أسماء الحالات بلغة المستخدم (تُقرأ عند العرض) */
+export const memberStatusLabel = {
+  get pending() { return t("member.pending"); },
+  get approved() { return t("member.approved"); },
+  get rejected() { return t("member.rejected"); },
+  get suspended() { return t("member.suspended"); },
+} as Record<MemberStatus, string>;
 
-export const recordStatusLabel: Record<RecordStatus, string> = {
-  pending: "بانتظار التأكيد",
-  confirmed: "مؤكد",
-  rejected: "مرفوض",
-};
+export const recordStatusLabel = {
+  get pending() { return t("record.pending"); },
+  get confirmed() { return t("record.confirmed"); },
+  get rejected() { return t("record.rejected"); },
+} as Record<RecordStatus, string>;
 
 export const statusTone = (s: MemberStatus | RecordStatus) =>
   s === "approved" || s === "confirmed" ? "ok" : s === "pending" ? "warn" : "bad";

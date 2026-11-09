@@ -3,6 +3,7 @@ import { Icon } from "../../../shared/Icon";
 import { org } from "../../../shared/org";
 import { copyText, useToast } from "../../../shared/toast";
 import { membershipConfig as cfg } from "../config";
+import { LangSwitch, t, tServer, useLang } from "../i18n";
 import { loginMember } from "../services/api";
 import { dateLabel, memberStatusLabel, statusTone } from "../lib/format";
 import { validatePhone } from "../lib/validation";
@@ -15,10 +16,12 @@ import { RegisterPage } from "./pages/RegisterPage";
  * شاشة «تسجيل الدخول» (الهاتف وكلمة المرور)، ومنها «إنشاء حساب جديد» ← طلب ينتظر قبول اللجنة أو المشرف.
  */
 export function AuthGate({ onLogin }: { onLogin: (m: Member) => void }) {
+  useLang();
   const [view, setView] = useState<"login" | "register">("login");
   if (view === "register") {
     return (
       <div className="pt-gate">
+        <div className="pt-gate__lang"><LangSwitch /></div>
         <div className="pt-gate__box"><RegisterPage onDone={onLogin} onBack={() => setView("login")} /></div>
       </div>
     );
@@ -38,14 +41,14 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
     e.preventDefault();
     const pe = validatePhone(phone);
     if (pe) return setError(pe);
-    if (!secret.trim()) return setError("أدخل كلمة المرور");
+    if (!secret.trim()) return setError(t("login.errPassword"));
     setBusy(true);
     try {
       const m = await loginMember(phone, secret);
-      if (!m) setError("رقم الهاتف أو كلمة المرور غير صحيحة.");
+      if (!m) setError(t("srv.creds"));
       else onLogin(m);
     } catch (err) {
-      setError((err as Error).message);
+      setError(tServer((err as Error).message));
     } finally {
       setBusy(false);
     }
@@ -53,9 +56,10 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
 
   return (
     <div className="lg">
+      <div className="lg-lang"><LangSwitch /></div>
       <header className="lg-hero">
         <MosqueSilhouette />
-        <img src={org.logoFull} alt={cfg.orgName} width={640} height={380} className="lg-hero__logo" />
+        <img src={org.logoFull} alt={t("org.name")} width={640} height={380} className="lg-hero__logo" />
         <svg className="lg-wave" viewBox="0 0 400 90" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 40 C 90 95, 170 0, 260 30 S 380 70, 400 20 L400 90 L0 90 Z" fill="var(--lg-coral)" opacity="0.55" />
           <path d="M0 60 C 100 100, 190 20, 280 50 S 380 80, 400 45 L400 90 L0 90 Z" fill="var(--lg-bg)" />
@@ -63,16 +67,16 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
       </header>
 
       <main className="lg-body">
-        <h1>تسجيل الدخول</h1>
-        <p className="lg-sub">أهلاً بك في جمعية عون وسند</p>
+        <h1>{t("login.title")}</h1>
+        <p className="lg-sub">{t("org.welcome")}</p>
 
         <form className="lg-form" onSubmit={submit} noValidate>
           <label className="lg-field">
-            <span className="visually-hidden">رقم الهاتف</span>
+            <span className="visually-hidden">{t("login.phone")}</span>
             <input
               value={phone}
               onChange={(e) => { setPhone(e.target.value); setError(null); }}
-              placeholder="رقم الهاتف"
+              placeholder={t("login.phone")}
               inputMode="tel"
               autoComplete="tel"
               aria-invalid={!!error && !phone ? true : undefined}
@@ -81,15 +85,15 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
           </label>
 
           <label className="lg-field">
-            <span className="visually-hidden">كلمة المرور</span>
-            <button type="button" className="lg-field__toggle" onClick={() => setShow((v) => !v)} aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}>
+            <span className="visually-hidden">{t("login.password")}</span>
+            <button type="button" className="lg-field__toggle" onClick={() => setShow((v) => !v)} aria-label={show ? t("login.hide") : t("login.show")}>
               <Icon name={show ? "eye" : "eyeOff"} />
             </button>
             <input
               type={show ? "text" : "password"}
               value={secret}
               onChange={(e) => { setSecret(e.target.value); setError(null); }}
-              placeholder="كلمة المرور"
+              placeholder={t("login.password")}
               autoComplete="current-password"
             />
             <Icon name="lock" className="lg-field__icon" />
@@ -97,24 +101,24 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
 
           {error && <p className="lg-error" role="alert">{error}</p>}
 
-          <button type="submit" className="lg-btn" disabled={busy}>{busy ? "جارٍ الدخول..." : "دخول"}</button>
+          <button type="submit" className="lg-btn" disabled={busy}>{busy ? t("login.submitting") : t("login.submit")}</button>
         </form>
 
-        <p className="lg-or">أو تسجيل عبر</p>
+        <p className="lg-or">{t("login.or")}</p>
         <button type="button" className="lg-btn lg-btn--outline" onClick={onRegister}>
-          <Icon name="userPlus" /> إنشاء حساب جديد
+          <Icon name="userPlus" /> {t("login.create")}
         </button>
 
         <button type="button" className="lg-contact" onClick={() => setContact((v) => !v)} aria-expanded={contact}>
-          <Icon name="headset" size={18} /> تواصل معنا
+          <Icon name="headset" size={18} /> {t("login.contact")}
         </button>
         {contact && (
           <div className="lg-contact__box">
-            <p>للتواصل مع اللجنة الانتسابية:</p>
+            <p>{t("login.contactText")}</p>
             <b className="num" dir="ltr">{cfg.phone}</b>
             <div className="lg-contact__links">
-              <a href={`tel:${cfg.phone}`}>اتصال</a>
-              <a href={`https://wa.me/${cfg.phone}`} target="_blank" rel="noopener noreferrer">واتساب</a>
+              <a href={`tel:${cfg.phone}`}>{t("login.call")}</a>
+              <a href={`https://wa.me/${cfg.phone}`} target="_blank" rel="noopener noreferrer">{t("login.whatsapp")}</a>
             </div>
           </div>
         )}
@@ -177,30 +181,32 @@ function Leaves() {
 
 /** شاشة من لم يُقبل بعد: لا يدخل الموقع حتى تقبله اللجنة أو المشرف */
 export function WaitingScreen({ member, onLogout }: { member: Member; onLogout: () => void }) {
+  useLang();
   const toast = useToast();
   const rejected = member.status === "rejected";
   const suspended = member.status === "suspended";
   return (
     <div className="pt-gate">
+      <div className="pt-gate__lang"><LangSwitch /></div>
       <div className="pt-gate__box">
         <Card className="pt-waiting">
           <div className={`pt-waiting__icon${rejected || suspended ? " is-bad" : ""}`}><Icon name={rejected || suspended ? "close" : "clock"} size={30} /></div>
-          <h1 className="pt-h1">{rejected ? "لم يُقبل طلبك" : suspended ? "حسابك موقوف" : "طلبك قيد المراجعة"}</h1>
+          <h1 className="pt-h1">{rejected ? t("wait.rejectedTitle") : suspended ? t("wait.suspendedTitle") : t("wait.pendingTitle")}</h1>
           <p className="pt-muted">
             {rejected
-              ? `للاستفسار تواصل مع الجمعية على الرقم ${cfg.phone}.`
+              ? t("wait.rejectedText", { phone: cfg.phone })
               : suspended
-                ? "تواصل مع مشرف قائمتك أو مع اللجنة الانتسابية."
-                : "سيراجع طلبك أحد أعضاء اللجنة الانتسابية أو المشرفين، وستتمكن من دخول الموقع فور قبوله."}
+                ? t("wait.suspendedText")
+                : t("wait.pendingText")}
           </p>
           <dl className="pt-facts">
-            <div><dt>الاسم</dt><dd>{member.fullName}</dd></div>
-            <div><dt>رقم المنتسب</dt><dd className="num" dir="ltr">{member.code} <button type="button" className="pt-inline-btn" onClick={async () => toast((await copyText(member.code)) ? "تم النسخ" : member.code)}>نسخ</button></dd></div>
-            <div><dt>الحالة</dt><dd><Badge tone={statusTone(member.status)}>{memberStatusLabel[member.status]}</Badge></dd></div>
-            <div><dt>تاريخ الطلب</dt><dd className="num">{dateLabel(member.createdAt)}</dd></div>
+            <div><dt>{t("wait.name")}</dt><dd>{member.fullName}</dd></div>
+            <div><dt>{t("wait.code")}</dt><dd className="num" dir="ltr">{member.code} <button type="button" className="pt-inline-btn" onClick={async () => toast((await copyText(member.code)) ? t("common.copied") : member.code)}>{t("common.copy")}</button></dd></div>
+            <div><dt>{t("wait.status")}</dt><dd><Badge tone={statusTone(member.status)}>{memberStatusLabel[member.status]}</Badge></dd></div>
+            <div><dt>{t("wait.date")}</dt><dd className="num">{dateLabel(member.createdAt)}</dd></div>
           </dl>
-          {!rejected && !suspended && <Notice>هذه الصفحة تتحدث تلقائياً كل بضع ثوانٍ، وتنقلك إلى الموقع فور قبول طلبك.</Notice>}
-          <Button variant="ghost" icon="logout" block onClick={onLogout}>خروج</Button>
+          {!rejected && !suspended && <Notice>{t("wait.auto")}</Notice>}
+          <Button variant="ghost" icon="logout" block onClick={onLogout}>{t("common.logout")}</Button>
         </Card>
       </div>
     </div>
