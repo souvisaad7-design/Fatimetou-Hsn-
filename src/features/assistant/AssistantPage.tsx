@@ -95,7 +95,7 @@ export default function AssistantPage() {
           <div className="ast-topbar__title">
             <img src={cfg.org.logo} alt={at("logoAlt")} width={32} height={32} />
             <div>
-              <h1>{at("orgName")}</h1>
+              <h1><span className="ast-name-full">{at("orgName")}</span><span className="ast-name-short">{at("shortName")}</span></h1>
               <span className="ast-status"><i aria-hidden="true" />{at("online")}</span>
             </div>
           </div>
