@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "../../../../shared/toast";
 import { membershipConfig as cfg } from "../../config";
 import { useDb } from "../../hooks/useDb";
@@ -19,6 +19,9 @@ export function MyList({ fixedListId }: { fixedListId?: string }) {
   const toast = useToast();
   const [chosen, setChosen] = useState(() => fixedListId ?? db.lists[0]?.id ?? "");
   const [askAmount, setAskAmount] = useState<string | null>(null);
+  // منع الضغط المزدوج على «دفع» (كان يسجّل الدفعة مرتين)
+  const [paying, setPaying] = useState<string | null>(null);
+  const inFlight = useRef(new Set<string>());
   const listId = fixedListId ?? chosen;
   const list = db.lists.find((l) => l.id === listId);
   const month = currentMonth();
@@ -44,8 +47,18 @@ export function MyList({ fixedListId }: { fixedListId?: string }) {
 
   const quickPay = async (memberId: string, amount?: number) => {
     if (!amount) return setAskAmount(memberId);
-    await recordPayment({ memberId, month, amount, method: "نقداً عبر المشرف" });
-    toast(`تم تسجيل ${money(amount)}`);
+    if (inFlight.current.has(memberId)) return;
+    inFlight.current.add(memberId);
+    setPaying(memberId);
+    try {
+      await recordPayment({ memberId, month, amount, method: "نقداً عبر المشرف" });
+      toast(`تم تسجيل ${money(amount)}`);
+    } catch (err) {
+      toast((err as Error).message);
+    } finally {
+      inFlight.current.delete(memberId);
+      setPaying(null);
+    }
   };
 
   return (
@@ -115,7 +128,7 @@ export function MyList({ fixedListId }: { fixedListId?: string }) {
                 {state === "unpaid" && (
                   <>
                     <a className="ui-btn ui-btn--ghost ui-btn--sm" href={smsLink(m.phone, reminderMessage(m, month))} aria-label={`تذكير ${m.fullName} برسالة`}>تذكير</a>
-                    <Button small onClick={() => quickPay(m.id, m.pledge)}>دفع{m.pledge ? ` ${money(m.pledge, false)}` : ""}</Button>
+                    <Button small disabled={paying === m.id} onClick={() => quickPay(m.id, m.pledge)}>{paying === m.id ? "جارٍ التسجيل..." : `دفع${m.pledge ? ` ${money(m.pledge, false)}` : ""}`}</Button>
                   </>
                 )}
               </div>

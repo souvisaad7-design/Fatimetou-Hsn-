@@ -66,12 +66,15 @@ export function PaymentFormModal({ memberId, month, onClose }: { memberId?: stri
   const months = lastMonths(12).reverse();
   const [f, setF] = useState({ memberId: memberId ?? approved[0]?.id ?? "", month: month ?? currentMonth(), amount: first?.pledge ? String(first.pledge) : "", method: cfg.paymentMethods[cfg.paymentMethods.length - 1], reference: "" });
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (saving) return; // ضغطة واحدة فقط
     const err = validateAmount(f.amount);
     if (err) return setError(err);
     if (!f.memberId) return setError("اختر المنتسب");
-    try { await recordPayment(f); } catch (err) { return setError((err as Error).message); }
+    setSaving(true);
+    try { await recordPayment(f); } catch (err) { setSaving(false); return setError((err as Error).message); }
     toast("تم تسجيل الدفعة");
     onClose();
   };
@@ -87,7 +90,7 @@ export function PaymentFormModal({ memberId, month, onClose }: { memberId?: stri
         <Field label="المبلغ" error={error}>{(id, d) => <input id={id} aria-describedby={d} value={f.amount} onChange={(e) => { setF({ ...f, amount: e.target.value }); setError(null); }} inputMode="numeric" dir="ltr" />}</Field>
         <Field label="طريقة الدفع">{(id) => <select id={id} value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>{cfg.paymentMethods.map((m) => <option key={m}>{m}</option>)}</select>}</Field>
         <Field label="رقم العملية" optional>{(id) => <input id={id} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} dir="ltr" />}</Field>
-        <div className="ui-field--full"><Button type="submit" block>تسجيل (مؤكدة)</Button></div>
+        <div className="ui-field--full"><Button type="submit" block disabled={saving}>{saving ? "جارٍ التسجيل..." : "تسجيل (مؤكدة)"}</Button></div>
       </form>
     </Modal>
   );
@@ -128,14 +131,17 @@ export function DonationFormModal({ campaignId, onClose }: { campaignId: string;
   const toast = useToast();
   const [f, setF] = useState({ memberId: "", donorName: "", donorPhone: "", amount: "", method: cfg.paymentMethods[0], reference: "" });
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (saving) return; // ضغطة واحدة فقط
     const err = validateAmount(f.amount);
     if (err) return setError(err);
     const m = db.members.find((x) => x.id === f.memberId);
+    setSaving(true);
     try {
       await addDonation({ campaignId, ...f, memberId: m?.id, donorName: m?.fullName ?? f.donorName, donorPhone: m?.phone ?? f.donorPhone }, true);
-    } catch (err) { return setError((err as Error).message); }
+    } catch (err) { setSaving(false); return setError((err as Error).message); }
     toast("تم تسجيل التبرع");
     onClose();
   };
@@ -150,7 +156,7 @@ export function DonationFormModal({ campaignId, onClose }: { campaignId: string;
         <Field label="المبلغ" error={error}>{(id, d) => <input id={id} aria-describedby={d} value={f.amount} onChange={(e) => { setF({ ...f, amount: e.target.value }); setError(null); }} inputMode="numeric" dir="ltr" />}</Field>
         <Field label="طريقة الدفع">{(id) => <select id={id} value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>{cfg.paymentMethods.map((m) => <option key={m}>{m}</option>)}</select>}</Field>
         <Field label="رقم العملية" optional full>{(id) => <input id={id} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} dir="ltr" />}</Field>
-        <div className="ui-field--full"><Button type="submit" block>تسجيل (مؤكد)</Button></div>
+        <div className="ui-field--full"><Button type="submit" block disabled={saving}>{saving ? "جارٍ التسجيل..." : "تسجيل (مؤكد)"}</Button></div>
       </form>
     </Modal>
   );

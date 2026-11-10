@@ -133,6 +133,7 @@ function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string;
   const [receipt, setReceipt] = useState<string>();
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const onReceipt = async (file?: File) => {
     setReceiptError(null);
     if (!file) return;
@@ -142,10 +143,12 @@ function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string;
     e.preventDefault();
     const err = validateAmount(f.amount);
     if (err) return setError(err);
-    if (!f.month) return;
+    if (!f.month || sending) return;
+    setSending(true);
     try {
       await reportPayment({ memberId, ...f, receipt });
     } catch (err) {
+      setSending(false);
       setError(tServer((err as Error).message));
       return;
     }
@@ -174,7 +177,7 @@ function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string;
           )}
         </Field>
         <div className="ui-field--full"><Notice>{t("rp.notice", { phone: cfg.phone })}</Notice></div>
-        <div className="ui-field--full"><Button type="submit" block>{t("common.send")}</Button></div>
+        <div className="ui-field--full"><Button type="submit" block disabled={sending}>{t("common.send")}</Button></div>
       </form>
       )}
     </Modal>
