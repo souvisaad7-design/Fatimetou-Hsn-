@@ -39,7 +39,7 @@ const questions: Record<string, LangText> = {
 };
 
 /** كلمات تسأل عن شخص */
-const PERSON = ["مسؤول", "رئيس", "منهو", "منهي", "شكون", "من هو", "من هي", "من يقود", "قائد", "اسم", "responsable", "qui ", "chef", "dirige"];
+const PERSON = ["مسؤول", "رئيس", "منهو", "منهي", "شكون", "من هو", "من هي", "من يقود", "قائد", "اسم", "responsable", "qui ", "chef", "dirige", "mas2oul", "mes2oul", "mas2oula", "mes2oula", "mas2oul", "chkoun", "chkon", "menhou", "menhi"];
 
 interface Committee {
   id: string;
@@ -52,12 +52,12 @@ interface Committee {
 const committees: Committee[] = [
   {
     id: "membership", ar: "اللجنة الانتسابية", fr: "la commission des adhésions",
-    keywords: ["انتسابيه", "الانتساب", "لجنه الانتساب", "adhesion"],
-    lead: T("مسؤول لجنة الانتساب هو **سعد / صوفي**.", "مسؤول اللجنة الانتسابية هو **سعد / صوفي**.", "Le responsable de la commission des adhésions est **سعد / صوفي**."),
+    keywords: ["انتسابيه", "الانتساب", "لجنه الانتساب", "adhesion", "intisab", "entisab", "intisabiya"],
+    lead: T("مسؤولة لجنة الانتساب هي **السعد الصوفي**.", "مسؤولة اللجنة الانتسابية هي **السعد الصوفي**.", "La responsable de la commission des adhésions est **السعد الصوفي**."),
   },
   {
     id: "education", ar: "لجنة التعليم", fr: "la commission de l'enseignement",
-    keywords: ["التعليم", "تعليم", "enseignement", "education"],
+    keywords: ["التعليم", "تعليم", "enseignement", "education", "ta3lim", "te3lim"],
     lead: T(
       "مسؤول لجنة التعليم هو **عبد الله / الحسن**، وهي الّ تشرف على معهد المحجة البيضاء.",
       "مسؤول لجنة التعليم هو **عبد الله / الحسن**، وهي التي تشرف على معهد المحجة البيضاء.",
@@ -66,7 +66,7 @@ const committees: Committee[] = [
   },
   {
     id: "media", ar: "اللجنة الإعلامية", fr: "la commission des médias",
-    keywords: ["اعلام", "اعلاميه", "media"],
+    keywords: ["اعلام", "اعلاميه", "media", "i3lam", "e3lam"],
     lead: T("مسؤولة الإعلام هي **أميه / حم**.", "مسؤولة الإعلام هي **أميه / حم**.", "La responsable des médias est **أميه / حم**."),
   },
   { id: "finance", ar: "اللجنة المالية", fr: "la commission des finances", keywords: ["ماليه", "المال", "finance"] },
