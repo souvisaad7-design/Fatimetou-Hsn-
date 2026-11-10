@@ -5,13 +5,16 @@
  *
  *   node scripts/build-hassaniya-lexicon.mjs
  *
- * يقرأ أجزاء البيانات من /splits ثم جملها من /rows (خادم بيانات Hugging Face)، فإن أضاف صاحبها
- * أجزاء أو جملاً جديدة تدخل تلقائياً. وإن تعذّر ذلك يرجع إلى ملف CSV الأصلي.
+ * المصادر بالترتيب (كلها تقرأ كل الأجزاء، فإن أضاف صاحب البيانات أجزاء أو جملاً جديدة تدخل تلقائياً):
+ *   1. ملفات Parquet: /api/datasets/<dataset>/parquet ← ملف لكل جزء (تحميل واحد، الأسرع)
+ *   2. خادم البيانات: /splits ثم /rows صفحة صفحة
+ *   3. ملف CSV الأصلي
  * كل جملة مكتوبة بالحرفين بالترتيب نفسه، فإذا تساوى عدد الكلمات تُقابَل كلمة بكلمة.
  * الناتج: src/features/assistant/data/hassaniyaLexicon.json
  * يستعمله المساعد ليفهم من يكتب الحسانية بالحروف اللاتينية (مثل: chenhou jam3iya 3oun w sanad).
  */
 import { writeFile } from "node:fs/promises";
+import { parquetReadObjects } from "hyparquet";
 
 const DATASET = "hassan-IA/dah";
 const API = "https://datasets-server.huggingface.co";
@@ -74,6 +77,27 @@ async function fromDatasetServer() {
   return { rows: all, splits: splits.map((x) => x.split) };
 }
 
+/** كل الجمل من ملفات Parquet لكل الأجزاء */
+async function fromParquet() {
+  const index = await getJson(`https://huggingface.co/api/datasets/${DATASET}/parquet`); // { config: { split: [urls] } }
+  const all = [];
+  const splits = [];
+  for (const [config, bySplit] of Object.entries(index)) {
+    for (const [split, urls] of Object.entries(bySplit)) {
+      for (const url of urls) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${url}`);
+        const rows = await parquetReadObjects({ file: await res.arrayBuffer(), columns: ["hassaniya-ar", "hassaniya-en"] });
+        for (const row of rows) all.push({ ar: row["hassaniya-ar"] ?? "", lat: row["hassaniya-en"] ?? "" });
+      }
+      splits.push(split);
+      console.log(`  ${config}/${split} (parquet): ${all.length} جملة حتى الآن`);
+    }
+  }
+  if (!all.length) throw new Error("لا توجد جمل في ملفات Parquet");
+  return { rows: all, splits };
+}
+
 async function fromCsv() {
   const res = await fetch(CSV);
   if (!res.ok) throw new Error(`تعذّر تحميل البيانات: ${res.status}`);
@@ -85,12 +109,15 @@ async function fromCsv() {
 }
 
 let data;
-try {
-  data = await fromDatasetServer();
-} catch (err) {
-  console.warn(`خادم البيانات غير متاح (${err.message})، أستعمل ملف CSV`);
-  data = await fromCsv();
+for (const [name, read] of [["Parquet", fromParquet], ["خادم البيانات", fromDatasetServer], ["CSV", fromCsv]]) {
+  try {
+    data = await read();
+    break;
+  } catch (err) {
+    console.warn(`تعذّر المصدر ${name} (${err.message})، أجرّب التالي`);
+  }
 }
+if (!data) throw new Error("تعذّرت كل مصادر البيانات");
 const { rows, splits } = data;
 const arabicWords = (s) => s.match(/[ء-يگڤٱ]+/g) ?? [];
 const latinWords = (s) => s.toLowerCase().match(/[a-z0-9]+/g) ?? [];
