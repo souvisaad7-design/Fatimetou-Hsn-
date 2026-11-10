@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { normalizeArabic } from "../../../../shared/arabic";
+import { Icon } from "../../../../shared/Icon";
 import { useToast } from "../../../../shared/toast";
 import { useDb } from "../../hooks/useDb";
 import { commitment, confirmed, deleteMember, memberMonths, setMemberStatus, setPaymentStatus, sum } from "../../services/api";
@@ -10,23 +11,52 @@ import { Badge, Button, Card, ConfirmButton, Empty, Modal } from "../../ui";
 import { MemberFormModal, PaymentFormModal } from "../forms";
 import { ReceiptButton } from "../ReceiptButton";
 
+const STATUSES: MemberStatus[] = ["approved", "pending", "suspended", "rejected"];
+
 export function MembersAdmin({ openId, go }: { openId?: string; go: (to: string) => void }) {
   const db = useDb();
+  const toast = useToast();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<MemberStatus | "">("");
   const [listId, setListId] = useState("");
   const [adding, setAdding] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
   const month = currentMonth();
   const paid = useMemo(() => new Set(confirmed(db.payments.filter((p) => p.month === month)).map((p) => p.memberId)), [db.payments, month]);
 
-  const rows = useMemo(() => {
+  // البحث الحي: بالاسم أو الرقم أو الهاتف أو الجامعة أو الحي (دون مراعاة الهمزات والتشكيل)
+  const searched = useMemo(() => {
     const nq = normalizeArabic(q);
     return db.members.filter((m) =>
-      (!status || m.status === status) &&
       (!listId || (listId === "none" ? !m.listId : m.listId === listId)) &&
       (!nq || normalizeArabic(`${m.fullName} ${m.code} ${m.phone} ${m.institution ?? ""} ${m.address ?? ""}`).includes(nq)),
     );
-  }, [db.members, q, status, listId]);
+  }, [db.members, q, listId]);
+  const rows = useMemo(() => searched.filter((m) => !status || m.status === status), [searched, status]);
+  const count = (s: MemberStatus | "") => (s ? searched.filter((m) => m.status === s).length : searched.length);
+
+  const changeStatus = async (id: string, next: MemberStatus) => {
+    const m = db.members.find((x) => x.id === id);
+    if (!m || m.status === next) return;
+    setBusy(id);
+    try {
+      await setMemberStatus(id, next, next === "approved" ? m.listId : undefined);
+      toast(`${m.fullName}: ${memberStatusLabel[next]}`);
+    } catch (err) {
+      toast(`تعذّر تغيير الحالة: ${(err as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const remove = async (id: string) => {
+    const m = db.members.find((x) => x.id === id);
+    try {
+      await deleteMember(id);
+      toast(`تم حذف ${m?.fullName ?? "المنتسب"}`);
+    } catch (err) {
+      toast(`تعذّر الحذف: ${(err as Error).message}`);
+    }
+  };
 
   const exportCsv = () =>
     downloadCsv(`منتسبو-عون-وسند-${month}.csv`, ["رقم المنتسب", "الاسم", "الهاتف", "الجنس", "الوضعية", "الجامعة/العمل", "الحي", "القائمة", "المشرف", "الانتساب الشهري", "الحالة", "تاريخ التسجيل"],
@@ -36,40 +66,60 @@ export function MembersAdmin({ openId, go }: { openId?: string; go: (to: string)
     <div className="ad-stack">
       <Card>
         <div className="ad-toolbar">
-          <input className="ui-input ad-toolbar__search" type="search" placeholder="ابحث بالاسم أو الرقم أو الهاتف..." value={q} onChange={(e) => setQ(e.target.value)} aria-label="بحث في المنتسبين" />
-          <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as MemberStatus | "")} aria-label="الحالة">
-            <option value="">كل الحالات</option>
-            {(Object.keys(memberStatusLabel) as MemberStatus[]).map((s) => <option key={s} value={s}>{memberStatusLabel[s]}</option>)}
-          </select>
+          <label className="ad-search">
+            <Icon name="search" size={18} />
+            <input type="search" placeholder="ابحث بالاسم أو الرقم أو الهاتف..." value={q} onChange={(e) => setQ(e.target.value)} aria-label="بحث في المنتسبين" />
+          </label>
           <select className="ui-input" value={listId} onChange={(e) => setListId(e.target.value)} aria-label="القائمة">
             <option value="">كل القوائم</option>
             <option value="none">بدون قائمة</option>
             {db.lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
+          <Button variant="ghost" icon="download" onClick={exportCsv}>تصدير CSV</Button>
           <Button icon="plus" onClick={() => setAdding(true)}>إضافة منتسب</Button>
-          <Button variant="ghost" icon="download" onClick={exportCsv}>تصدير</Button>
         </div>
-        <p className="ad-muted ad-small">{rows.length} منتسب</p>
+
+        <div className="ad-filters" role="tablist" aria-label="تصفية حسب الحالة">
+          {(["", ...STATUSES] as Array<MemberStatus | "">).map((s) => (
+            <button key={s || "all"} type="button" role="tab" aria-selected={status === s} className={`ad-filter${status === s ? " is-active" : ""}${s ? ` ad-filter--${s}` : ""}`} onClick={() => setStatus(s)}>
+              {s ? memberStatusLabel[s] : "الكل"} <em className="num">{count(s)}</em>
+            </button>
+          ))}
+        </div>
+
         {rows.length === 0 ? <Empty icon="users" title="لا يوجد منتسبون بهذه الشروط" /> : (
-          <div className="ui-table-wrap">
-            <table className="ui-table ad-clickable">
-              <thead><tr><th>الرقم</th><th>الاسم</th><th>الهاتف</th><th>القائمة</th><th>الحالة</th><th>{monthLabel(month)}</th><th>الالتزام</th></tr></thead>
+          <div className="ui-table-wrap ad-table-wrap">
+            <table className="ui-table ad-table">
+              <thead><tr><th>المنتسب</th><th>الهاتف</th><th>القائمة</th><th>الحالة</th><th>{monthLabel(month)}</th><th>الالتزام</th><th><span className="visually-hidden">إجراءات</span></th></tr></thead>
               <tbody>
                 {rows.map((m) => (
-                  <tr key={m.id} onClick={() => go(`members/${m.id}`)} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && go(`members/${m.id}`)}>
-                    <td className="num" dir="ltr">{m.code}</td>
-                    <td><b>{m.fullName}</b></td>
-                    <td className="num" dir="ltr">{m.phone}</td>
-                    <td>{db.lists.find((l) => l.id === m.listId)?.name ?? <span className="ad-muted">—</span>}</td>
-                    <td><Badge tone={statusTone(m.status)}>{memberStatusLabel[m.status]}</Badge></td>
-                    <td>{m.status === "approved" ? (paid.has(m.id) ? <Badge tone="ok">مدفوع</Badge> : <Badge tone="bad">غير مدفوع</Badge>) : <span className="ad-muted">—</span>}</td>
-                    <td className="num">{m.status === "approved" ? `${commitment(db, m).pct}%` : "—"}</td>
+                  <tr key={m.id} className={busy === m.id ? "is-busy" : undefined}>
+                    <td data-label="المنتسب">
+                      <button type="button" className="ad-person" onClick={() => go(`members/${m.id}`)}>
+                        <span className="ad-avatar" aria-hidden="true">{m.fullName.trim().charAt(0)}</span>
+                        <span><b>{m.fullName}</b><small className="num" dir="ltr">{m.code}</small></span>
+                      </button>
+                    </td>
+                    <td data-label="الهاتف" className="num" dir="ltr">{m.phone}</td>
+                    <td data-label="القائمة">{db.lists.find((l) => l.id === m.listId)?.name ?? <span className="ad-muted">—</span>}</td>
+                    <td data-label="الحالة">
+                      <select className={`ad-status ad-status--${m.status}`} value={m.status} disabled={busy === m.id} onChange={(e) => changeStatus(m.id, e.target.value as MemberStatus)} aria-label={`حالة ${m.fullName}`}>
+                        {STATUSES.map((s) => <option key={s} value={s}>{memberStatusLabel[s]}</option>)}
+                      </select>
+                    </td>
+                    <td data-label={monthLabel(month)}>{m.status === "approved" ? (paid.has(m.id) ? <Badge tone="ok">مدفوع</Badge> : <Badge tone="bad">غير مدفوع</Badge>) : <span className="ad-muted">—</span>}</td>
+                    <td data-label="الالتزام" className="num">{m.status === "approved" ? `${commitment(db, m).pct}%` : "—"}</td>
+                    <td className="ad-table__actions">
+                      <Button small variant="ghost" icon="eye" onClick={() => go(`members/${m.id}`)}>عرض</Button>
+                      <ConfirmButton label="حذف" icon="trash" confirmLabel="تأكيد الحذف" onConfirm={() => remove(m.id)} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+        <p className="ad-muted ad-small">عرض <span className="num">{rows.length}</span> من <span className="num">{db.members.length}</span> منتسب</p>
       </Card>
       {adding && <MemberFormModal onClose={() => setAdding(false)} />}
       {openId && db.members.some((m) => m.id === openId) && <MemberDetail id={openId} onClose={() => go("members")} />}

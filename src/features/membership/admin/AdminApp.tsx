@@ -17,6 +17,7 @@ import { Reminders } from "./pages/Reminders";
 import { PaymentsAdmin } from "./pages/PaymentsAdmin";
 import { RequestsAdmin } from "./pages/RequestsAdmin";
 import { SettingsAdmin } from "./pages/SettingsAdmin";
+import { MemberFormModal } from "./forms";
 import "./admin.css";
 
 
@@ -134,6 +135,7 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
   const { page, params, go } = useHashRoute(supervisor ? "mylist" : "dashboard");
   const { theme, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
+  const [adding, setAdding] = useState(false);
   const db = useDb();
   const stats = dashboardStats(db);
   const badges: Record<string, number> = { requests: supervisor ? stats.pending : stats.pending + stats.pendingPayments + stats.pendingDonations };
@@ -172,8 +174,22 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
       <div className="ad-main">
         <header className="ad-top">
           <button type="button" className="ui-icon-btn ad-menu-btn" aria-label="القائمة" onClick={() => setMenu(true)}><Icon name="menu" /></button>
-          <h1>{current.label}</h1>
+          <div className="ad-top__title">
+            <h1>{current.label}</h1>
+            <span className="ad-muted">{list ? `مشرف: ${list.name}` : `${cfg.committeeName} — ${org.name}`}</span>
+          </div>
+          <div className="ad-top__actions">
+            {!supervisor && (
+              <button type="button" className="ad-top__add" onClick={() => setAdding(true)}>
+                <Icon name="plus" size={18} /> <span>إضافة منتسب</span>
+              </button>
+            )}
+            <button type="button" className="ad-theme" onClick={toggle} aria-label={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"} title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}>
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
+            </button>
+          </div>
         </header>
+        {adding && <MemberFormModal onClose={() => setAdding(false)} />}
         <main className="ad-content">
           {current.id === "mylist" ? <MyList fixedListId={supervisor} />
             : current.id === "reminders" ? <Reminders fixedListId={supervisor} />

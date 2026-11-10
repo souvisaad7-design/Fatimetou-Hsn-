@@ -1,16 +1,37 @@
+import { lazy, Suspense } from "react";
 import { useDb } from "../../hooks/useDb";
 import { campaignRaised, confirmed, dashboardStats, sum } from "../../services/api";
 import { currentMonth, money, monthLabel } from "../../lib/format";
 import { Button, Card, Progress, Stat } from "../../ui";
+
+// Chart.js يُحمَّل فقط عند فتح لوحة المعلومات (لا مع شاشة الدخول)
+const charts = () => import("../charts");
+const GrowthChart = lazy(() => charts().then((m) => ({ default: m.GrowthChart })));
+const PlansChart = lazy(() => charts().then((m) => ({ default: m.PlansChart })));
+const ReferralsChart = lazy(() => charts().then((m) => ({ default: m.ReferralsChart })));
+const MoneyChart = lazy(() => charts().then((m) => ({ default: m.MoneyChart })));
+const ChartSlot = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<div className="ad-chart ad-chart--loading" style={{ height: 260 }} />}>{children}</Suspense>;
 
 export function Dashboard({ go }: { go: (to: string) => void }) {
   const db = useDb();
   const s = dashboardStats(db);
   const month = currentMonth();
   const pendingTotal = s.pending + s.pendingPayments + s.pendingDonations;
+  const newThisMonth = db.members.filter((m) => m.createdAt.slice(0, 7) === month).length;
 
   return (
     <div className="ad-stack">
+      <div className="ad-hero">
+        <div>
+          <h2>نظرة عامة</h2>
+          <p className="ad-muted">{monthLabel(month)} · <span className="num">{newThisMonth}</span> تسجيل جديد هذا الشهر</p>
+        </div>
+        <div className="ad-hero__actions">
+          <Button variant="ghost" icon="users" onClick={() => go("members")}>جدول المنتسبين</Button>
+          <Button variant="ghost" icon="inbox" onClick={() => go("requests")}>الطلبات</Button>
+        </div>
+      </div>
+
       <div className="ad-stats">
         <Stat tone="navy" icon="users" label="المنتسبون المعتمدون" value={s.approved} sub={`من أصل ${s.members} مسجل`} />
         <Stat icon="wallet" label={`انتساب ${monthLabel(month)}`} value={money(s.membershipThisMonth, false)} sub={`${s.paidThisMonth} من ${s.approved} دفعوا`} />
@@ -25,11 +46,25 @@ export function Dashboard({ go }: { go: (to: string) => void }) {
         </div>
       )}
 
-      <div className="ad-grid-2">
-        <Card title="آخر 6 أشهر (أوقية قديمة)">
-          <MonthlyChart data={s.byMonth} />
+      <div className="ad-grid-charts">
+        <Card title="نمو الأعضاء" actions={<span className="ad-chip">آخر 12 شهراً</span>} className="ad-span-2">
+          <ChartSlot><GrowthChart db={db} /></ChartSlot>
         </Card>
+        <Card title="توزيع الباقات" actions={<span className="ad-chip">مبلغ الانتساب الشهري</span>}>
+          <ChartSlot><PlansChart db={db} /></ChartSlot>
+        </Card>
+      </div>
 
+      <div className="ad-grid-2">
+        <Card title="الإحالات حسب المشرف" actions={<span className="ad-chip">المنتسبون المعتمدون</span>}>
+          <ChartSlot><ReferralsChart db={db} /></ChartSlot>
+        </Card>
+        <Card title="الانتساب والتبرعات" actions={<span className="ad-chip">آخر 6 أشهر · أوقية قديمة</span>}>
+          <ChartSlot><MoneyChart data={s.byMonth} /></ChartSlot>
+        </Card>
+      </div>
+
+      <div className="ad-grid-2">
         <Card title={`القوائم — ${monthLabel(month)}`} actions={<Button small variant="ghost" onClick={() => go("lists")}>الكل</Button>}>
           {db.lists.length === 0 ? <p className="ad-muted">لا توجد قوائم بعد.</p> : (
             <div className="ad-rows">
@@ -52,7 +87,6 @@ export function Dashboard({ go }: { go: (to: string) => void }) {
             </div>
           )}
         </Card>
-      </div>
 
       <Card title="الحملات الجارية" actions={<Button small variant="ghost" onClick={() => go("campaigns")}>إدارة الحملات</Button>}>
         <div className="ad-rows">
@@ -71,38 +105,7 @@ export function Dashboard({ go }: { go: (to: string) => void }) {
           {s.activeCampaigns === 0 && <p className="ad-muted">لا توجد حملات جارية.</p>}
         </div>
       </Card>
-    </div>
-  );
-}
-
-/** رسم أعمدة بسيط: الانتساب الشهري والتبرعات لكل شهر */
-function MonthlyChart({ data }: { data: Array<{ month: string; membership: number; donations: number }> }) {
-  const max = Math.max(1, ...data.flatMap((d) => [d.membership, d.donations]));
-  const W = 600, H = 220, pad = 28, bw = (W - pad * 2) / data.length;
-  const y = (v: number) => H - pad - (v / max) * (H - pad * 2);
-  return (
-    <div className="ad-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="الانتساب الشهري والتبرعات في آخر 6 أشهر">
-        {[0, 0.5, 1].map((t) => (
-          <line key={t} x1={pad} x2={W - pad} y1={y(max * t)} y2={y(max * t)} stroke="var(--line)" strokeDasharray={t ? "4 4" : undefined} />
-        ))}
-        {data.map((d, i) => {
-          const x = W - pad - (i + 1) * bw; // من اليمين إلى اليسار
-          return (
-            <g key={d.month}>
-              <rect x={x + bw * 0.18} y={y(d.membership)} width={bw * 0.3} height={H - pad - y(d.membership)} rx={4} fill="var(--chart-a)">
-                <title>{`${monthLabel(d.month)} — انتساب: ${money(d.membership)}`}</title>
-              </rect>
-              <rect x={x + bw * 0.52} y={y(d.donations)} width={bw * 0.3} height={H - pad - y(d.donations)} rx={4} fill="var(--chart-b)">
-                <title>{`${monthLabel(d.month)} — تبرعات: ${money(d.donations)}`}</title>
-              </rect>
-              <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="12" fill="var(--muted)">{monthLabel(d.month).split(" ")[0]}</text>
-            </g>
-          );
-        })}
-        <text x={pad} y={14} textAnchor="start" fontSize="11" fill="var(--muted)">{money(max, false)}</text>
-      </svg>
-      <div className="ad-legend"><span><i style={{ background: "var(--chart-a)" }} /> الانتساب</span><span><i style={{ background: "var(--chart-b)" }} /> التبرعات</span></div>
+      </div>
     </div>
   );
 }

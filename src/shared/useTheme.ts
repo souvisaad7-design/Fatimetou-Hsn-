@@ -1,34 +1,45 @@
-import { useCallback, useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { storage } from "./storage";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 const KEY = "awn:theme";
 
-const systemTheme = (): Theme => (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+/**
+ * الوضع الفاتح/الداكن: يتبع إعداد الجهاز ما لم يختر المستخدم وضعاً بنفسه.
+ * الحالة مشتركة بين كل المكوّنات (زر في الشريط الجانبي وآخر في الأعلى يبقيان متطابقين،
+ * والرسوم البيانية تعرف متى تتغير الألوان).
+ */
+const mq = typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: dark)") : undefined;
+let chosen: Theme | null = storage.get<Theme>(KEY);
+const listeners = new Set<() => void>();
 
-/** الوضع الفاتح/الداكن: يتبع إعداد الجهاز ما لم يختر المستخدم وضعاً بنفسه */
+const resolved = (): Theme => chosen ?? (mq?.matches ? "dark" : "light");
+const emit = () => listeners.forEach((l) => l());
+
+function apply() {
+  if (typeof document === "undefined") return;
+  if (chosen) document.documentElement.dataset.theme = chosen;
+  else delete document.documentElement.dataset.theme;
+}
+apply();
+mq?.addEventListener?.("change", emit);
+
+function subscribe(l: () => void) {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
+
+export function setTheme(next: Theme) {
+  chosen = next;
+  storage.set(KEY, next);
+  apply();
+  emit();
+}
+
+export const getTheme = resolved;
+
 export function useTheme() {
-  const [chosen, setChosen] = useState<Theme | null>(() => storage.get<Theme>(KEY));
-  const [system, setSystem] = useState<Theme>(systemTheme);
-
-  useEffect(() => {
-    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
-    const onChange = () => setSystem(systemTheme());
-    mq?.addEventListener("change", onChange);
-    return () => mq?.removeEventListener("change", onChange);
-  }, []);
-
-  useEffect(() => {
-    if (chosen) document.documentElement.dataset.theme = chosen;
-    else delete document.documentElement.dataset.theme;
-  }, [chosen]);
-
-  const theme = chosen ?? system;
-  const toggle = useCallback(() => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setChosen(next);
-    storage.set(KEY, next);
-  }, [theme]);
-
+  const theme = useSyncExternalStore(subscribe, resolved, () => "light" as Theme);
+  const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
   return { theme, toggle };
 }
