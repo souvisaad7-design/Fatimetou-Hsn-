@@ -53,7 +53,7 @@ const committees: Committee[] = [
   {
     id: "membership", ar: "اللجنة الانتسابية", fr: "la commission des adhésions",
     keywords: ["انتسابيه", "الانتساب", "لجنه الانتساب", "adhesion", "intisab", "entisab", "intisabiya"],
-    lead: T("مسؤولة لجنة الانتساب هي **السعد الصوفي**.", "مسؤولة اللجنة الانتسابية هي **السعد الصوفي**.", "La responsable de la commission des adhésions est **السعد الصوفي**."),
+    lead: T("مسؤولة لجنة الانتساب هي **سعد صوفي**.", "مسؤولة اللجنة الانتسابية هي **سعد صوفي**.", "La responsable de la commission des adhésions est **سعد صوفي**."),
   },
   {
     id: "education", ar: "لجنة التعليم", fr: "la commission de l'enseignement",
