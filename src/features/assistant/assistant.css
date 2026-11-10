@@ -339,3 +339,20 @@
 .ast-voice-pick { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; font-size: 0.85rem; color: var(--muted); }
 .ast-voice-pick span { display: inline-flex; align-items: center; gap: 6px; }
 .ast-voice-pick select { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; }
+
+/* اختيار اللغة: «العربية | Français» في مكان واحد أعلى المساعد */
+.lang-switch { display: inline-flex; align-items: center; gap: 6px; direction: ltr; font: 600 0.76rem var(--f-body); line-height: 1; color: var(--muted); flex: none; }
+.lang-switch span { opacity: 0.5; }
+.lang-switch button { border: 0; background: none; padding: 6px 2px; font: inherit; color: inherit; cursor: pointer; opacity: 0.75; }
+.lang-switch button:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+.lang-switch button.is-active { opacity: 1; font-weight: 800; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: default; }
+.lang-switch button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+.ast-lang { margin-inline-start: auto; margin-inline-end: 4px; }
+/* بالفرنسية (من اليسار لليمين): القائمة الجانبية على الهاتف تختبئ إلى اليسار */
+@media (max-width: 860px) {
+  :root[dir="ltr"] .ast-sidebar { transform: translateX(-100%); }
+  :root[dir="ltr"] .ast-sidebar.is-open { transform: none; }
+}
+/* العنوان في سطر واحد على الشاشات الصغيرة */
+.ast-topbar__title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 480px) { .lang-switch { gap: 4px; font-size: 0.72rem; } .ast-status { white-space: nowrap; } }

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { assistantConfig as cfg } from "../config";
 import { channelVideos } from "../data/channelVideos";
 import { filterChannelVideos } from "../lib/videoMatch";
+import { at } from "../i18n";
 
 const PAGE = 12;
 const embedVideo = (id: string, autoplay: boolean) =>
@@ -50,24 +51,24 @@ export function PlaylistCard({ startId }: { startId?: string }) {
 
       <div className="ast-gallery">
         <div className="ast-gallery__head">
-          <span className="ast-gallery__count">كل الفيديوهات ({channelVideos.length})</span>
+          <span className="ast-gallery__count">{at("allVideos")} ({channelVideos.length})</span>
           {current && (
             <button type="button" className="ast-gallery__all" onClick={() => setCurrent(null)}>
-              تشغيل القائمة كاملة
+              {at("playAll")}
             </button>
           )}
         </div>
-        <label htmlFor="ast-gallery-search" className="visually-hidden">ابحث في فيديوهات الجمعية</label>
+        <label htmlFor="ast-gallery-search" className="visually-hidden">{at("searchVideos")}</label>
         <input
           id="ast-gallery-search"
           className="ast-gallery__search"
           type="search"
-          placeholder="ابحث في الفيديوهات: سقاية، المحجة، رمضان..."
+          placeholder={at("searchVideosPh")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         {list.length === 0 ? (
-          <p className="ast-gallery__empty">لا توجد فيديوهات بهذا العنوان.</p>
+          <p className="ast-gallery__empty">{at("noVideos")}</p>
         ) : (
           <div className="ast-gallery__grid" role="list">
             {visible.map((v) => (
@@ -76,7 +77,7 @@ export function PlaylistCard({ startId }: { startId?: string }) {
                 type="button"
                 role="listitem"
                 className={`ast-video__thumb${v.id === current ? " is-playing" : ""}`}
-                aria-label={`تشغيل: ${v.title}`}
+                aria-label={`${at("play")}: ${v.title}`}
                 aria-current={v.id === current ? "true" : undefined}
                 onClick={() => play(v.id)}
               >
@@ -94,7 +95,7 @@ export function PlaylistCard({ startId }: { startId?: string }) {
         )}
         {!query && shown < list.length && (
           <button type="button" className="ast-gallery__more" onClick={() => setShown(list.length)}>
-            عرض كل الفيديوهات ({list.length})
+            {at("showAllVideos")} ({list.length})
           </button>
         )}
       </div>

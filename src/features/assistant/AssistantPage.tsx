@@ -9,11 +9,13 @@ import { assistantConfig as cfg } from "./config";
 import { useAssistant } from "./hooks/useAssistant";
 import { useVoiceChat } from "./hooks/useVoiceChat";
 import "./assistant.css";
+import { assistantName, at, welcomeLines } from "./i18n";
+import { LangSwitch, useLang } from "../membership/i18n";
 
-const welcomeMessage = { content: cfg.assistant.welcome.join("\n") };
 
 export default function AssistantPage() {
   const chat = useAssistant();
+  const { lang } = useLang(); // إعادة الرسم عند تغيير اللغة
   const { theme, toggle } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -23,8 +25,8 @@ export default function AssistantPage() {
   const voice = useVoiceChat({ busy: chat.busy, messages, conversationId: chat.conversation?.id, onSend: chat.ask });
 
   useEffect(() => {
-    document.title = `${cfg.assistant.name} | ${cfg.org.name}`;
-  }, []);
+    document.title = `${assistantName()} | ${at("orgName")}`;
+  }, [lang]);
 
   // فتح المساعد بسؤال جاهز: assistant/?q=كيف أنتسب
   const handledPreset = useRef(false);
@@ -83,7 +85,7 @@ export default function AssistantPage() {
           <button
             className="ast-icon-btn ast-only-mobile"
             type="button"
-            aria-label="فتح قائمة المحادثات"
+            aria-label={at("openMenu")}
             aria-controls="ast-sidebar"
             aria-expanded={sidebarOpen}
             onClick={() => setSidebarOpen(true)}
@@ -91,23 +93,24 @@ export default function AssistantPage() {
             <Icon name="menu" />
           </button>
           <div className="ast-topbar__title">
-            <img src={cfg.org.logo} alt="شعار جمعية عون وسند الخيرية" width={32} height={32} />
+            <img src={cfg.org.logo} alt={at("logoAlt")} width={32} height={32} />
             <div>
-              <h1>{cfg.org.name}</h1>
-              <span className="ast-status"><i aria-hidden="true" />المساعد الذكي متاح</span>
+              <h1>{at("orgName")}</h1>
+              <span className="ast-status"><i aria-hidden="true" />{at("online")}</span>
             </div>
           </div>
-          <button className="ast-icon-btn" type="button" aria-label="محادثة جديدة" title="محادثة جديدة" onClick={chat.newConversation}>
+          <LangSwitch className="ast-lang" />
+          <button className="ast-icon-btn" type="button" aria-label={at("newChat")} title={at("newChat")} onClick={chat.newConversation}>
             <Icon name="edit" />
           </button>
         </header>
 
-        <section className="ast-thread" ref={threadRef} onScroll={onScroll} aria-live="polite" aria-label="الرسائل">
+        <section className="ast-thread" ref={threadRef} onScroll={onScroll} aria-live="polite" aria-label={at("messages")}>
           {empty ? (
             <Welcome onAsk={chat.ask} onVoice={voice.toggle} />
           ) : (
             <div className="ast-messages">
-              <BotMessage message={welcomeMessage} isWelcome />
+              <BotMessage message={{ content: welcomeLines().join("\n") }} isWelcome />
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <UserMessage key={m.id} content={m.content} />

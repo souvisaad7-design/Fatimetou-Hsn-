@@ -1,3 +1,4 @@
+import { at } from "../i18n";
 /**
  * تحويل كلام الزائر إلى نص عبر محرّك التعرف على الكلام المدمج في المتصفح (Web Speech API) — دون خادم ولا مفتاح.
  * يعمل في Chrome وEdge وSafari (الحاسوب والهاتف). لا يدعمه Firefox.
@@ -95,17 +96,17 @@ export function listen(lang: string, h: ListenHandlers): ListenSession {
 export function voiceErrorMessage(code: string): string {
   switch (code) {
     case "unsupported":
-      return "متصفحك لا يدعم الكلام بالصوت. جرّب Chrome أو Safari، أو اكتب سؤالك.";
+      return at("vUnsupported");
     case "not-allowed":
     case "service-not-allowed":
-      return "اسمح للموقع باستخدام الميكروفون من إعدادات المتصفح، ثم أعد المحاولة.";
+      return at("vNotAllowed");
     case "audio-capture":
-      return "لم يُعثر على ميكروفون في جهازك.";
+      return at("vNoMic");
     case "network":
-      return "تعذّر التعرف على الكلام بسبب الاتصال بالإنترنت. أعد المحاولة.";
+      return at("vNetwork");
     case "language-not-supported":
-      return "لغة الكلام غير مدعومة في هذا المتصفح.";
+      return at("vLang");
     default:
-      return "تعذّر تشغيل الميكروفون. أعد المحاولة أو اكتب سؤالك.";
+      return at("vOther");
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Icon } from "../../../shared/Icon";
 import type { VoiceChat, VoiceState } from "../hooks/useVoiceChat";
+import { at } from "../i18n";
 
 interface Props {
   busy: boolean;
@@ -10,10 +11,10 @@ interface Props {
   voice: VoiceChat;
 }
 
-const voiceLabels: Record<Exclude<VoiceState, "off">, { status: string; button: string }> = {
-  listening: { status: "أستمع إليك... تكلم الآن", button: "انتهيت من الكلام" },
-  thinking: { status: "لحظة، أحضّر الرد...", button: "إنهاء المحادثة الصوتية" },
-  speaking: { status: "أجيبك بالصوت... اضغط الميكروفون لتقاطعني", button: "قاطع وتكلم" },
+const voiceLabels: Record<Exclude<VoiceState, "off">, { readonly status: string; readonly button: string }> = {
+  listening: { get status() { return at("listening"); }, get button() { return at("listeningBtn"); } },
+  thinking: { get status() { return at("thinking"); }, get button() { return at("thinkingBtn"); } },
+  speaking: { get status() { return at("speaking"); }, get button() { return at("speakingBtn"); } },
 };
 
 export function Composer({ busy, onSend, onStop, focusKey, voice }: Props) {
@@ -61,7 +62,7 @@ export function Composer({ busy, onSend, onStop, focusKey, voice }: Props) {
                 {voice.interim && <span dir="auto">{voice.interim}</span>}
               </span>
               <button type="button" className="ast-voice__end" onClick={voice.end}>
-                <Icon name="close" size={16} /> إنهاء
+                <Icon name="close" size={16} /> {at("end")}
               </button>
             </>
           ) : (
@@ -70,14 +71,14 @@ export function Composer({ busy, onSend, onStop, focusKey, voice }: Props) {
         </div>
       )}
       <form className="ast-composer" onSubmit={submit} autoComplete="off">
-        <label htmlFor="ast-input" className="visually-hidden">اكتب سؤالك</label>
+        <label htmlFor="ast-input" className="visually-hidden">{at("typeQuestion")}</label>
         <textarea
           id="ast-input"
           ref={ref}
           rows={1}
           maxLength={2000}
           enterKeyHint="send"
-          placeholder={live ? "أو اكتب سؤالك هنا..." : "اكتب سؤالك أو اضغط الميكروفون وتكلم..."}
+          placeholder={live ? at("placeholderLive") : at("placeholder")}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
@@ -88,16 +89,16 @@ export function Composer({ busy, onSend, onStop, focusKey, voice }: Props) {
           onClick={voice.toggle}
           disabled={busy && !live}
           aria-pressed={live}
-          aria-label={live ? voiceLabels[voice.state as Exclude<VoiceState, "off">].button : "تكلم مع المساعد بالصوت"}
-          title={live ? voiceLabels[voice.state as Exclude<VoiceState, "off">].button : "تكلم مع المساعد بالصوت"}
+          aria-label={live ? voiceLabels[voice.state as Exclude<VoiceState, "off">].button : at("talk")}
+          title={live ? voiceLabels[voice.state as Exclude<VoiceState, "off">].button : at("talk")}
         >
           <Icon name={voice.state === "thinking" ? "stop" : "mic"} />
         </button>
-        <button className="ast-send" type="submit" aria-label={busy ? "إيقاف الرد" : "إرسال"} disabled={!busy && !value.trim()}>
+        <button className="ast-send" type="submit" aria-label={busy ? at("stopReply") : at("send")} disabled={!busy && !value.trim()}>
           <Icon name={busy ? "stop" : "send"} />
         </button>
       </form>
-      <p className="ast-disclaimer">إجابات المساعد مبنية على الملف التعريفي للجمعية. للتأكد من أي معلومة يُرجى الرجوع إلى إدارة الجمعية.</p>
+      <p className="ast-disclaimer">{at("disclaimer")}</p>
     </footer>
   );
 }

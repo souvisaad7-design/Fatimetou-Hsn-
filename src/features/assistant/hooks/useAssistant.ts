@@ -4,6 +4,7 @@ import { sendChat } from "../services/chatService";
 import type { ChatMessage } from "../types";
 import { useConversations } from "./useConversations";
 import { isVoiceChatActive } from "./useVoiceChat";
+import { at } from "../i18n";
 
 export interface PendingReply {
   conversationId: string;
@@ -37,11 +38,11 @@ export function useAssistant() {
         if (getAutoSpeak() && !isVoiceChatActive()) speak(reply.content); // في المحادثة الصوتية تتولى useVoiceChat القراءة
       } catch (err) {
         if ((err as Error).name === "AbortError") {
-          if (partial.trim()) store.addMessage(conversationId, { role: "assistant", content: `${partial}\n\n_تم إيقاف الرد._` });
+          if (partial.trim()) store.addMessage(conversationId, { role: "assistant", content: `${partial}\n\n_${at("stopped")}_` });
         } else {
           store.addMessage(conversationId, {
             role: "assistant",
-            content: `عذراً، حدث خطأ أثناء الحصول على الرد. ${(err as Error).message ?? ""}`,
+            content: `${at("error")} ${(err as Error).message ?? ""}`,
             error: true,
           });
         }

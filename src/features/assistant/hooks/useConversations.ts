@@ -4,6 +4,7 @@ import { assistantConfig as cfg } from "../config";
 import type { ChatMessage, Conversation } from "../types";
 
 const NEW_TITLE = "محادثة جديدة";
+const NEW_TITLES = new Set([NEW_TITLE, "Nouvelle conversation"]);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 interface State {
@@ -75,7 +76,7 @@ export function useConversations() {
           ? c
           : {
               ...c,
-              title: c.title === NEW_TITLE && msg.role === "user" ? msg.content.slice(0, 48) : c.title,
+              title: NEW_TITLES.has(c.title) && msg.role === "user" ? msg.content.slice(0, 48) : c.title,
               messages: [...c.messages, message],
               updatedAt: Date.now(),
             },

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { VideoResult } from "../types";
+import { at } from "../i18n";
 
 const embedUrl = (id: string) => `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&playsinline=1`;
 const thumbUrl = (v: VideoResult) => v.thumbnail || `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
@@ -55,14 +56,14 @@ export function VideoCard({ videos }: { videos: VideoResult[] }) {
       <p className="ast-video__title">{active.title}</p>
 
       {others.length > 0 && (
-        <div className="ast-video__more" role="list" aria-label="فيديوهات أخرى">
+        <div className="ast-video__more" role="list" aria-label={at("moreVideos")}>
           {others.map((v) => (
             <button
               key={v.id}
               type="button"
               role="listitem"
               className="ast-video__thumb"
-              aria-label={`تشغيل: ${v.title}`}
+              aria-label={`${at("play")}: ${v.title}`}
               onClick={() => { setActiveId(v.id); setVisible(true); }}
             >
               <span className="ast-video__thumb-img">

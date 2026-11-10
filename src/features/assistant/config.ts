@@ -39,6 +39,24 @@ export const assistantConfig = {
       { text: "كم الاشتراك الشهري؟", icon: "heart" },
       { text: "كيف نصوّت فالانتخابات؟", icon: "check" },
     ] as const,
+    /** النسخة الفرنسية (عند اختيار Français أعلى المساعد) */
+    fr: {
+      name: "Assistant Aoun wa Sanad",
+      welcome: [
+        "Bonjour et bienvenue !",
+        "Je suis l'assistant de l'association Aoun wa Sanad. Je réponds à vos questions sur l'adhésion, les commissions, les élections, l'institut, les activités et le contact.",
+        "Vous pouvez m'écrire en français, en arabe ou en hassaniya.",
+      ],
+      suggestions: [
+        "Qu'est-ce que l'association Aoun wa Sanad ?",
+        "Quels sont les objectifs de l'association ?",
+        "Comment adhérer à l'association ?",
+        "Montrez-moi les vidéos des réalisations",
+        "Combien est la cotisation mensuelle ?",
+        "Comment voter aux élections ?",
+      ],
+      membershipLabel: "S'inscrire sur le portail des membres",
+    },
   },
 
   /**

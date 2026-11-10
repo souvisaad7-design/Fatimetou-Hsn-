@@ -7,6 +7,7 @@ import { speak, speechSupported, stopSpeaking, useSpeakingText } from "../lib/sp
 import type { ChatMessage } from "../types";
 import { PlaylistCard } from "./PlaylistCard";
 import { VideoCard } from "./VideoCard";
+import { assistantName, at } from "../i18n";
 
 export function UserMessage({ content }: { content: string }) {
   return (
@@ -40,7 +41,7 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
         <div className="ast-msg__actions">
           {links.map((a) => (
             <a key={a.url} className="ast-action" href={a.url} {...(/^https?:/.test(a.url ?? "") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-              <Icon name="link" size={18} /> {a.label ?? "فتح الرابط"}
+              <Icon name="link" size={18} /> {a.label ?? at("openLink")}
             </a>
           ))}
         </div>
@@ -51,9 +52,9 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
           <button
             type="button"
             className="ast-tool"
-            onClick={async () => toast((await copyText(message.content)) ? "تم نسخ الرد" : "تعذّر النسخ، حدّد النص وانسخه يدوياً")}
+            onClick={async () => toast((await copyText(message.content)) ? at("copied") : at("copyFailed"))}
           >
-            <Icon name="copy" size={16} /> نسخ
+            <Icon name="copy" size={16} /> {at("copy")}
           </button>
           {speechSupported && !message.error && (
             <button
@@ -62,12 +63,12 @@ export function BotMessage({ message, isLast, isWelcome, onAsk, onRegenerate }: 
               onClick={() => (speaking ? stopSpeaking() : speak(message.content))}
               aria-pressed={speaking}
             >
-              <Icon name={speaking ? "stop" : "volume"} size={16} /> {speaking ? "إيقاف" : "استمع"}
+              <Icon name={speaking ? "stop" : "volume"} size={16} /> {speaking ? at("stop") : at("listen")}
             </button>
           )}
           {isLast && onRegenerate && (
             <button type="button" className="ast-tool" onClick={onRegenerate}>
-              <Icon name="retry" size={16} /> {message.error ? "إعادة المحاولة" : "إعادة التوليد"}
+              <Icon name="retry" size={16} /> {message.error ? at("retry") : at("regenerate")}
             </button>
           )}
         </div>
@@ -91,8 +92,8 @@ export function PendingMessage({ text }: { text: string }) {
       {text ? (
         <div className="ast-msg__body is-streaming"><Markdown text={text} /></div>
       ) : (
-        <div className="ast-typing" role="status" aria-label="المساعد يكتب">
-          <span /><span /><span /><em>يكتب الآن...</em>
+        <div className="ast-typing" role="status" aria-label={at("typingLabel")}>
+          <span /><span /><span /><em>{at("typing")}</em>
         </div>
       )}
     </BotShell>
@@ -104,7 +105,7 @@ function BotShell({ children, error, pending }: { children: ReactNode; error?: b
     <article className={`ast-msg ast-msg--bot${error ? " is-error" : ""}${pending ? " is-pending" : ""}`}>
       <img className="ast-msg__avatar" src={cfg.org.logo} alt="" width={34} height={34} />
       <div className="ast-msg__main">
-        <div className="ast-msg__name">{cfg.assistant.name}</div>
+        <div className="ast-msg__name">{assistantName()}</div>
         {children}
       </div>
     </article>

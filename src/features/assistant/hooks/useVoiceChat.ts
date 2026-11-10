@@ -4,6 +4,8 @@ import { detectLang } from "../lib/detectLang";
 import { primeSpeech, speak, stopSpeaking } from "../lib/speech";
 import { listen, voiceErrorMessage, voiceInputSupported, type ListenSession } from "../lib/voiceInput";
 import type { ChatMessage } from "../types";
+import { at } from "../i18n";
+import { getLang } from "../../membership/i18n";
 
 /**
  * المحادثة الصوتية: يضغط الزائر على الميكروفون ويتكلم ← يُرسل سؤاله ← يُقرأ الرد بالصوت ← يستمع المساعد من جديد.
@@ -34,7 +36,7 @@ export function useVoiceChat({ busy, messages, conversationId, onSend }: Options
 
   const stateRef = useRef<VoiceState>("off");
   const session = useRef<ListenSession | null>(null);
-  const lang = useRef<"ar" | "fr">("ar");
+  const lang = useRef<"ar" | "fr">(getLang());
   const waitFrom = useRef<string | undefined>(undefined); // آخر رسالة قبل إرسال السؤال
   const sawBusy = useRef(false);
   const lastId = useRef<string | undefined>(undefined);
@@ -79,14 +81,14 @@ export function useVoiceChat({ busy, messages, conversationId, onSend }: Options
         session.current = null;
         setInterim("");
         go("off");
-        if (auto) setNotice("انتهت المحادثة الصوتية. اضغط الميكروفون إذا عندك سؤال آخر.");
+        if (auto) setNotice(at("voiceEnded"));
       },
       onError: (code) => {
         session.current = null;
         setInterim("");
         go("off");
         // بعض الهواتف (iPhone) لا تفتح الميكروفون تلقائياً دون ضغطة
-        setNotice(auto && code === "not-allowed" ? "اضغط الميكروفون لتسأل سؤالاً آخر." : voiceErrorMessage(code));
+        setNotice(auto && code === "not-allowed" ? at("voiceTapAgain") : voiceErrorMessage(code));
       },
     });
   }, [end]);
