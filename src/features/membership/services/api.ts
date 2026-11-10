@@ -35,6 +35,8 @@ export interface RegistrationInput {
   institution?: string;
   address?: string;
   pledge?: number;
+  /** صورة وصل الدفع/التحويل (data URL مضغوطة) */
+  receipt?: string;
 }
 
 /** تسجيل مستخدم جديد: ينشئ الحساب والطلب على الخادم، ثم يدخل به (يبقى «قيد المراجعة») */
@@ -181,6 +183,13 @@ export async function deletePayment(id: string): Promise<void> {
 }
 
 /** صورة الإيصال (تُحمَّل عند الحاجة فقط) */
+/** صورة وصل الدفع المرفق مع طلب الانتساب */
+export async function getMemberReceipt(memberId: string): Promise<string | null> {
+  const { data, error } = await supabase.from("members").select("receipt").eq("id", memberId).maybeSingle();
+  if (error) throw new Error(errorMessage(error));
+  return (data?.receipt as string | null) ?? null;
+}
+
 export async function getReceipt(paymentId: string): Promise<string | null> {
   const { data, error } = await supabase.from("payments").select("receipt").eq("id", paymentId).maybeSingle();
   if (error) throw new Error(errorMessage(error));

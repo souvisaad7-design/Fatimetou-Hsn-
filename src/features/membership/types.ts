@@ -23,6 +23,8 @@ export interface Member {
   createdAt: string; // ISO
   approvedAt?: string;
   notes?: string;
+  /** أرفق وصل الدفع/التحويل مع طلب الانتساب (الصورة تُحمَّل عند الطلب فقط) */
+  hasReceipt?: boolean;
 }
 
 /** قائمة منتسبين لها مشرف يجمع الانتساب الشهري */

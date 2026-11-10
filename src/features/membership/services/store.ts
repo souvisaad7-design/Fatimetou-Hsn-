@@ -24,6 +24,7 @@ const toMember = (r: Row): Member => ({
   id: r.id, userId: r.user_id, code: r.code, fullName: r.full_name, phone: r.phone, nni: opt(r.nni), gender: r.gender,
   birthDate: opt(r.birth_date), occupation: r.occupation, institution: opt(r.institution), address: opt(r.address),
   listId: opt(r.list_id), pledge: opt(r.pledge), status: r.status, createdAt: r.created_at, approvedAt: opt(r.approved_at), notes: opt(r.notes),
+  hasReceipt: r.has_receipt ?? false,
 });
 const toList = (r: Row): MemberList => ({
   id: r.id, name: r.name, supervisor: r.supervisor_name, supervisorPhone: opt(r.supervisor_phone), supervisorUserId: r.supervisor_user_id,
@@ -51,10 +52,11 @@ async function load(): Promise<void> {
   }
   if (db.status === "idle") set({ ...db, status: "loading" });
   try {
+    const MEMBER_COLS = "id,user_id,code,full_name,phone,nni,gender,birth_date,occupation,institution,address,list_id,pledge,status,notes,created_at,approved_at,has_receipt";
     const PAYMENT_COLS = "id,member_id,month,amount,method,reference,has_receipt,status,source,created_at";
     const [profile, members, lists, payments, campaigns, donations, totals] = await Promise.all([
       supabase.rpc("my_profile"),
-      supabase.from("members").select("*").order("created_at", { ascending: false }),
+      supabase.from("members").select(MEMBER_COLS).order("created_at", { ascending: false }),
       supabase.from("lists").select("*").order("created_at"),
       supabase.from("payments").select(PAYMENT_COLS).order("created_at", { ascending: false }),
       supabase.from("campaigns").select("*").order("created_at", { ascending: false }),

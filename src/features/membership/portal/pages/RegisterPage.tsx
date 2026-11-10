@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { membershipConfig as cfg } from "../../config";
 import { registerMember } from "../../services/api";
+import { compressImage } from "../../lib/image";
 import { validateAmount, validateName, validateNni, validatePhone, validatePin, toAmount } from "../../lib/validation";
 import type { Member } from "../../types";
 import { t, tServer, tValue, useLang } from "../../i18n";
@@ -15,6 +16,13 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [pledgeOk, setPledgeOk] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useState<string>();
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+  const onReceipt = async (file?: File) => {
+    setReceiptError(null);
+    if (!file) return;
+    try { setReceipt(await compressImage(file)); } catch (err) { setReceipt(undefined); setReceiptError((err as Error).message); }
+  };
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
     setF((v) => ({ ...v, [k]: e.target.value }));
     if (errors[k]) setErrors((x) => ({ ...x, [k]: null }));
@@ -35,7 +43,7 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
     if (Object.values(errs).some(Boolean)) return;
     setBusy(true);
     try {
-      const m = await registerMember({ ...f, pledge: f.pledge ? toAmount(f.pledge) : undefined });
+      const m = await registerMember({ ...f, pledge: f.pledge ? toAmount(f.pledge) : undefined, receipt });
       onDone(m);
     } catch (err) {
       setErrors({ phone: tServer((err as Error).message) });
@@ -95,6 +103,17 @@ export function RegisterPage({ onDone, onBack }: { onDone: (m: Member) => void; 
           </Field>
           <Field label={t("reg.pledge")} optional hint={t("reg.pledgeHint", { motto: t("org.motto") })} error={errors.pledge}>
             {(id, d) => <input id={id} aria-describedby={d} value={f.pledge} onChange={set("pledge")} inputMode="numeric" dir="ltr" placeholder={t("reg.pledgePh")} />}
+          </Field>
+          <Field label={t("reg.receipt")} optional full hint={t("reg.receiptHint")} error={receiptError}>
+            {(id) => (
+              <div className="pt-receipt">
+                <label htmlFor={id} className={`pt-receipt__drop${receipt ? " has" : ""}`}>
+                  {receipt ? <img src={receipt} alt={t("rp.receiptPreview")} /> : <span>{t("rp.receiptPick")}</span>}
+                </label>
+                <input id={id} type="file" accept="image/*" hidden onChange={(e) => { onReceipt(e.target.files?.[0]); e.target.value = ""; }} />
+                {receipt && <button type="button" className="pt-inline-btn" onClick={() => setReceipt(undefined)}>{t("rp.receiptRemove")}</button>}
+              </div>
+            )}
           </Field>
           <div className="ui-field ui-field--full">
             <label className="ui-check">

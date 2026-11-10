@@ -32,6 +32,7 @@ export function RequestsAdmin({ supervisorListId }: { supervisorListId?: string 
                   <span className="ad-muted num" dir="ltr">{m.code} · {m.phone}</span>
                   <span className="ad-muted">{m.occupation}{m.institution ? ` — ${m.institution}` : ""}{m.address ? ` · ${m.address}` : ""}</span>
                   <span className="ad-muted">الانتساب المقترح: {m.pledge ? money(m.pledge) : "حسب القدرة"} · سجّل في {dateLabel(m.createdAt)}</span>
+                  {m.hasReceipt ? <Badge tone="ok">📎 أرفق وصل الدفع</Badge> : <span className="ad-muted ad-small">بدون وصل دفع</span>}
                 </div>
                 <div className="ad-request__actions">
                   {!supervisorListId && (
@@ -40,8 +41,9 @@ export function RequestsAdmin({ supervisorListId }: { supervisorListId?: string 
                       {db.lists.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.supervisor})</option>)}
                     </select>
                   )}
-                  <Button small icon="check" onClick={async () => { await setMemberStatus(m.id, "approved", supervisorListId ?? (listFor[m.id] || undefined)); toast(`تم قبول ${m.fullName}`); }}>{supervisorListId ? "قبول في قائمتي" : "قبول"}</Button>
-                  <ConfirmButton label="رفض" confirmLabel="تأكيد الرفض" onConfirm={async () => { await setMemberStatus(m.id, "rejected"); toast("تم رفض الطلب"); }} />
+                  <ReceiptButton memberId={m.id} has={m.hasReceipt} label="عرض الوصل" />
+                  <Button small icon="check" onClick={async () => { await setMemberStatus(m.id, "approved", supervisorListId ?? (listFor[m.id] || undefined)); toast(`تم قبول ${m.fullName}`); }}>{supervisorListId ? "قبول الطلب في قائمتي" : "قبول الطلب"}</Button>
+                  <ConfirmButton label="رفض الطلب" confirmLabel="تأكيد الرفض" onConfirm={async () => { await setMemberStatus(m.id, "rejected"); toast("تم رفض الطلب"); }} />
                 </div>
               </div>
             ))}

@@ -121,6 +121,7 @@ button.ui-month { font: inherit; cursor: pointer; }
 .ad-member__meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 0.8rem; color: var(--muted); }
 .ad-member__actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-inline-start: auto; }
 .ad-template { min-height: 96px; resize: vertical; line-height: 1.7; }
+.ad-receipt-open { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .ad-receipt-img { display: block; max-width: 100%; height: auto; margin-inline: auto; border-radius: 10px; }
 
 .ad-list { margin: 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 6px; }

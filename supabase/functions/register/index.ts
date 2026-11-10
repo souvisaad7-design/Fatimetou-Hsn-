@@ -39,6 +39,11 @@ Deno.serve(async (req) => {
   const pledge = Number(body.pledge) > 0 ? Math.round(Number(body.pledge)) : null;
   const birthDate = /^\d{4}-\d{2}-\d{2}$/.test(String(body.birthDate ?? "")) ? String(body.birthDate) : null;
 
+  // وصل الدفع / التحويل البنكي (اختياري): صورة مضغوطة بصيغة data URL
+  const receipt = typeof body.receipt === "string" && body.receipt ? body.receipt : null;
+  if (receipt && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(receipt)) return json({ error: "صورة الوصل غير صالحة" }, 400);
+  if (receipt && receipt.length >= 400_000) return json({ error: "صورة الوصل كبيرة جداً، اختر صورة أصغر" }, 400);
+
   if (fullName.split(" ").length < 2) return json({ error: "اكتب الاسم الكامل (الاسم واسم الأب على الأقل)" }, 400);
   if (!/^[234]\d{7}$/.test(phone)) return json({ error: "رقم الهاتف 8 أرقام ويبدأ بـ 2 أو 3 أو 4" }, 400);
   if (pin.length < 6 || pin.length > 72) return json({ error: "كلمة المرور 6 أحرف أو أرقام على الأقل" }, 400);
@@ -78,6 +83,7 @@ Deno.serve(async (req) => {
       institution: clean(body.institution) || null,
       address: clean(body.address) || null,
       pledge,
+      receipt,
       status: "pending",
     })
     .select("code")
