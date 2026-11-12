@@ -37,6 +37,7 @@ interface SmsMessage {
 interface ServerStatus {
   provider: string;
   configured: boolean;
+  fixedTemplate?: boolean;
   cron: { scheduled: boolean; schedule: string | null; last_run: { at: string; status: string } | null } | null;
 }
 
@@ -202,6 +203,13 @@ export function SmsAdmin() {
         <Notice tone="warn">
           لن تُرسل أي رسالة قبل ربط حساب لدى مزوّد رسائل يدعم موريتانيا (موريتل، ماتل، شنقيتل). تُضاف مفاتيحه في Supabase ← Edge Functions ← Secrets
           (SMS_PROVIDER وبيانات المزوّد)، ولا توضع في الموقع أبداً. حتى ذلك الحين تُسجَّل الرسائل التجريبية «فشلت» مع السبب.
+        </Notice>
+      )}
+
+      {server?.fixedTemplate && (
+        <Notice tone="warn">
+          مزوّد الرسائل الحالي (Chinguisoft) لا يقبل نصاً حراً: تُرسَل الرسالة بالنص المضبوط في حسابكم لدى Chinguisoft (صفحة «حملات»)،
+          فلا يُستعمل النص المكتوب هنا ولا يظهر فيها اسم المنتسب. لإرسال نص مخصّص باسم كل منتسب يلزم اتفاق «Custom SMS» مع Chinguisoft أو مزوّد آخر.
         </Notice>
       )}
 
