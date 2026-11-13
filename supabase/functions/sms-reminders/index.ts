@@ -12,6 +12,7 @@
  *
  * المزوّد (SMS_PROVIDER):
  *  chinguisoft: CHINGUISOFT_CAMPAIGN_KEY, CHINGUISOFT_CAMPAIGN_TOKEN (Chinguisoft SMS Campaign API — موريتل وماتل وشنقيتل)
+ *              أو يُدخلهما المسؤول من لوحة الإدارة فيُحفظان مشفّرين في Supabase Vault (sms_set_chinguisoft).
  *              ملاحظة: نص الرسالة هو القالب المضبوط في حساب Chinguisoft نفسه؛ الـ API لا يقبل نصاً حراً.
  *  twilio  : TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (رقم أو Messaging Service SID يبدأ بـ MG)
  *  infobip : INFOBIP_BASE_URL (مثل xxxxx.api.infobip.com), INFOBIP_API_KEY, INFOBIP_FROM (اختياري)
@@ -54,39 +55,52 @@ async function withTimeout(p: Promise<Response>, ms = 20000): Promise<Response> 
 }
 const errText = async (res: Response) => `HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`;
 
+/** Chinguisoft SMS Campaign API — https://chinguisoft.com/sms/campaign/guide (POST /api/sms/campaign/{key}، الترويسة Campaign-token) */
+function chinguisoftProvider(key: string, token: string): Provider {
+  const name = "chinguisoft", lang = env("CHINGUISOFT_LANG") || "ar";
+  const reasons: Record<number, string> = {
+    401: "Chinguisoft: مفتاح أو رمز الحملة غير صحيح (401)",
+    402: "Chinguisoft: الرصيد غير كافٍ، يلزم شحن الحساب (402)",
+    422: "Chinguisoft: بيانات غير مقبولة (422)",
+    429: "Chinguisoft: طلبات كثيرة، أعد المحاولة بعد قليل (429)",
+    503: "Chinguisoft: الخدمة غير متاحة حالياً (503)",
+  };
+  return {
+    name, configured: Boolean(key && token),
+    async send(phone, _text) {
+      const call = () => withTimeout(fetch(`https://chinguisoft.com/api/sms/campaign/${encodeURIComponent(key)}`, {
+        method: "POST",
+        headers: { "Campaign-token": token, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ phone, lang, reference: 0 }),
+      }));
+      let res = await call();
+      if (res.status === 429) { await sleep(2500); res = await call(); } // محاولة واحدة بعد التمهّل
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return { ok: true, id: data?.balance !== undefined ? `balance:${data.balance}` : undefined };
+      }
+      const detail = (await res.text().catch(() => "")).slice(0, 200);
+      return { ok: false, error: `${reasons[res.status] ?? `Chinguisoft: HTTP ${res.status}`} ${detail}`.trim() };
+    },
+  };
+}
+
+/** المزوّد: من متغيرات البيئة (Secrets) إن وُجدت، وإلا من المفاتيح المحفوظة مشفّرة في Vault من لوحة الإدارة */
+async function loadProvider(db: SupabaseClient): Promise<Provider> {
+  const fromEnv = providerFromEnv();
+  if (fromEnv.configured) return fromEnv;
+  const { data } = await db.rpc("sms_provider_config");
+  if (data?.provider === "chinguisoft" && data.chinguisoft_key && data.chinguisoft_token) {
+    return chinguisoftProvider(String(data.chinguisoft_key), String(data.chinguisoft_token));
+  }
+  return fromEnv;
+}
+
 function providerFromEnv(): Provider {
   const name = env("SMS_PROVIDER").toLowerCase();
   const intl = (phone: string) => `+222${phone}`;
 
-  if (name === "chinguisoft") {
-    // https://chinguisoft.com/sms/campaign/guide — POST /api/sms/campaign/{key}، الترويسة Campaign-token
-    const key = env("CHINGUISOFT_CAMPAIGN_KEY"), token = env("CHINGUISOFT_CAMPAIGN_TOKEN"), lang = env("CHINGUISOFT_LANG") || "ar";
-    const reasons: Record<number, string> = {
-      401: "Chinguisoft: مفتاح أو رمز الحملة غير صحيح (401)",
-      402: "Chinguisoft: الرصيد غير كافٍ، يلزم شحن الحساب (402)",
-      422: "Chinguisoft: بيانات غير مقبولة (422)",
-      429: "Chinguisoft: طلبات كثيرة، أعد المحاولة بعد قليل (429)",
-      503: "Chinguisoft: الخدمة غير متاحة حالياً (503)",
-    };
-    return {
-      name, configured: Boolean(key && token),
-      async send(phone, _text) {
-        const call = () => withTimeout(fetch(`https://chinguisoft.com/api/sms/campaign/${encodeURIComponent(key)}`, {
-          method: "POST",
-          headers: { "Campaign-token": token, "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ phone, lang, reference: 0 }),
-        }));
-        let res = await call();
-        if (res.status === 429) { await sleep(2500); res = await call(); } // محاولة واحدة بعد التمهّل
-        if (res.ok) {
-          const data = await res.json().catch(() => ({}));
-          return { ok: true, id: data?.balance !== undefined ? `balance:${data.balance}` : undefined };
-        }
-        const detail = (await res.text().catch(() => "")).slice(0, 200);
-        return { ok: false, error: `${reasons[res.status] ?? `Chinguisoft: HTTP ${res.status}`} ${detail}`.trim() };
-      },
-    };
-  }
+  if (name === "chinguisoft") return chinguisoftProvider(env("CHINGUISOFT_CAMPAIGN_KEY"), env("CHINGUISOFT_CAMPAIGN_TOKEN"));
 
   if (name === "twilio") {
     const sid = env("TWILIO_ACCOUNT_SID"), token = env("TWILIO_AUTH_TOKEN"), from = env("TWILIO_FROM");
@@ -200,7 +214,7 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { /* بلا جسم */ }
   const action = String(body.action ?? "");
   const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-  const provider = providerFromEnv();
+  const provider = await loadProvider(db);
 
   try {
     /* ---------- المهمة المجدولة ---------- */

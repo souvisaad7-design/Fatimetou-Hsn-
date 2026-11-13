@@ -18,6 +18,8 @@ interface SmsSettings {
   last_run_at: string | null;
   last_run_month: string | null;
   last_run_summary: Record<string, unknown> | null;
+  provider: string | null;
+  provider_updated_at: string | null;
 }
 interface SmsMessage {
   id: string;
@@ -85,6 +87,7 @@ export function SmsAdmin() {
   const [test, setTest] = useState({ phone: "", name: "", busy: false });
   const [testResult, setTestResult] = useState<SmsMessage | null>(null);
   const [running, setRunning] = useState(false);
+  const [keys, setKeys] = useState({ key: "", token: "", show: false, busy: false, editing: false });
   const [filter, setFilter] = useState<"" | SmsMessage["status"]>("");
 
   const load = useCallback(async () => {
@@ -201,10 +204,54 @@ export function SmsAdmin() {
       </div>
       {server && !providerReady && (
         <Notice tone="warn">
-          لن تُرسل أي رسالة قبل ربط حساب لدى مزوّد رسائل يدعم موريتانيا (موريتل، ماتل، شنقيتل). تُضاف مفاتيحه في Supabase ← Edge Functions ← Secrets
-          (SMS_PROVIDER وبيانات المزوّد)، ولا توضع في الموقع أبداً. حتى ذلك الحين تُسجَّل الرسائل التجريبية «فشلت» مع السبب.
+          لن تُرسل أي رسالة قبل ربط حساب مزوّد الرسائل: أدخل مفتاح Chinguisoft ورمزه السري في البطاقة «ربط حساب Chinguisoft» أعلاه.
+          حتى ذلك الحين تُسجَّل الرسائل التجريبية «فشلت» مع السبب.
         </Notice>
       )}
+
+      {/* ربط Chinguisoft: المفتاح والرمز يُحفظان مشفّرين في Supabase Vault ولا يُعرضان مرة أخرى */}
+      <Card title="ربط حساب Chinguisoft">
+        {settings.provider === "chinguisoft" && !keys.editing ? (
+          <div className="ad-toolbar">
+            <Badge tone="ok">✓ مربوط</Badge>
+            <span className="ad-muted ad-small">
+              المفتاح والرمز السري محفوظان مشفّرين{settings.provider_updated_at ? ` منذ ${dateTime(settings.provider_updated_at)}` : ""}، ولا يمكن عرضهما.
+            </span>
+            <Button small variant="ghost" icon="edit" onClick={() => setKeys({ ...keys, editing: true })}>تغيير المفاتيح</Button>
+          </div>
+        ) : (
+          <div className="ui-form">
+            <p className="ui-field--full ad-muted ad-small">
+              من صفحة «حملات» في Chinguisoft: انسخ <b>المفتاح</b> والصقه في الخانة الأولى، وانسخ <b>الرمز السري</b> (الأحمر) والصقه في الثانية، ثم اضغط «حفظ».
+              يُحفظان مشفّرين على الخادم، ولا يظهران مرة أخرى لأي أحد.
+            </p>
+            <Field label="المفتاح (campaign_key)">
+              {(id) => <input id={id} value={keys.key} onChange={(e) => setKeys({ ...keys, key: e.target.value })} dir="ltr" autoComplete="off" autoCapitalize="off" spellCheck={false} />}
+            </Field>
+            <Field label="الرمز السري (Campaign-token)">
+              {(id) => <input id={id} type={keys.show ? "text" : "password"} value={keys.token} onChange={(e) => setKeys({ ...keys, token: e.target.value })} dir="ltr" autoComplete="new-password" autoCapitalize="off" spellCheck={false} />}
+            </Field>
+            <div className="ui-field--full ad-toolbar">
+              <Button icon="check" disabled={keys.busy || keys.key.trim().length < 6 || keys.token.trim().length < 10} onClick={async () => {
+                setKeys((k) => ({ ...k, busy: true }));
+                try {
+                  const { error } = await supabase.rpc("sms_set_chinguisoft", { p_key: keys.key, p_token: keys.token });
+                  if (error) throw error;
+                  setKeys({ key: "", token: "", show: false, busy: false, editing: false });
+                  toast("تم ربط Chinguisoft وحفظ المفاتيح مشفّرة");
+                  await load();
+                  callServer<ServerStatus>({ action: "status" }).then(setServer).catch(() => {});
+                } catch (err) {
+                  setKeys((k) => ({ ...k, busy: false }));
+                  toast(errorMessage(err));
+                }
+              }}>{keys.busy ? "جارٍ الحفظ..." : "حفظ"}</Button>
+              <Button variant="ghost" onClick={() => setKeys({ ...keys, show: !keys.show })}>{keys.show ? "إخفاء الرمز" : "إظهار الرمز"}</Button>
+              {keys.editing && <Button variant="ghost" onClick={() => setKeys({ key: "", token: "", show: false, busy: false, editing: false })}>إلغاء</Button>}
+            </div>
+          </div>
+        )}
+      </Card>
 
       {server?.fixedTemplate && (
         <Notice tone="warn">
