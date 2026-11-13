@@ -59,11 +59,11 @@ const errText = async (res: Response) => `HTTP ${res.status}: ${(await res.text(
 function chinguisoftProvider(key: string, token: string): Provider {
   const name = "chinguisoft", lang = env("CHINGUISOFT_LANG") || "ar";
   const reasons: Record<number, string> = {
-    401: "Chinguisoft: مفتاح أو رمز الحملة غير صحيح (401)",
-    402: "Chinguisoft: الرصيد غير كافٍ، يلزم شحن الحساب (402)",
-    422: "Chinguisoft: بيانات غير مقبولة (422)",
-    429: "Chinguisoft: طلبات كثيرة، أعد المحاولة بعد قليل (429)",
-    503: "Chinguisoft: الخدمة غير متاحة حالياً (503)",
+    401: "مفتاح أو رمز الحملة غير صحيح",
+    402: "رفض المزوّد الإرسال",
+    422: "بيانات غير مقبولة",
+    429: "طلبات كثيرة، أعد المحاولة بعد قليل",
+    503: "الخدمة غير متاحة حالياً",
   };
   return {
     name, configured: Boolean(key && token),
@@ -79,8 +79,24 @@ function chinguisoftProvider(key: string, token: string): Provider {
         const data = await res.json().catch(() => ({}));
         return { ok: true, id: data?.balance !== undefined ? `balance:${data.balance}` : undefined };
       }
-      const detail = (await res.text().catch(() => "")).slice(0, 200);
-      return { ok: false, error: `${reasons[res.status] ?? `Chinguisoft: HTTP ${res.status}`} ${detail}`.trim() };
+      // نعرض سبب Chinguisoft الحقيقي (قد يأتي 402 لأسباب مختلفة: الرصيد أو نص الحملة غير مضبوط)
+      const raw = (await res.text().catch(() => "")).slice(0, 300);
+      let reason = "";
+      try {
+        const j = JSON.parse(raw);
+        reason = String(j.error ?? j.message ?? "");
+        if (j.balance !== undefined) reason += ` (الرصيد: ${j.balance})`;
+      } catch { reason = raw; }
+      const known: Array<[RegExp, string]> = [
+        [/message required/i, "نص رسالة الحملة غير مضبوط في حساب Chinguisoft — اطلب منهم ضبط نص حملة awn"],
+        [/payment required/i, "الرصيد غير كافٍ، يلزم شحن الحساب"],
+        [/unauthorized/i, "مفتاح أو رمز الحملة غير صحيح (انتبه للأحرف الكبيرة والصغيرة)"],
+        [/too many/i, "طلبات كثيرة، أعد المحاولة بعد قليل"],
+        [/unavailable/i, "الخدمة غير متاحة حالياً"],
+        [/regex|phone/i, "رقم الهاتف غير مقبول"],
+      ];
+      const label = known.find(([re]) => re.test(reason))?.[1] ?? reasons[res.status] ?? "خطأ من المزوّد";
+      return { ok: false, error: `Chinguisoft (${res.status}): ${label} — ${reason}`.slice(0, 480) };
     },
   };
 }
