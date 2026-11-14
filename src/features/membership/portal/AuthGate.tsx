@@ -60,8 +60,9 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
     <div className="lx">
       <div className="lx-lang"><LangSwitch /></div>
       <main className="lx-card">
+        {/* شعار الجمعية الكامل مع اسمها كما هو */}
         <div className="lx-logo">
-          <img src={org.logo} alt={t("org.name")} width={120} height={120} />
+          <img src={org.logoFull} alt={t("org.name")} width={640} height={380} />
         </div>
 
         <h1 className="lx-title">{t("login.welcomeBack")}</h1>
