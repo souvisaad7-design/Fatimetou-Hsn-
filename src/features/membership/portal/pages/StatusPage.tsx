@@ -123,7 +123,7 @@ function MemberDashboard({ memberId, go }: { memberId: string; go: (to: string) 
   );
 }
 
-function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string; defaultAmount?: number; onClose: () => void }) {
+export function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string; defaultAmount?: number; onClose: () => void }) {
   const toast = useToast();
   const db = useDb();
   // الأشهر التي لم تُدفع بعد فقط (الأحدث أولاً)
@@ -185,7 +185,7 @@ function ReportPayment({ memberId, defaultAmount, onClose }: { memberId: string;
 }
 
 /** المنتسب يغيّر مبلغه الشهري بنفسه متى شاء */
-function PledgeForm({ memberId, current, onClose }: { memberId: string; current?: number; onClose: () => void }) {
+export function PledgeForm({ memberId, current, onClose }: { memberId: string; current?: number; onClose: () => void }) {
   const toast = useToast();
   const [v, setV] = useState(current ? String(current) : "");
   const [error, setError] = useState<string | null>(null);
