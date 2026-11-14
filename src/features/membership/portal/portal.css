@@ -238,11 +238,12 @@
 .lx-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: stretch; padding-top: 40px; }
 
 .lx-logo {
-  align-self: center; width: min(270px, 74vw); aspect-ratio: 640 / 380; border-radius: 28px; display: grid; place-items: center;
-  background: #29244c; border: 4px solid var(--lx-accent); overflow: hidden;
+  align-self: center; width: 190px; height: 190px; border-radius: 50%; display: grid; place-items: center;
+  background: #29244c; border: 5px solid var(--lx-accent); overflow: hidden;
   box-shadow: 0 16px 34px -18px rgba(39, 36, 79, 0.55), 0 0 0 8px color-mix(in srgb, var(--lx-accent) 8%, transparent);
 }
-.lx-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* الشعار كما هو (الرمز واسم الجمعية) داخل الدائرة دون قص */
+.lx-logo img { width: 94%; height: auto; display: block; transform: translateY(-2%); }
 .lx-title { margin: 26px 0 0; text-align: center; font: 800 2rem var(--f-body); color: var(--lx-ink); letter-spacing: 0; }
 .lx-sub { margin: 6px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
 
@@ -312,5 +313,5 @@
 .lx-btn:focus-visible { outline: 3px solid var(--lx-ring); outline-offset: 3px; }
 .lx-foot { margin: 22px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
 
-@media (max-width: 380px) { .lx-title { font-size: 1.7rem; } .lx-mascot { width: 64px; height: 60px; } }
+@media (max-width: 380px) { .lx-logo { width: 168px; height: 168px; } .lx-title { font-size: 1.7rem; } .lx-mascot { width: 64px; height: 60px; } }
 @media (prefers-reduced-motion: reduce) { .lx-mascot__hand { animation: none; } }
