@@ -18,6 +18,7 @@ import { PaymentsAdmin } from "./pages/PaymentsAdmin";
 import { RequestsAdmin } from "./pages/RequestsAdmin";
 import { SettingsAdmin } from "./pages/SettingsAdmin";
 import { SmsAdmin } from "./pages/SmsAdmin";
+import { WhatsAppAdmin } from "./pages/WhatsAppAdmin";
 import { MemberFormModal } from "./forms";
 import "./admin.css";
 
@@ -27,6 +28,7 @@ const NAV: Array<{ id: string; label: string; icon: IconName; supervisor?: boole
   { id: "mylist", label: "قائمتي", icon: "check", supervisor: true },
   { id: "reminders", label: "التذكيرات", icon: "bell", supervisor: true },
   { id: "sms", label: "التذكير برسوم الانتساب SMS", icon: "phone" },
+  { id: "whatsapp", label: "واتساب", icon: "chat" },
   { id: "requests", label: "الطلبات", icon: "inbox", supervisor: true },
   { id: "members", label: "المنتسبون", icon: "users" },
   { id: "payments", label: "الانتساب الشهري", icon: "wallet" },
@@ -202,6 +204,7 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
             : current.id === "campaigns" ? <CampaignsAdmin />
             : current.id === "settings" ? <SettingsAdmin />
             : current.id === "sms" ? <SmsAdmin />
+            : current.id === "whatsapp" ? <WhatsAppAdmin />
             : <Dashboard go={go} />}
         </main>
       </div>
