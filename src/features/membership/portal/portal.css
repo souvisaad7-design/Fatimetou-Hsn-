@@ -235,16 +235,16 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lx { --lx-bg: #15122b; --lx-ink: #eeebf7; --lx-muted: #a9a4c4; --lx-field: #201c3d; --lx-line: #342f5c; --lx-brand: #f4aa9c; --lx-brand-2: #f08f78; --lx-accent: #9aa8ff; } }
 .lx ~ .pt-fab { display: none; } /* المساعد موجود داخل الشاشة نفسها */
 .lx-lang { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); inset-inline-end: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; }
-.lx-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: stretch; padding-top: 40px; }
+.lx-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: stretch; padding-top: 34px; }
 
 .lx-logo {
-  align-self: center; width: 190px; height: 190px; border-radius: 50%; display: grid; place-items: center;
+  align-self: center; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
   background: #29244c; border: 5px solid var(--lx-accent); overflow: hidden;
   box-shadow: 0 16px 34px -18px rgba(39, 36, 79, 0.55), 0 0 0 8px color-mix(in srgb, var(--lx-accent) 8%, transparent);
 }
 /* الشعار كما هو (الرمز واسم الجمعية) داخل الدائرة دون قص */
 .lx-logo img { width: 94%; height: auto; display: block; transform: translateY(-2%); }
-.lx-title { margin: 26px 0 0; text-align: center; font: 800 2rem var(--f-body); color: var(--lx-ink); letter-spacing: 0; }
+.lx-title { margin: 20px 0 0; text-align: center; font: 800 2rem var(--f-body); color: var(--lx-ink); letter-spacing: 0; }
 .lx-sub { margin: 6px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
 
 /* المساعد الذكي */
@@ -313,5 +313,5 @@
 .lx-btn:focus-visible { outline: 3px solid var(--lx-ring); outline-offset: 3px; }
 .lx-foot { margin: 22px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
 
-@media (max-width: 380px) { .lx-logo { width: 168px; height: 168px; } .lx-title { font-size: 1.7rem; } .lx-mascot { width: 64px; height: 60px; } }
+@media (max-width: 380px) { .lx-logo { width: 132px; height: 132px; } .lx-title { font-size: 1.7rem; } .lx-mascot { width: 64px; height: 60px; } }
 @media (prefers-reduced-motion: reduce) { .lx-mascot__hand { animation: none; } }
