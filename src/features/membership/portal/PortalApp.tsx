@@ -100,7 +100,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
       <main className="pt-wrap pt-main">
         {page === "status" ? <StatusPage member={member} go={go} />
           : page === "campaigns" ? <CampaignsPage />
-          : <HomePage member={member} go={go} />}
+          : <HomePage go={go} />}
       </main>
 
       <footer className="pt-footer">
