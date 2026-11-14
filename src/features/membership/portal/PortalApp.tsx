@@ -3,7 +3,7 @@ import { Icon } from "../../../shared/Icon";
 import { org } from "../../../shared/org";
 import { useTheme } from "../../../shared/useTheme";
 import { membershipConfig as cfg } from "../config";
-import { LangSwitch, t, useLang } from "../i18n";
+import { LangSwitch, LangToggle, t, useLang } from "../i18n";
 import { useDb } from "../hooks/useDb";
 import { logout as apiLogout, restoreSession } from "../services/api";
 import { useHashRoute } from "../hooks/useHashRoute";
@@ -84,7 +84,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
             ))}
           </nav>
           <div className="pt-top__tools">
-            <LangSwitch className="lang-switch--compact" />
+            <LangToggle />
             <span className="pt-hello">{member.fullName.split(" ")[0]}</span>
             <button type="button" className="ui-icon-btn" onClick={onLogout} aria-label={t("common.logout")} title={t("common.logout")}><Icon name="logout" /></button>
             <button type="button" className="ui-icon-btn" onClick={toggle} aria-label={theme === "dark" ? t("common.lightMode") : t("common.darkMode")}>

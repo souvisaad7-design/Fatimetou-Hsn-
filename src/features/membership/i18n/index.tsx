@@ -127,3 +127,21 @@ export function LangSwitch({ className = "" }: { className?: string }) {
     </div>
   );
 }
+
+/**
+ * زر تبديل اللغة المختصر (أيقونة فقط): ضغطة واحدة تحوّل بين العربية والفرنسية.
+ * يُستعمل في الشريط العلوي للبوابة حتى لا يضيّق المساحة على الاسم.
+ */
+export function LangToggle({ className = "" }: { className?: string }) {
+  const { lang: current } = useLang();
+  const next: Lang = current === "ar" ? "fr" : "ar";
+  const label = next === "fr" ? "Passer en français" : "التبديل إلى العربية";
+  return (
+    <button type="button" className={`ui-icon-btn lang-toggle ${className}`} onClick={() => setLang(next)} aria-label={label} title={label}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </svg>
+      <span className="lang-toggle__badge" lang={next}>{next === "fr" ? "FR" : "ع"}</span>
+    </button>
+  );
+}

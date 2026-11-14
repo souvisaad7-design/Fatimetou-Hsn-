@@ -24,3 +24,11 @@
 .lang-switch__menu button.is-active { font-weight: 800; color: var(--brand, #27244f); }
 .lang-switch__menu button:focus-visible { outline: 2px solid var(--brand, #27244f); outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) { .lang-switch__menu { animation: none; } }
+
+/* زر التبديل المختصر (أيقونة + شارة اللغة التالية) */
+.lang-toggle { position: relative; }
+.lang-toggle__badge {
+  position: absolute; bottom: 1px; inset-inline-end: 0; min-width: 17px; height: 15px; padding: 0 3px; border-radius: 8px;
+  display: grid; place-items: center; font-size: 0.6rem; font-weight: 800; line-height: 1;
+  background: var(--pink, #f4aa9c); color: var(--navy, #27244f); pointer-events: none;
+}
