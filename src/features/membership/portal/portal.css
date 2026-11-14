@@ -220,3 +220,97 @@
 @media (max-width: 420px) { .pt-fab span { font-size: 0.85rem; } }
 .lg-body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 .pt-gate { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+/* =====================================================================
+   شاشة الدخول (تصميم بسيط: شعار دائري، حقول بعناوين، زر كبير، ومساعد ذكي)
+   ===================================================================== */
+.lx {
+  --lx-bg: #f5f6fb; --lx-ink: #1d1a33; --lx-muted: #7a7690; --lx-field: #ffffff; --lx-line: #e3e2ee;
+  --lx-brand: #27244f; --lx-brand-2: #4a43a8; --lx-accent: #3b56c9; --lx-ring: color-mix(in srgb, var(--lx-accent) 22%, transparent);
+  min-height: 100%; background: var(--lx-bg); color: var(--lx-ink); position: relative;
+  display: flex; justify-content: center;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+}
+:root[data-theme="dark"] .lx { --lx-bg: #15122b; --lx-ink: #eeebf7; --lx-muted: #a9a4c4; --lx-field: #201c3d; --lx-line: #342f5c; --lx-brand: #f4aa9c; --lx-brand-2: #f08f78; --lx-accent: #9aa8ff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lx { --lx-bg: #15122b; --lx-ink: #eeebf7; --lx-muted: #a9a4c4; --lx-field: #201c3d; --lx-line: #342f5c; --lx-brand: #f4aa9c; --lx-brand-2: #f08f78; --lx-accent: #9aa8ff; } }
+.lx ~ .pt-fab { display: none; } /* المساعد موجود داخل الشاشة نفسها */
+.lx-lang { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); inset-inline-end: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; }
+.lx-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: stretch; padding-top: 22px; }
+
+.lx-logo {
+  align-self: center; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
+  background: #29244c; border: 5px solid var(--lx-accent); box-shadow: 0 16px 34px -18px rgba(39, 36, 79, 0.55), 0 0 0 8px color-mix(in srgb, var(--lx-accent) 8%, transparent);
+  overflow: hidden;
+}
+.lx-logo img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); }
+.lx-title { margin: 26px 0 0; text-align: center; font: 800 2rem var(--f-body); color: var(--lx-ink); letter-spacing: 0; }
+.lx-sub { margin: 6px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
+
+/* المساعد الذكي */
+.lx-assistant {
+  margin: 18px 0 4px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;
+  align-self: flex-start; max-width: 100%;
+}
+.lx-mascot { width: 76px; height: 70px; flex: none; color: var(--lx-ink); filter: drop-shadow(0 8px 10px rgba(240, 143, 120, 0.25)); }
+.lx-mascot__hand { transform-origin: 98px 44px; animation: lx-wave 2.4s ease-in-out infinite; }
+@keyframes lx-wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(-16deg); } 20%, 40% { transform: rotate(10deg); } }
+.lx-assistant__bubble {
+  position: relative; display: flex; flex-direction: column; gap: 2px; padding: 9px 14px; border-radius: 16px;
+  background: var(--lx-field); border: 1px solid var(--lx-line); box-shadow: 0 10px 22px -18px rgba(39, 36, 79, 0.6);
+  transition: border-color 0.15s, transform 0.15s;
+}
+.lx-assistant__bubble::before {
+  content: ""; position: absolute; top: 50%; inset-inline-start: -7px; width: 12px; height: 12px; margin-top: -6px;
+  background: var(--lx-field); border-inline-start: 1px solid var(--lx-line); border-bottom: 1px solid var(--lx-line); transform: rotate(45deg);
+}
+:root[dir="rtl"] .lx-assistant__bubble::before { transform: rotate(-45deg); }
+.lx-assistant__bubble b { font-size: 0.9rem; }
+.lx-assistant__bubble small { color: var(--lx-accent); font-weight: 700; font-size: 0.82rem; }
+.lx-assistant:hover .lx-assistant__bubble { border-color: var(--lx-accent); transform: translateY(-1px); }
+.lx-assistant:focus-visible { outline: 3px solid var(--lx-ring); outline-offset: 4px; border-radius: 16px; }
+
+/* الحقول */
+.lx-form { display: flex; flex-direction: column; gap: 18px; margin-top: 14px; }
+.lx-field { display: flex; flex-direction: column; gap: 8px; }
+.lx-label { font-weight: 800; font-size: 0.95rem; color: var(--lx-ink); }
+.lx-label-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lx-input {
+  display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 18px; border-radius: 22px;
+  background: var(--lx-field); border: 1.5px solid var(--lx-line); transition: border-color 0.15s, box-shadow 0.15s;
+}
+.lx-input:focus-within { border-color: var(--lx-accent); box-shadow: 0 0 0 4px var(--lx-ring); }
+.lx-input.is-error { border-color: #d0453a; }
+.lx-input input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--lx-ink); font: 600 1.05rem var(--f-body); }
+.lx-input input::placeholder { color: color-mix(in srgb, var(--lx-muted) 75%, transparent); font-weight: 500; letter-spacing: 0.04em; }
+.lx-prefix { font-weight: 800; color: var(--lx-accent); padding-inline-end: 12px; border-inline-end: 1.5px solid var(--lx-line); line-height: 1.6; }
+.lx-input__icon { color: var(--lx-muted); flex: none; }
+.lx-eye { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--lx-muted); cursor: pointer; flex: none; }
+.lx-eye:hover { background: color-mix(in srgb, var(--lx-accent) 10%, transparent); color: var(--lx-ink); }
+.lx-link { border: 0; background: none; padding: 2px 0; color: var(--lx-accent); font: 700 0.88rem var(--f-body); cursor: pointer; }
+.lx-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lx-link--strong { font-weight: 800; font-size: 0.95rem; }
+
+.lx-help { background: var(--lx-field); border: 1px dashed var(--lx-line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.lx-help p { margin: 0; color: var(--lx-muted); font-size: 0.9rem; }
+.lx-help b { font-size: 1.35rem; color: var(--lx-ink); }
+.lx-help__links { display: flex; gap: 8px; justify-content: center; }
+.lx-help__links a { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 999px; background: var(--lx-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.88rem; }
+:root[data-theme="dark"] .lx-help__links a { color: #27244f; }
+
+.lx-error { margin: -4px 0 0; color: #c0392b; font-weight: 700; font-size: 0.9rem; }
+:root[data-theme="dark"] .lx-error { color: #f07c70; }
+.lx-btn {
+  height: 64px; border: 0; border-radius: 22px; cursor: pointer; margin-top: 8px;
+  background: linear-gradient(90deg, var(--lx-brand-2), var(--lx-brand)); color: #fff; font: 800 1.15rem var(--f-body);
+  box-shadow: 0 16px 28px -16px var(--lx-brand); transition: transform 0.12s, filter 0.15s;
+}
+:root[data-theme="dark"] .lx-btn { color: #27244f; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lx-btn, :root:not([data-theme="light"]) .lx-help__links a { color: #27244f; } }
+.lx-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.lx-btn:active { transform: scale(0.99); }
+.lx-btn:disabled { opacity: 0.7; cursor: progress; }
+.lx-btn:focus-visible { outline: 3px solid var(--lx-ring); outline-offset: 3px; }
+.lx-foot { margin: 22px 0 0; text-align: center; color: var(--lx-muted); font-size: 0.95rem; }
+
+@media (max-width: 380px) { .lx-logo { width: 128px; height: 128px; } .lx-title { font-size: 1.7rem; } .lx-mascot { width: 64px; height: 60px; } }
+@media (prefers-reduced-motion: reduce) { .lx-mascot__hand { animation: none; } }

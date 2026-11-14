@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Icon } from "../../../shared/Icon";
 import { org } from "../../../shared/org";
 import { copyText, useToast } from "../../../shared/toast";
@@ -35,7 +35,9 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
   const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [contact, setContact] = useState(false);
+  const [forgot, setForgot] = useState(false);
+  const { lang } = useLang();
+  useEffect(() => setError(null), [lang]); // رسالة الخطأ تُكتب بلغة لحظة ظهورها
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,127 +57,112 @@ function LoginScreen({ onLogin, onRegister }: { onLogin: (m: Member) => void; on
   };
 
   return (
-    <div className="lg">
-      <div className="lg-lang"><LangSwitch /></div>
-      <header className="lg-hero">
-        <MosqueSilhouette />
-        <img src={org.logoFull} alt={t("org.name")} width={640} height={380} className="lg-hero__logo" />
-        <svg className="lg-wave" viewBox="0 0 400 90" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 40 C 90 95, 170 0, 260 30 S 380 70, 400 20 L400 90 L0 90 Z" fill="var(--lg-coral)" opacity="0.55" />
-          <path d="M0 60 C 100 100, 190 20, 280 50 S 380 80, 400 45 L400 90 L0 90 Z" fill="var(--lg-bg)" />
-        </svg>
-      </header>
+    <div className="lx">
+      <div className="lx-lang"><LangSwitch /></div>
+      <main className="lx-card">
+        <div className="lx-logo">
+          <img src={org.logo} alt={t("org.name")} width={120} height={120} />
+        </div>
 
-      <main className="lg-body">
-        <h1>{t("login.title")}</h1>
-        <p className="lg-sub">{t("org.welcome")}</p>
+        <h1 className="lx-title">{t("login.welcomeBack")}</h1>
+        <p className="lx-sub">{t("login.welcomeSub")}</p>
 
-        <form className="lg-form" onSubmit={submit} noValidate>
-          <label className="lg-field">
-            <span className="visually-hidden">{t("login.phone")}</span>
-            <input
-              value={phone}
-              onChange={(e) => { setPhone(e.target.value); setError(null); }}
-              placeholder={t("login.phone")}
-              inputMode="tel"
-              autoComplete="tel"
-              aria-invalid={!!error && !phone ? true : undefined}
-            />
-            <Icon name="phone" className="lg-field__icon" />
-          </label>
+        {/* المساعد الذكي: معلومات الجمعية متاحة دون تسجيل دخول */}
+        <a className="lx-assistant" href="./assistant/" aria-label={`${t("nav.assistant")} — ${t("nav.assistantHint")}`}>
+          <AssistantMascot />
+          <span className="lx-assistant__bubble">
+            <b>{t("login.assistantHi")}</b>
+            <small>{t("login.assistantCta")}</small>
+          </span>
+        </a>
 
-          <label className="lg-field">
-            <span className="visually-hidden">{t("login.password")}</span>
-            <button type="button" className="lg-field__toggle" onClick={() => setShow((v) => !v)} aria-label={show ? t("login.hide") : t("login.show")}>
-              <Icon name={show ? "eye" : "eyeOff"} />
-            </button>
-            <input
-              type={show ? "text" : "password"}
-              value={secret}
-              onChange={(e) => { setSecret(e.target.value); setError(null); }}
-              placeholder={t("login.password")}
-              autoComplete="current-password"
-            />
-            <Icon name="lock" className="lg-field__icon" />
-          </label>
-
-          {error && <p className="lg-error" role="alert">{error}</p>}
-
-          <button type="submit" className="lg-btn" disabled={busy}>{busy ? t("login.submitting") : t("login.submit")}</button>
-        </form>
-
-        <p className="lg-or">{t("login.or")}</p>
-        <button type="button" className="lg-btn lg-btn--outline" onClick={onRegister}>
-          <Icon name="userPlus" /> {t("login.create")}
-        </button>
-
-        <button type="button" className="lg-contact" onClick={() => setContact((v) => !v)} aria-expanded={contact}>
-          <Icon name="headset" size={18} /> {t("login.contact")}
-        </button>
-        {contact && (
-          <div className="lg-contact__box">
-            <p>{t("login.contactText")}</p>
-            <b className="num" dir="ltr">{cfg.phone}</b>
-            <div className="lg-contact__links">
-              <a href={`tel:${cfg.phone}`}>{t("login.call")}</a>
-              <a href={`https://wa.me/${cfg.phone}`} target="_blank" rel="noopener noreferrer">{t("login.whatsapp")}</a>
+        <form className="lx-form" onSubmit={submit} noValidate>
+          <div className="lx-field">
+            <label htmlFor="lx-phone" className="lx-label">{t("login.phone")}</label>
+            <div className={`lx-input${error && !phone ? " is-error" : ""}`}>
+              <span className="lx-prefix" dir="ltr">+222</span>
+              <input
+                id="lx-phone"
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value); setError(null); }}
+                placeholder="XX XX XX XX"
+                inputMode="tel"
+                autoComplete="tel"
+                dir="ltr"
+              />
             </div>
           </div>
-        )}
-      </main>
 
-      <Leaves />
+          <div className="lx-field">
+            <div className="lx-label-row">
+              <label htmlFor="lx-pass" className="lx-label">{t("login.password")}</label>
+              <button type="button" className="lx-link" onClick={() => setForgot((v) => !v)} aria-expanded={forgot}>{t("login.forgot")}</button>
+            </div>
+            <div className="lx-input">
+              <Icon name="lock" className="lx-input__icon" />
+              <input
+                id="lx-pass"
+                type={show ? "text" : "password"}
+                value={secret}
+                onChange={(e) => { setSecret(e.target.value); setError(null); }}
+                placeholder={t("login.passwordPh")}
+                autoComplete="current-password"
+              />
+              <button type="button" className="lx-eye" onClick={() => setShow((v) => !v)} aria-label={show ? t("login.hide") : t("login.show")}>
+                <Icon name={show ? "eyeOff" : "eye"} />
+              </button>
+            </div>
+          </div>
+
+          {forgot && (
+            <div className="lx-help" role="status">
+              <p>{t("login.forgotText")}</p>
+              <b className="num" dir="ltr">{cfg.phone}</b>
+              <div className="lx-help__links">
+                <a href={`tel:${cfg.phone}`}><Icon name="phone" size={16} /> {t("login.call")}</a>
+                <a href={`https://wa.me/222${cfg.phone}`} target="_blank" rel="noopener noreferrer">{t("login.whatsapp")}</a>
+              </div>
+            </div>
+          )}
+
+          {error && <p className="lx-error" role="alert">{error}</p>}
+
+          <button type="submit" className="lx-btn" disabled={busy}>{busy ? t("login.submitting") : t("login.submit")}</button>
+        </form>
+
+        <p className="lx-foot">
+          {t("login.noAccount")} <button type="button" className="lx-link lx-link--strong" onClick={onRegister}>{t("login.createShort")}</button>
+        </p>
+      </main>
     </div>
   );
 }
 
-/** رسم مسجد بسيط في خلفية الرأس */
-function MosqueSilhouette() {
+/** شخصية المساعد الذكي (بألوان الجمعية) تلوّح بيدها */
+function AssistantMascot() {
   return (
-    <svg className="lg-mosque" viewBox="0 0 220 130" aria-hidden="true">
-      <g fill="currentColor">
-        {/* المئذنتان */}
-        <rect x="18" y="38" width="12" height="92" rx="2" />
-        <path d="M16 40 L24 14 L32 40 Z" />
-        <rect x="16" y="56" width="16" height="4" rx="1" />
-        <rect x="190" y="30" width="12" height="100" rx="2" />
-        <path d="M188 32 L196 4 L204 32 Z" />
-        <rect x="188" y="50" width="16" height="4" rx="1" />
-        {/* القبة الكبرى */}
-        <path d="M70 86 C 70 50, 150 50, 150 86 Z" />
-        <path d="M106 52 L110 38 L114 52 Z" />
-        {/* قبتان صغيرتان */}
-        <path d="M40 98 C 40 76, 76 76, 76 98 Z" />
-        <path d="M144 98 C 144 76, 180 76, 180 98 Z" />
-        {/* المبنى */}
-        <rect x="36" y="86" width="148" height="44" />
-        <rect x="64" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
-        <rect x="105" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
-        <rect x="146" y="96" width="10" height="20" rx="5" fill="var(--lg-hero)" opacity="0.6" />
+    <svg className="lx-mascot" viewBox="0 0 120 110" aria-hidden="true">
+      <ellipse cx="56" cy="100" rx="38" ry="6" fill="currentColor" opacity="0.12" />
+      <g className="lx-mascot__hand">
+        <circle cx="98" cy="30" r="13" fill="#f4aa9c" />
+        <circle cx="98" cy="30" r="13" fill="url(#lxShade)" />
       </g>
+      <path d="M18 62 C 18 32, 40 20, 58 20 C 80 20, 96 34, 96 60 C 96 84, 80 96, 57 96 C 34 96, 18 86, 18 62 Z" fill="#f4aa9c" />
+      <path d="M18 62 C 18 32, 40 20, 58 20 C 80 20, 96 34, 96 60 C 96 84, 80 96, 57 96 C 34 96, 18 86, 18 62 Z" fill="url(#lxShade)" />
+      <circle cx="44" cy="56" r="5" fill="#27244f" />
+      <circle cx="70" cy="56" r="5" fill="#27244f" />
+      <circle cx="45.5" cy="54.5" r="1.6" fill="#fff" />
+      <circle cx="71.5" cy="54.5" r="1.6" fill="#fff" />
+      <path d="M48 70 Q 57 78, 66 70" stroke="#27244f" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <circle cx="36" cy="68" r="4" fill="#e8806c" opacity="0.45" />
+      <circle cx="78" cy="68" r="4" fill="#e8806c" opacity="0.45" />
+      <defs>
+        <linearGradient id="lxShade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
+          <stop offset="1" stopColor="#c76b58" stopOpacity="0.25" />
+        </linearGradient>
+      </defs>
     </svg>
-  );
-}
-
-/** أوراق زخرفية في زاويتي الشاشة */
-function Leaves() {
-  const leaf = "M0 0 C 18 -22, 50 -22, 64 0 C 50 22, 18 22, 0 0 Z";
-  return (
-    <>
-      <svg className="lg-leaves lg-leaves--start" viewBox="0 0 120 120" aria-hidden="true">
-        <g fill="currentColor">
-          <path d={leaf} transform="translate(10 100) rotate(-55)" />
-          <path d={leaf} transform="translate(30 112) rotate(-20) scale(.8)" />
-          <path d={leaf} transform="translate(4 70) rotate(-85) scale(.7)" />
-        </g>
-      </svg>
-      <svg className="lg-leaves lg-leaves--end" viewBox="0 0 120 120" aria-hidden="true">
-        <g fill="currentColor">
-          <path d={leaf} transform="translate(110 100) rotate(-125)" />
-          <path d={leaf} transform="translate(90 114) rotate(-160) scale(.8)" />
-        </g>
-      </svg>
-    </>
   );
 }
 
