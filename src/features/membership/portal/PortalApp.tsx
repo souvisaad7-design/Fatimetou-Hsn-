@@ -11,13 +11,17 @@ import type { Member } from "../types";
 import { AuthGate, WaitingScreen } from "./AuthGate";
 import { CampaignsPage } from "./pages/CampaignsPage";
 import { HomePage } from "./pages/HomePage";
+import { LivePage } from "./pages/LivePage";
+import { useLiveStatus } from "../live/liveApi";
 import { StatusPage } from "./pages/StatusPage";
 import "./portal.css";
+import "../live/live.css";
 
 const NAV = [
   { id: "home", label: "nav.home", icon: "home" },
   { id: "status", label: "nav.status", icon: "users" },
   { id: "campaigns", label: "nav.campaigns", icon: "heart" },
+  { id: "live", label: "live.nav", icon: "play" },
 ] as const;
 
 /**
@@ -58,9 +62,10 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
   const { lang } = useLang();
   const { theme, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
+  const { live } = useLiveStatus();
 
   useEffect(() => {
-    const titles: Record<string, string> = { status: t("nav.status"), campaigns: t("nav.campaigns") };
+    const titles: Record<string, string> = { status: t("nav.status"), campaigns: t("nav.campaigns"), live: t("live.nav") };
     document.title = `${titles[page] ? `${titles[page]} | ` : ""}${t("org.committee")} — ${t("org.name")}`;
     setMenu(false);
   }, [page, lang]);
@@ -79,7 +84,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
           <nav className={`pt-nav${menu ? " is-open" : ""}`} aria-label={t("common.mainMenu")}>
             {NAV.map((n) => (
               <a key={n.id} href={`#/${n.id}`} className={page === n.id ? "is-active" : undefined} aria-current={page === n.id ? "page" : undefined}>
-                <Icon name={n.icon} size={18} /> {t(n.label)}
+                <Icon name={n.icon} size={18} /> {t(n.label)}{n.id === "live" && live && <span className="lv-navdot" aria-label="LIVE" />}
               </a>
             ))}
           </nav>
@@ -97,9 +102,18 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
         </div>
       </header>
 
+      {live && page !== "live" && (
+        <a className="lv-banner" href="#/live">
+          <span className="lv-banner__dot" aria-hidden="true" />
+          <span className="lv-banner__text"><b>{t("live.nowBanner")}</b> {live.title}</span>
+          <span className="lv-banner__cta">{t("live.watch")} ←</span>
+        </a>
+      )}
+
       <main className="pt-wrap pt-main">
         {page === "status" ? <StatusPage member={member} go={go} />
           : page === "campaigns" ? <CampaignsPage />
+          : page === "live" ? <LivePage />
           : <HomePage member={member} go={go} />}
       </main>
 
@@ -115,7 +129,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
         {NAV.map((n) => (
           <a key={n.id} href={`#/${n.id}`} className={page === n.id ? "is-active" : undefined}>
             <Icon name={n.icon} size={20} />
-            <span>{t(n.label)}</span>
+            <span>{t(n.label)}</span>{n.id === "live" && live && <span className="lv-navdot" aria-label="LIVE" />}
           </a>
         ))}
       </nav>
