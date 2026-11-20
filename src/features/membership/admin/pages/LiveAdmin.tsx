@@ -25,6 +25,8 @@ const duration = (a: string | null, b: string | null) => {
   const m = Math.round((new Date(b).getTime() - new Date(a).getTime()) / 60000);
   return m >= 60 ? `${Math.floor(m / 60)} س ${m % 60} د` : `${m} د`;
 };
+/** رابط LiveKit كما يقبله الخادم: wss://… بلا مسافات ولا «/» في آخره (ويقبل https:// فيحوّله) */
+const normalizeUrl = (u: string) => u.trim().replace(/^https:\/\//i, "wss://").replace(/\/+$/, "");
 const EMPTY = { id: "", title: "", description: "", scheduled_at: "" };
 
 export function LiveAdmin() {
@@ -92,7 +94,7 @@ export function LiveAdmin() {
 
   const connect = async () => {
     setKeys((k) => ({ ...k, busy: true }));
-    const ok = await rpc("live_set_credentials", { p_url: keys.url, p_key: keys.key, p_secret: keys.secret }, "تم ربط حساب LiveKit وحفظ المفاتيح مشفّرة");
+    const ok = await rpc("live_set_credentials", { p_url: normalizeUrl(keys.url), p_key: keys.key.trim(), p_secret: keys.secret.trim() }, "تم ربط حساب LiveKit وحفظ المفاتيح مشفّرة");
     setKeys(ok ? { url: "", key: "", secret: "", show: false, busy: false, editing: false } : (k) => ({ ...k, busy: false }));
   };
 
@@ -188,7 +190,8 @@ export function LiveAdmin() {
               <li>انسخ رابط المشروع <b>Project URL</b> الذي يبدأ بـ <code dir="ltr">wss://</code>.</li>
             </ol>
             <Field label="Project URL" full>
-              {(id) => <input id={id} value={keys.url} onChange={(e) => setKeys({ ...keys, url: e.target.value.trim() })} dir="ltr" placeholder="wss://awn-xxxx.livekit.cloud" autoComplete="off" spellCheck={false} />}
+              {(id) => <input id={id} value={keys.url} onChange={(e) => setKeys({ ...keys, url: e.target.value.trim() })}
+                onBlur={() => setKeys((k) => ({ ...k, url: normalizeUrl(k.url) }))} dir="ltr" placeholder="wss://awn-xxxx.livekit.cloud" autoComplete="off" spellCheck={false} />}
             </Field>
             <Field label="API Key">
               {(id) => <input id={id} value={keys.key} onChange={(e) => setKeys({ ...keys, key: e.target.value })} dir="ltr" autoComplete="off" spellCheck={false} />}
