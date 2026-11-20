@@ -36,10 +36,61 @@ async function livekitToken(apiKey: string, secret: string, claims: Record<strin
   return `${head}.${body}.${b64url(sig)}`;
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/** رمز رابط المشاهدة: توقيع رقم البث بالمفتاح السري (لا يُخمَّن، ويختلف لكل بث) */
+async function shareCode(secret: string, sessionId: string) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`awn-share:${sessionId}`)));
+  return b64url(sig).slice(0, 24);
+}
+const sameText = (a: string, b: string) => {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+};
+
+/** زائر برابط المشاهدة: يعرف حالة البث، ويحصل على إذن مشاهدة فقط أثناء البث */
+// deno-lint-ignore no-explicit-any
+async function guest(db: any, body: Record<string, unknown>) {
+  const sid = String(body.s ?? ""), code = String(body.k ?? "");
+  if (!UUID.test(sid) || !/^[A-Za-z0-9_-]{16,64}$/.test(code)) return json({ error: "الرابط غير صحيح" }, 400);
+  const { data: cfg } = await db.rpc("live_provider_config");
+  const url = String(cfg?.url ?? ""), apiKey = String(cfg?.key ?? ""), secret = String(cfg?.secret ?? "");
+  if (!url || !apiKey || !secret) return json({ error: "البث غير متاح الآن" }, 503);
+  if (!sameText(await shareCode(secret, sid), code)) return json({ error: "الرابط غير صالح أو انتهت صلاحيته" }, 403);
+  const { data: s } = await db.from("live_sessions").select("id, title, description, status, scheduled_at, room").eq("id", sid).maybeSingle();
+  if (!s) return json({ error: "هذا البث غير موجود" }, 404);
+  const info = { status: s.status, title: s.title, description: s.description, scheduled_at: s.scheduled_at, session_id: s.id };
+  if (s.status !== "live") return json(info);
+  const now = Math.floor(Date.now() / 1000);
+  const token = await livekitToken(apiKey, secret, {
+    iss: apiKey, sub: `guest-${crypto.randomUUID().slice(0, 12)}`, name: "زائر", nbf: now - 10, exp: now + 6 * 3600,
+    metadata: JSON.stringify({ role: "guest" }),
+    video: { room: s.room, roomJoin: true, canSubscribe: true, canPublish: false, canPublishData: false, canUpdateOwnMetadata: false },
+  });
+  return json({ ...info, url, token });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return json({ error: "طريقة غير مسموحة" }, 405);
   if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "إعدادات الخادم ناقصة" }, 500);
+
+  let body: Record<string, unknown> = {};
+  try { body = await req.json(); } catch { /* بلا جسم */ }
+  const action = String(body.action ?? "token");
+
+  /* رابط المشاهدة المستقل: مشاهدة فقط، بلا حساب، لبث واحد بعينه */
+  if (action === "guest") {
+    try {
+      return await guest(createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } }), body);
+    } catch (err) {
+      console.error(err);
+      return json({ error: "خطأ في الخادم" }, 500);
+    }
+  }
 
   const auth = req.headers.get("Authorization") ?? "";
   if (!auth.startsWith("Bearer ")) return json({ error: "سجّل الدخول أولاً" }, 401);
@@ -57,10 +108,6 @@ Deno.serve(async (req) => {
   const approved = member?.status === "approved";
   if (!admin && !approved) return json({ error: "البث خاص بالمنتسبين المعتمدين" }, 403);
 
-  let body: Record<string, unknown> = {};
-  try { body = await req.json(); } catch { /* بلا جسم */ }
-  const action = String(body.action ?? "token");
-
   try {
     const { data: live } = await db.from("live_sessions").select("id, room, title").eq("status", "live").maybeSingle();
 
@@ -69,6 +116,16 @@ Deno.serve(async (req) => {
       if (!admin || !live) return json({ ok: false });
       await db.rpc("live_record_viewers", { p_id: live.id, p_count: Math.max(0, Math.min(100000, Number(body.count) || 0)) });
       return json({ ok: true });
+    }
+
+    /* اللجنة تحصل على رابط المشاهدة المستقل لبث معيّن */
+    if (action === "share") {
+      if (!admin) return json({ error: "للجنة فقط" }, 403);
+      const sid = String(body.session_id ?? "");
+      if (!UUID.test(sid)) return json({ error: "بث غير صحيح" }, 400);
+      const { data: c } = await db.rpc("live_provider_config");
+      if (!c?.secret) return json({ error: "اربط خدمة البث أولاً" }, 400);
+      return json({ code: await shareCode(String(c.secret), sid) });
     }
 
     /* اللجنة تختبر مفاتيح LiveKit (دون إظهار القيم السرية) */

@@ -74,3 +74,34 @@ export async function getLiveToken(role: "publisher" | "viewer", sessionId?: str
 export function reportViewers(count: number) {
   void supabase.functions.invoke("live-token", { body: { action: "viewers", count } }).catch(() => {});
 }
+
+export interface GuestInfo {
+  status: "scheduled" | "live" | "ended";
+  title: string;
+  description: string;
+  scheduled_at: string | null;
+  session_id: string;
+  url?: string;
+  token?: string;
+}
+/** رابط المشاهدة المستقل (بلا حساب): حالة البث، وإذن مشاهدة أثناء البث */
+export async function getGuestInfo(s: string, k: string): Promise<GuestInfo> {
+  const { data, error } = await supabase.functions.invoke("live-token", { body: { action: "guest", s, k } });
+  if (error) {
+    let msg = error.message;
+    try { const ctx = (error as { context?: Response }).context; const j = ctx ? await ctx.json() : null; if (j?.error) msg = j.error; } catch { /* */ }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+/** رابط المشاهدة المستقل لبث (للجنة) */
+export async function getShareLink(sessionId: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("live-token", { body: { action: "share", session_id: sessionId } });
+  if (error || data?.error) throw new Error(data?.error ?? error?.message ?? "تعذّر إنشاء الرابط");
+  const url = new URL("../live/", window.location.href);
+  url.searchParams.set("s", sessionId);
+  url.searchParams.set("k", data.code);
+  return url.href;
+}

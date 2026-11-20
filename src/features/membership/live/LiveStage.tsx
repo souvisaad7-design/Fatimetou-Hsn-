@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { LocalTrackPublication, RemoteTrack, Room, Track as TrackT } from "livekit-client";
 import { Icon } from "../../../shared/Icon";
 import { t } from "../i18n";
-import { getLiveToken, reportViewers } from "./liveApi";
+import { getGuestInfo, getLiveToken, reportViewers } from "./liveApi";
 
 type Phase = "idle" | "connecting" | "connected" | "error" | "ended";
 interface VideoItem { key: string; track: TrackT; source: string }
@@ -23,9 +23,11 @@ function VideoView({ track, className, mirror }: { track: TrackT; className?: st
   return <video ref={ref} className={className} autoPlay playsInline muted style={mirror ? { transform: "scaleX(-1)" } : undefined} />;
 }
 
-export function LiveStage({ role, sessionId, autoJoin = false, onLeft }: {
+export function LiveStage({ role, sessionId, autoJoin = false, onLeft, guest }: {
   role: "publisher" | "viewer";
   sessionId: string;
+  /** رابط المشاهدة المستقل (بلا حساب) */
+  guest?: { s: string; k: string };
   autoJoin?: boolean;
   onLeft?: () => void;
 }) {
@@ -46,13 +48,16 @@ export function LiveStage({ role, sessionId, autoJoin = false, onLeft }: {
     setPhase("connecting");
     setError(null);
     try {
-      const [{ Room, RoomEvent, Track }, creds] = await Promise.all([import("livekit-client"), getLiveToken(role, sessionId)]);
+      const [{ Room, RoomEvent, Track }, creds] = await Promise.all([import("livekit-client"), guest ? getGuestInfo(guest.s, guest.k).then((g) => {
+        if (!g.token || !g.url) throw new Error(g.status === "ended" ? t("live.ended") : t("live.waitingHost"));
+        return { url: g.url, token: g.token, session_id: g.session_id };
+      }) : getLiveToken(role, sessionId)]);
       const room = new Room({ adaptiveStream: true, dynacast: true });
       roomRef.current = room;
 
       const refresh = () => {
         const remote = [...room.remoteParticipants.values()];
-        const isViewer = (identity: string) => identity.startsWith("viewer-");
+        const isViewer = (identity: string) => identity.startsWith("viewer-") || identity.startsWith("guest-");
         setViewers(remote.filter((p) => isViewer(p.identity)).length + (role === "viewer" ? 1 : 0));
         setHostPresent(remote.some((p) => p.identity.startsWith("host-")));
         const vids: VideoItem[] = [];
@@ -111,7 +116,7 @@ export function LiveStage({ role, sessionId, autoJoin = false, onLeft }: {
       setError((err as Error).message || t("live.error"));
       setPhase("error");
     }
-  }, [role, sessionId]);
+  }, [role, sessionId, guest?.s, guest?.k]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (autoJoin) void join();

@@ -75,3 +75,9 @@
 .lv-admin-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .lv-admin-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 12px; }
 .lv-admin-list li > div:first-child { display: flex; flex-direction: column; gap: 2px; }
+
+/* رابط المشاهدة المستقل */
+.lv-share { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px dashed var(--line); border-radius: 14px; background: var(--bg); }
+.lv-share code { overflow-wrap: anywhere; font-size: .8rem; background: var(--surface); border-radius: 8px; padding: 8px 10px; text-align: left; }
+.lv-share a[aria-disabled="true"] { pointer-events: none; opacity: .5; }
+.lv-guest .pt-main { padding-bottom: 32px; }

@@ -3,12 +3,12 @@
  * ويشاهده المنتسبون المعتمدون فقط داخل بوابة المنتسبين.
  */
 import { useCallback, useEffect, useState } from "react";
-import { useToast } from "../../../../shared/toast";
+import { copyText, useToast } from "../../../../shared/toast";
 import { supabase, errorMessage } from "../../services/supabase";
 import { Badge, Button, Card, ConfirmButton, Empty, Field, Notice } from "../../ui";
 import { LiveComments } from "../../live/LiveComments";
 import { LiveStage } from "../../live/LiveStage";
-import { fetchSessions, type LiveSession } from "../../live/liveApi";
+import { fetchSessions, getShareLink, type LiveSession } from "../../live/liveApi";
 import "../../live/live.css";
 
 interface LiveSettings { livekit_url: string | null; comments_enabled: boolean; connected_at: string | null }
@@ -30,6 +30,34 @@ const normalizeUrl = (u: string) => u.trim().replace(/^https:\/\//i, "wss://").r
 /** المفاتيح حروف وأرقام فقط: نحذف أي مسافة أو سطر جديد أو حرف خفي يأتي مع النسخ */
 const clean = (v: string) => v.replace(/[^A-Za-z0-9]/g, "");
 const EMPTY = { id: "", title: "", description: "", scheduled_at: "" };
+
+/** رابط المشاهدة المستقل: يُرسَل لأي شخص فيشاهد البث دون رقم أو كلمة مرور (مشاهدة فقط) */
+function ShareLink({ session }: { session: LiveSession }) {
+  const toast = useToast();
+  const [link, setLink] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    getShareLink(session.id).then((l) => alive && setLink(l)).catch((e) => alive && setErr((e as Error).message));
+    return () => { alive = false; };
+  }, [session.id]);
+  const text = `${session.title}\nالبث المباشر للجنة الانتسابية — جمعية عون وسند الخيرية:\n${link ?? ""}`;
+  return (
+    <div className="lv-share">
+      <b>🔗 رابط المشاهدة (بدون تسجيل دخول)</b>
+      {err ? <span className="ad-muted ad-small">{err}</span> : (
+        <>
+          <code dir="ltr">{link ?? "…"}</code>
+          <div className="ad-toolbar">
+            <Button small icon="copy" disabled={!link} onClick={async () => toast((await copyText(link!)) ? "تم نسخ الرابط" : link!)}>نسخ الرابط</Button>
+            <a className="ui-btn ui-btn--ghost ui-btn--sm" href={link ? `https://wa.me/?text=${encodeURIComponent(text)}` : undefined} target="_blank" rel="noopener noreferrer" aria-disabled={!link}>إرسال عبر واتساب</a>
+          </div>
+          <span className="ad-muted ad-small">من معه هذا الرابط يشاهد هذا البث فقط (لا يعلّق ولا يبث). يتوقف الرابط عند انتهاء البث.</span>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function LiveAdmin() {
   const toast = useToast();
@@ -134,6 +162,7 @@ export function LiveAdmin() {
                 بدأ {live.started_at ? dateTime(live.started_at) : ""}. اضغط «ابدأ البث بالكاميرا» واسمح للمتصفح باستعمال الكاميرا والمايكروفون.
                 «قطع الاتصال» يوقف كاميرتك فقط؛ لإنهاء البث للجميع اضغط «إنهاء البث للجميع».
               </p>
+              <ShareLink session={live} />
               <label className="ui-check">
                 <input type="checkbox" checked={settings.comments_enabled} onChange={(e) => void rpc("set_live_comments", { p_enabled: e.target.checked }, e.target.checked ? "فُعّلت التعليقات" : "أُوقفت التعليقات")} />
                 <span>السماح للمنتسبين بالتعليق والأسئلة</span>
@@ -178,6 +207,9 @@ export function LiveAdmin() {
                   </div>
                   <div className="ad-toolbar">
                     <Button small variant="pink" icon="play" disabled={!ready} onClick={() => void rpc("set_live_session_status", { p_id: s.id, p_status: "live" }, "بدأ البث — اضغط «ابدأ البث بالكاميرا»")}>ابدأ الآن</Button>
+                    <Button small variant="ghost" icon="link" disabled={!ready} onClick={async () => {
+                      try { const l = await getShareLink(s.id); toast((await copyText(l)) ? "تم نسخ رابط المشاهدة" : l); } catch (e) { toast((e as Error).message); }
+                    }}>نسخ الرابط</Button>
                     <Button small variant="ghost" icon="edit" onClick={() => setForm({ id: s.id, title: s.title, description: s.description, scheduled_at: toLocalInput(s.scheduled_at) })}>تعديل</Button>
                     <ConfirmButton label="حذف" confirmLabel="تأكيد الحذف" onConfirm={() => void rpc("delete_live_session", { p_id: s.id }, "حُذف البث")} />
                   </div>
