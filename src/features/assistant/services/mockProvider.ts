@@ -7,6 +7,30 @@ import type { ChatProvider, Intent, LangText } from "../types";
 import { resolveActions, sleep } from "./utils";
 import { matchChannelVideos } from "../lib/videoMatch";
 import { searchVideos } from "./videoSearch";
+import { supabase } from "../../membership/services/supabase";
+
+/** أسئلة وأجوبة تضيفها اللجنة من «إدارة الموقع» (تتقدّم على الردود الجاهزة) */
+interface Faq { keywords: string[]; answer_has: string; answer_ar: string; answer_fr: string }
+let faqCache: { at: number; rows: Faq[] } | null = null;
+async function loadFaq(): Promise<Faq[]> {
+  if (faqCache && Date.now() - faqCache.at < 5 * 60_000) return faqCache.rows;
+  try {
+    const { data } = await supabase.from("assistant_faq").select("keywords, answer_has, answer_ar, answer_fr").eq("active", true);
+    faqCache = { at: Date.now(), rows: (data ?? []) as Faq[] };
+  } catch {
+    faqCache = { at: Date.now(), rows: faqCache?.rows ?? [] };
+  }
+  return faqCache.rows;
+}
+function matchFaq(question: string, rows: Faq[]): Faq | null {
+  const q = ` ${normalizeText(question)} `;
+  let best: Faq | null = null, bestHits = 0;
+  for (const f of rows) {
+    const hits = f.keywords.filter((k) => q.includes(normalizeText(k))).length;
+    if (hits > bestHits) { best = f; bestHits = hits; }
+  }
+  return best;
+}
 
 type Reply = Omit<Intent, "id" | "keywords">;
 
@@ -37,7 +61,10 @@ export const mockProvider: ChatProvider = {
     }
     const about = isAboutAssociation(question, knowledge);
 
-    let reply: Reply | null = matchIntent(question, knowledge);
+    const faq = matchFaq(question, await loadFaq());
+    let reply: Reply | null = faq
+      ? { answer: { has: faq.answer_has, ar: faq.answer_ar || faq.answer_has, fr: faq.answer_fr || faq.answer_ar || faq.answer_has }, noVideo: true }
+      : matchIntent(question, knowledge);
     let startVideo = reply?.playlist ? matchChannelVideos(question, 1) : [];
     if (!reply) {
       // فقط لسؤال عن نشاط مرقّم بعينه، حتى لا يُعرض فيديو عام بدل «ما عندي خبر»

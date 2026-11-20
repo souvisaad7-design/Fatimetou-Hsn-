@@ -2,6 +2,8 @@
 import { mount } from "../app/bootstrap";
 import GuestLivePage from "../features/membership/live/GuestLivePage";
 import { initLang } from "../features/membership/i18n";
+import { loadSite } from "../features/membership/site/siteApi";
 
 initLang();
+void loadSite();
 mount(<GuestLivePage />);

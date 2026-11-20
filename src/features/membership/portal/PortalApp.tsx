@@ -13,6 +13,8 @@ import { CampaignsPage } from "./pages/CampaignsPage";
 import { HomePage } from "./pages/HomePage";
 import { LivePage } from "./pages/LivePage";
 import { useLiveStatus } from "../live/liveApi";
+import { SitePageView } from "../site/SiteBlocks";
+import { useSite } from "../site/siteApi";
 import { StatusPage } from "./pages/StatusPage";
 import "./portal.css";
 import "../live/live.css";
@@ -58,7 +60,8 @@ function AssistantFab({ raised = false }: { raised?: boolean }) {
 }
 
 function PortalShell({ member, onLogout }: { member: Member; onLogout: () => void }) {
-  const { page, go } = useHashRoute("home");
+  const { page, params, go } = useHashRoute("home");
+  const site = useSite();
   const { lang } = useLang();
   const { theme, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
@@ -114,6 +117,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
         {page === "status" ? <StatusPage member={member} go={go} />
           : page === "campaigns" ? <CampaignsPage />
           : page === "live" ? <LivePage />
+          : page === "p" ? <SitePageView slug={params[0] ?? ""} />
           : <HomePage member={member} go={go} />}
       </main>
 
@@ -121,6 +125,12 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
         <div className="pt-wrap">
           <p><b>{t("org.committee")}</b> — {t("org.name")}</p>
           <p>{t("footer.contact")} <b className="num" dir="ltr">{cfg.phone}</b></p>
+          {site.settings.links && (
+            <p className="pt-socials">
+              {([["facebook", "Facebook"], ["youtube", "YouTube"], ["tiktok", "TikTok"], ["snapchat", "Snapchat"], ["whatsapp", "WhatsApp"], ["website", "Web"]] as const)
+                .filter(([k]) => site.settings.links?.[k]).map(([k, label]) => <a key={k} href={site.settings.links![k]} target="_blank" rel="noopener noreferrer">{label}</a>)}
+            </p>
+          )}
         </div>
       </footer>
 

@@ -20,6 +20,7 @@ import { SettingsAdmin } from "./pages/SettingsAdmin";
 import { SmsAdmin } from "./pages/SmsAdmin";
 import { WhatsAppAdmin } from "./pages/WhatsAppAdmin";
 import { LiveAdmin } from "./pages/LiveAdmin";
+import { SiteAdmin } from "./pages/SiteAdmin";
 import { MemberFormModal } from "./forms";
 import "./admin.css";
 
@@ -36,6 +37,7 @@ const NAV: Array<{ id: string; label: string; icon: IconName; supervisor?: boole
   { id: "payments", label: "الانتساب الشهري", icon: "wallet" },
   { id: "lists", label: "القوائم والمشرفون", icon: "list" },
   { id: "campaigns", label: "الحملات والتبرعات", icon: "megaphone" },
+  { id: "site", label: "إدارة الموقع", icon: "edit" },
   { id: "settings", label: "الإعدادات", icon: "settings" },
 ];
 
@@ -208,6 +210,7 @@ function AdminShell({ session, onLogout }: { session: Session; onLogout: () => v
             : current.id === "sms" ? <SmsAdmin />
             : current.id === "whatsapp" ? <WhatsAppAdmin />
             : current.id === "live" ? <LiveAdmin />
+            : current.id === "site" ? <SiteAdmin />
             : <Dashboard go={go} />}
         </main>
       </div>

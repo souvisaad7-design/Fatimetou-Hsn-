@@ -1,0 +1,22 @@
+/* ===== محتوى «إدارة الموقع» في البوابة ===== */
+.st-posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.st-post { display: flex; flex-direction: column; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; min-width: 0; }
+.st-post.is-pinned { border-color: color-mix(in srgb, var(--pink) 60%, var(--line)); }
+.st-post img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.st-post__body { padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.st-post__meta { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: .78rem; }
+.st-pin { color: var(--coral-ink, #b4523f); font-weight: 700; }
+.st-post h3 { margin: 0; font-size: 1.05rem; }
+.st-rich { line-height: 1.9; overflow-wrap: anywhere; }
+.st-rich h2 { font-size: 1.2rem; margin: 14px 0 4px; }
+.st-rich h3 { font-size: 1.05rem; margin: 12px 0 4px; }
+.st-rich ul { margin: 6px 0; padding-inline-start: 22px; }
+.st-rich a { color: var(--brand); }
+.st-pagelinks { display: flex; flex-wrap: wrap; gap: 10px; }
+.st-pagelink { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 700; min-height: 44px; }
+.st-pagelink:hover { border-color: var(--pink); }
+.st-page { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 20px; }
+.pt-socials { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 6px; }
+.pt-socials a { color: var(--muted); font-size: .85rem; }
+.st-admin-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 700px) { .st-admin-pair { grid-template-columns: minmax(0, 1fr); } }

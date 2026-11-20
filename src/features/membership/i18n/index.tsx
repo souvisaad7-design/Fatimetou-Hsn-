@@ -41,9 +41,18 @@ export function initLang() {
   applyDocument();
 }
 
+/** نصوص تعدّلها اللجنة من «إدارة الموقع» (تتقدّم على النصوص الأصلية) */
+let overrides: Partial<Record<DictKey, { ar?: string; fr?: string }>> = {};
+export function setTextOverrides(next: typeof overrides) {
+  overrides = next;
+  listeners.forEach((l) => l());
+}
+
 /** ترجمة نص بمفتاحه، مع استبدال {المتغيرات} */
 export function t(key: DictKey, vars?: Record<string, string | number>): string {
-  const text = (lang === "fr" ? fr[key] : ar[key]) ?? ar[key] ?? key;
+  const o = overrides[key];
+  const custom = o ? (lang === "fr" ? o.fr || o.ar : o.ar)?.trim() : "";
+  const text = custom || ((lang === "fr" ? fr[key] : ar[key]) ?? ar[key] ?? key);
   return vars ? text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? "")) : text;
 }
 

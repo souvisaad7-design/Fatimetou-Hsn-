@@ -16,6 +16,7 @@ import type { Member } from "../../types";
 import { Badge, Button, Progress } from "../../ui";
 import { t, tValue, useLang } from "../../i18n";
 import { PledgeForm, ReportPayment } from "./StatusPage";
+import { Announcements, PageLinks } from "../../site/SiteBlocks";
 
 export function HomePage({ member: m0, go }: { member: Member; go: (to: string) => void }) {
   const { lang } = useLang();
@@ -131,6 +132,9 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
         <div className="pd-stat"><span className="pd-stat__icon">🤍</span><div><b className="num">{myDonations.length}</b><small>{t("dash.donations", { total: money(sum(myDonations), false) })}</small></div></div>
       </section>
 
+      {/* إعلانات اللجنة (من «إدارة الموقع») */}
+      <Announcements />
+
       {/* إجراءات سريعة */}
       <section>
         <h2 className="pt-h2">{t("dash.quick")}</h2>
@@ -193,6 +197,8 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           </div>
         )}
       </section>
+
+      <PageLinks />
 
       {/* الدفع */}
       <section className="pt-pay">
