@@ -71,6 +71,33 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    /* اللجنة تختبر مفاتيح LiveKit (دون إظهار القيم السرية) */
+    if (action === "check") {
+      if (!admin) return json({ error: "للجنة فقط" }, 403);
+      const { data: c } = await db.rpc("live_provider_config");
+      const url = String(c?.url ?? ""), apiKey = String(c?.key ?? ""), secret = String(c?.secret ?? "");
+      const info: Record<string, unknown> = {
+        url, key: apiKey ? `${apiKey.slice(0, 6)}…${apiKey.slice(-3)} (${apiKey.length} حرفاً)` : "غير محفوظ",
+        secret_length: secret.length,
+      };
+      if (!url || !apiKey || !secret) return json({ ok: false, ...info, reason: "المفاتيح غير محفوظة" });
+      const now = Math.floor(Date.now() / 1000);
+      const tok = await livekitToken(apiKey, secret, { iss: apiKey, nbf: now - 10, exp: now + 300, video: { roomList: true } });
+      try {
+        const res = await fetch(`${url.replace(/^wss:/, "https:")}/twirp/livekit.RoomService/ListRooms`, {
+          method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(10000),
+        });
+        const text = (await res.text()).slice(0, 300);
+        const reason = res.ok ? "المفاتيح صحيحة ✅"
+          : /invalid API key|could not find/i.test(text) ? "LiveKit لا يعرف هذا المفتاح (API Key): ربما حُذف، أو كُتب بحرف مختلف، أو أنه من مشروع آخر"
+          : /signature|invalid token/i.test(text) ? "الرمز السري (API Secret) لا يطابق هذا المفتاح"
+          : `ردّ LiveKit: ${res.status}`;
+        return json({ ok: res.ok, ...info, reason, livekit: res.ok ? undefined : text });
+      } catch (e) {
+        return json({ ok: false, ...info, reason: `تعذّر الوصول إلى ${url}: ${(e as Error).message}` });
+      }
+    }
+
     if (action !== "token") return json({ error: "طلب غير معروف" }, 400);
     if (!live) return json({ error: "لا يوجد بث جارٍ الآن" }, 404);
     if (body.session_id && body.session_id !== live.id) return json({ error: "انتهى هذا البث" }, 409);

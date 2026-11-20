@@ -39,6 +39,7 @@ export function LiveAdmin() {
   const [keys, setKeys] = useState({ url: "", key: "", secret: "", show: false, busy: false, editing: false });
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [check, setCheck] = useState<{ busy: boolean; result: null | { ok: boolean; reason: string; url?: string; key?: string; secret_length?: number; livekit?: string } }>({ busy: false, result: null });
 
   const load = useCallback(async () => {
     try {
@@ -94,10 +95,22 @@ export function LiveAdmin() {
     }
   };
 
+  const runCheck = async () => {
+    setCheck({ busy: true, result: null });
+    try {
+      const { data, error } = await supabase.functions.invoke("live-token", { body: { action: "check" } });
+      if (error) throw error;
+      setCheck({ busy: false, result: data });
+    } catch (err) {
+      setCheck({ busy: false, result: { ok: false, reason: errorMessage(err) } });
+    }
+  };
+
   const connect = async () => {
     setKeys((k) => ({ ...k, busy: true }));
     const ok = await rpc("live_set_credentials", { p_url: normalizeUrl(keys.url), p_key: clean(keys.key), p_secret: clean(keys.secret) }, "تم ربط حساب LiveKit وحفظ المفاتيح مشفّرة");
     setKeys(ok ? { url: "", key: "", secret: "", show: false, busy: false, editing: false } : (k) => ({ ...k, busy: false }));
+    if (ok) void runCheck();
   };
 
   return (
@@ -183,6 +196,7 @@ export function LiveAdmin() {
             <Badge tone="ok">✓ مربوطة</Badge>
             <span className="ad-muted ad-small">المشروع <code dir="ltr">{settings.livekit_url}</code> — المفاتيح محفوظة مشفّرة منذ {dateTime(settings.connected_at!)}.</span>
             <Button small variant="ghost" icon="edit" onClick={() => setKeys({ ...keys, editing: true })}>تغيير المفاتيح</Button>
+            <Button small variant="ghost" icon="check" disabled={check.busy} onClick={() => void runCheck()}>{check.busy ? "جارٍ الاختبار..." : "اختبار الاتصال"}</Button>
           </div>
         ) : (
           <div className="ui-form">
@@ -207,6 +221,13 @@ export function LiveAdmin() {
               {keys.editing && <Button variant="ghost" onClick={() => setKeys({ url: "", key: "", secret: "", show: false, busy: false, editing: false })}>إلغاء</Button>}
             </div>
             <p className="ui-field--full ad-muted ad-small">تُحفظ مشفّرة على الخادم (Supabase Vault)، ولا تظهر مرة أخرى، ولا توجد في كود الموقع ولا في GitHub.</p>
+          </div>
+        )}
+        {check.result && (
+          <div className={`ad-sms-preview ad-mt`}>
+            <b>{check.result.reason}</b>
+            <span className="ad-muted ad-small" dir="ltr">URL: {check.result.url || "—"} · Key: {check.result.key} · Secret: {check.result.secret_length} chars</span>
+            {check.result.livekit && <span className="ad-muted ad-small" dir="ltr">{check.result.livekit}</span>}
           </div>
         )}
       </Card>
