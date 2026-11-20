@@ -27,6 +27,8 @@ const duration = (a: string | null, b: string | null) => {
 };
 /** رابط LiveKit كما يقبله الخادم: wss://… بلا مسافات ولا «/» في آخره (ويقبل https:// فيحوّله) */
 const normalizeUrl = (u: string) => u.trim().replace(/^https:\/\//i, "wss://").replace(/\/+$/, "");
+/** المفاتيح حروف وأرقام فقط: نحذف أي مسافة أو سطر جديد أو حرف خفي يأتي مع النسخ */
+const clean = (v: string) => v.replace(/[^A-Za-z0-9]/g, "");
 const EMPTY = { id: "", title: "", description: "", scheduled_at: "" };
 
 export function LiveAdmin() {
@@ -94,7 +96,7 @@ export function LiveAdmin() {
 
   const connect = async () => {
     setKeys((k) => ({ ...k, busy: true }));
-    const ok = await rpc("live_set_credentials", { p_url: normalizeUrl(keys.url), p_key: keys.key.trim(), p_secret: keys.secret.trim() }, "تم ربط حساب LiveKit وحفظ المفاتيح مشفّرة");
+    const ok = await rpc("live_set_credentials", { p_url: normalizeUrl(keys.url), p_key: clean(keys.key), p_secret: clean(keys.secret) }, "تم ربط حساب LiveKit وحفظ المفاتيح مشفّرة");
     setKeys(ok ? { url: "", key: "", secret: "", show: false, busy: false, editing: false } : (k) => ({ ...k, busy: false }));
   };
 
@@ -200,7 +202,7 @@ export function LiveAdmin() {
               {(id) => <input id={id} type={keys.show ? "text" : "password"} value={keys.secret} onChange={(e) => setKeys({ ...keys, secret: e.target.value })} dir="ltr" autoComplete="new-password" spellCheck={false} />}
             </Field>
             <div className="ui-field--full ad-toolbar">
-              <Button icon="check" disabled={keys.busy || !/^wss:\/\//.test(keys.url) || keys.key.trim().length < 8 || keys.secret.trim().length < 20} onClick={() => void connect()}>{keys.busy ? "جارٍ الحفظ..." : "حفظ وربط"}</Button>
+              <Button icon="check" disabled={keys.busy || !/^wss:\/\//.test(keys.url) || clean(keys.key).length < 8 || clean(keys.secret).length < 20} onClick={() => void connect()}>{keys.busy ? "جارٍ الحفظ..." : "حفظ وربط"}</Button>
               <Button variant="ghost" onClick={() => setKeys({ ...keys, show: !keys.show })}>{keys.show ? "إخفاء" : "إظهار"}</Button>
               {keys.editing && <Button variant="ghost" onClick={() => setKeys({ url: "", key: "", secret: "", show: false, busy: false, editing: false })}>إلغاء</Button>}
             </div>
