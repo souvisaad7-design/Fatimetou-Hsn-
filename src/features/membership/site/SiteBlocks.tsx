@@ -62,3 +62,19 @@ export function SitePageView({ slug }: { slug: string }) {
     </article>
   );
 }
+
+/** صورة كبيرة أعلى الصفحة الرئيسية (تضعها اللجنة من «إدارة الموقع») */
+export function HomeBanner() {
+  const { settings } = useSite();
+  const b = settings.banner;
+  if (!b?.image_url || (settings.hidden ?? []).includes("home.banner")) return null;
+  const inner = (
+    <>
+      <img src={b.image_url} alt={b.title ?? ""} />
+      {b.title && <span className="st-banner__title">{b.title}</span>}
+    </>
+  );
+  return b.link
+    ? <a className="st-banner" href={b.link} target={b.link.startsWith("#") ? undefined : "_blank"} rel="noopener noreferrer">{inner}</a>
+    : <div className="st-banner">{inner}</div>;
+}

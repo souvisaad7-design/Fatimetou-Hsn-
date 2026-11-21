@@ -14,7 +14,7 @@ import { HomePage } from "./pages/HomePage";
 import { LivePage } from "./pages/LivePage";
 import { useLiveStatus } from "../live/liveApi";
 import { SitePageView } from "../site/SiteBlocks";
-import { useSite } from "../site/siteApi";
+import { useShow, useSite } from "../site/siteApi";
 import { StatusPage } from "./pages/StatusPage";
 import "./portal.css";
 import "../live/live.css";
@@ -46,7 +46,12 @@ export default function PortalApp() {
   if (db.status === "error" && !db.profile) return <div className="app-message" role="alert"><LangSwitch /><h1>{t("common.connError")}</h1><p>{db.error}</p><button type="button" onClick={() => void restoreSession()}>{t("common.retry")}</button></div>;
   if (!member) return <><AuthGate onLogin={login} /><AssistantFab /></>;
   if (member.status !== "approved") return <><WaitingScreen member={member} onLogout={logout} /><AssistantFab /></>;
-  return <><PortalShell member={member} onLogout={logout} /><AssistantFab raised /></>;
+  return <><PortalShell member={member} onLogout={logout} /><FabIfShown /></>;
+}
+
+function FabIfShown() {
+  const show = useShow();
+  return show("fab.assistant") ? <AssistantFab raised /> : null;
 }
 
 /** زر عائم يفتح المساعد الذكي (أهداف الجمعية وفيديوهات إنجازاتها من قناتها على يوتيوب) */
@@ -62,6 +67,8 @@ function AssistantFab({ raised = false }: { raised?: boolean }) {
 function PortalShell({ member, onLogout }: { member: Member; onLogout: () => void }) {
   const { page, params, go } = useHashRoute("home");
   const site = useSite();
+  const show = useShow();
+  const nav = NAV.filter((n) => n.id === "home" || show(`nav.${n.id}`));
   const { lang } = useLang();
   const { theme, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
@@ -85,7 +92,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
             </span>
           </a>
           <nav className={`pt-nav${menu ? " is-open" : ""}`} aria-label={t("common.mainMenu")}>
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <a key={n.id} href={`#/${n.id}`} className={page === n.id ? "is-active" : undefined} aria-current={page === n.id ? "page" : undefined}>
                 <Icon name={n.icon} size={18} /> {t(n.label)}{n.id === "live" && live && <span className="lv-navdot" aria-label="LIVE" />}
               </a>
@@ -105,7 +112,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
         </div>
       </header>
 
-      {live && page !== "live" && (
+      {live && page !== "live" && show("nav.live") && (
         <a className="lv-banner" href="#/live">
           <span className="lv-banner__dot" aria-hidden="true" />
           <span className="lv-banner__text"><b>{t("live.nowBanner")}</b> {live.title}</span>
@@ -136,7 +143,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
 
       {/* شريط تنقل سفلي على الهاتف */}
       <nav className="pt-tabbar" aria-label={t("common.quickNav")}>
-        {NAV.map((n) => (
+        {nav.map((n) => (
           <a key={n.id} href={`#/${n.id}`} className={page === n.id ? "is-active" : undefined}>
             <Icon name={n.icon} size={20} />
             <span>{t(n.label)}</span>{n.id === "live" && live && <span className="lv-navdot" aria-label="LIVE" />}

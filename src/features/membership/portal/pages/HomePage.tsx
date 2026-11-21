@@ -16,11 +16,13 @@ import type { Member } from "../../types";
 import { Badge, Button, Progress } from "../../ui";
 import { t, tValue, useLang } from "../../i18n";
 import { PledgeForm, ReportPayment } from "./StatusPage";
-import { Announcements, PageLinks } from "../../site/SiteBlocks";
+import { Announcements, HomeBanner, PageLinks } from "../../site/SiteBlocks";
+import { useShow } from "../../site/siteApi";
 
 export function HomePage({ member: m0, go }: { member: Member; go: (to: string) => void }) {
   const { lang } = useLang();
   const db = useDb();
+  const show = useShow();
   const toast = useToast();
   const member = db.members.find((x) => x.id === m0.id) ?? m0;
   const list = db.lists.find((l) => l.id === member.listId);
@@ -70,7 +72,10 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
 
   return (
     <div className="pt-stack pd">
+      <HomeBanner />
+
       {/* التحية */}
+      {show("home.hello") && (
       <section className="pd-hello">
         <span className="pd-hello__logo"><img src={org.logoFull} alt="" width={640} height={380} /></span>
         <div>
@@ -79,9 +84,11 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           <p className="pd-hello__motto">«{t("org.motto")}»</p>
         </div>
       </section>
+      )}
 
       <div className="pd-grid">
         {/* بطاقة المنتسب الرقمية */}
+        {show("home.card") && (
         <section className="pd-card" aria-label={t("dash.cardTitle")}>
           <div className="pd-card__top">
             <span className="pd-card__logo"><img src={org.logoFull} alt="" width={640} height={380} /></span>
@@ -104,8 +111,10 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
             </button>
           </div>
         </section>
+        )}
 
         {/* حالة الشهر الحالي */}
+        {show("home.month") && (
         <section className={`pd-month is-${monthState}`}>
           <span className="pd-month__icon" aria-hidden="true">{monthState === "paid" ? "✓" : monthState === "pending" ? "⏳" : "!"}</span>
           <div className="pd-month__body">
@@ -119,9 +128,11 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           </div>
           {monthState === "unpaid" && <Button icon="plus" onClick={() => setReporting(true)}>{t("st.report")}</Button>}
         </section>
+        )}
       </div>
 
       {/* أرقامي */}
+      {show("home.stats") && (
       <section className="pd-stats" aria-label={t("dash.myNumbers")}>
         <div className="pd-stat">
           <div className="pd-ring" style={{ ["--pct" as string]: `${c.pct}%` }}><span className="num">{c.pct}%</span></div>
@@ -131,11 +142,13 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
         <div className="pd-stat"><span className="pd-stat__icon">💰</span><div><b className="num">{money(yearTotal, false)}</b><small>{t("dash.yearTotal", { year: month.slice(0, 4) })}</small></div></div>
         <div className="pd-stat"><span className="pd-stat__icon">🤍</span><div><b className="num">{myDonations.length}</b><small>{t("dash.donations", { total: money(sum(myDonations), false) })}</small></div></div>
       </section>
+      )}
 
       {/* إعلانات اللجنة (من «إدارة الموقع») */}
-      <Announcements />
+      {show("home.news") && <Announcements />}
 
       {/* إجراءات سريعة */}
+      {show("home.quick") && (
       <section>
         <h2 className="pt-h2">{t("dash.quick")}</h2>
         <div className="pd-actions">
@@ -151,8 +164,10 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           <button type="button" className="pd-action" onClick={() => go("status")}><span><Icon name="list" /></span>{t("nav.status")}</button>
         </div>
       </section>
+      )}
 
       {/* آخر 6 أشهر */}
+      {show("home.last6") && (
       <section className="pd-panel">
         <div className="pt-section-head">
           <h2 className="pt-h2">{t("dash.last6")}</h2>
@@ -168,8 +183,10 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           ))}
         </ol>
       </section>
+      )}
 
       {/* الحملات الجارية */}
+      {show("home.campaigns") && (
       <section>
         <div className="pt-section-head">
           <h2 className="pt-h2">{t("home.active")}</h2>
@@ -197,10 +214,12 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           </div>
         )}
       </section>
+      )}
 
-      <PageLinks />
+      {show("home.pages") && <PageLinks />}
 
       {/* الدفع */}
+      {show("home.pay") && (
       <section className="pt-pay">
         <Icon name="wallet" size={28} />
         <div className="pd-pay__body">
@@ -214,6 +233,7 @@ export function HomePage({ member: m0, go }: { member: Member; go: (to: string) 
           <p className="pt-muted">{t("home.payVia", { methods: cfg.paymentMethods.map((x) => tValue("pay", x)).join(lang === "ar" ? "، " : ", ") })}</p>
         </div>
       </section>
+      )}
 
       {member.status !== "approved" && <Badge tone={statusTone(member.status)}>{memberStatusLabel[member.status]}</Badge>}
       {reporting && <ReportPayment memberId={member.id} defaultAmount={member.pledge} onClose={() => setReporting(false)} />}
