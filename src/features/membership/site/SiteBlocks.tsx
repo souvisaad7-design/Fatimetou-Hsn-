@@ -1,7 +1,7 @@
 /** عرض محتوى «إدارة الموقع» في بوابة المنتسبين: الإعلانات، روابط الصفحات، والصفحة نفسها */
 import { Icon } from "../../../shared/Icon";
 import { t, useLang } from "../i18n";
-import { renderRichText, useSite, type SitePage } from "./siteApi";
+import { renderRichText, safeUrl, useSite, type SitePage } from "./siteApi";
 import "./site.css";
 
 const pageTitle = (p: SitePage, lang: string) => (lang === "fr" && p.title_fr ? p.title_fr : p.title_ar);
@@ -15,7 +15,7 @@ export function Announcements() {
       <div className="st-posts">
         {posts.slice(0, 6).map((p) => (
           <article key={p.id} className={`st-post${p.pinned ? " is-pinned" : ""}`}>
-            {p.image_url && <img src={p.image_url} alt="" loading="lazy" />}
+            {safeUrl(p.image_url) && <img src={safeUrl(p.image_url)} alt="" loading="lazy" />}
             <div className="st-post__body">
               <div className="st-post__meta">
                 {p.pinned && <span className="st-pin">📌 {t("site.pinned")}</span>}
@@ -23,7 +23,7 @@ export function Announcements() {
               </div>
               <h3>{p.title}</h3>
               {p.body && <div className="st-rich" dangerouslySetInnerHTML={{ __html: renderRichText(p.body) }} />}
-              {p.link_url && <a className="pt-link" href={p.link_url} target="_blank" rel="noopener noreferrer">{t("site.more")} ←</a>}
+              {safeUrl(p.link_url) && <a className="pt-link" href={safeUrl(p.link_url)} target="_blank" rel="noopener noreferrer">{t("site.more")} ←</a>}
             </div>
           </article>
         ))}
@@ -67,14 +67,15 @@ export function SitePageView({ slug }: { slug: string }) {
 export function HomeBanner() {
   const { settings } = useSite();
   const b = settings.banner;
-  if (!b?.image_url || (settings.hidden ?? []).includes("home.banner")) return null;
+  const img = safeUrl(b?.image_url), link = safeUrl(b?.link);
+  if (!b || !img || (settings.hidden ?? []).includes("home.banner")) return null;
   const inner = (
     <>
-      <img src={b.image_url} alt={b.title ?? ""} />
+      <img src={img} alt={b.title ?? ""} />
       {b.title && <span className="st-banner__title">{b.title}</span>}
     </>
   );
-  return b.link
-    ? <a className="st-banner" href={b.link} target={b.link.startsWith("#") ? undefined : "_blank"} rel="noopener noreferrer">{inner}</a>
+  return link
+    ? <a className="st-banner" href={link} target={link.startsWith("#") ? undefined : "_blank"} rel="noopener noreferrer">{inner}</a>
     : <div className="st-banner">{inner}</div>;
 }

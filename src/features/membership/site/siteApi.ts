@@ -56,6 +56,12 @@ export async function loadSite() {
   emit();
 }
 
+/** رابط آمن فقط: https أو رابط داخلي يبدأ بـ #/ (يمنع روابط javascript: وغيرها) */
+export function safeUrl(u?: string | null): string | undefined {
+  const v = (u ?? "").trim();
+  return /^https:\/\/[^\s"'<>]+$/i.test(v) || /^#\/[\w\-/]*$/.test(v) ? v : undefined;
+}
+
 export function useSite() {
   return useSyncExternalStore((cb) => { listeners.add(cb); return () => { listeners.delete(cb); }; }, () => state, () => state);
 }

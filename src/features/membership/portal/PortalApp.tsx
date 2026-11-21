@@ -14,7 +14,7 @@ import { HomePage } from "./pages/HomePage";
 import { LivePage } from "./pages/LivePage";
 import { useLiveStatus } from "../live/liveApi";
 import { SitePageView } from "../site/SiteBlocks";
-import { useShow, useSite } from "../site/siteApi";
+import { safeUrl, useShow, useSite } from "../site/siteApi";
 import { StatusPage } from "./pages/StatusPage";
 import "./portal.css";
 import "../live/live.css";
@@ -135,7 +135,7 @@ function PortalShell({ member, onLogout }: { member: Member; onLogout: () => voi
           {site.settings.links && (
             <p className="pt-socials">
               {([["facebook", "Facebook"], ["youtube", "YouTube"], ["tiktok", "TikTok"], ["snapchat", "Snapchat"], ["whatsapp", "WhatsApp"], ["website", "Web"]] as const)
-                .filter(([k]) => site.settings.links?.[k]).map(([k, label]) => <a key={k} href={site.settings.links![k]} target="_blank" rel="noopener noreferrer">{label}</a>)}
+                .filter(([k]) => safeUrl(site.settings.links?.[k])).map(([k, label]) => <a key={k} href={safeUrl(site.settings.links![k])} target="_blank" rel="noopener noreferrer">{label}</a>)}
             </p>
           )}
         </div>

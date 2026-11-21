@@ -53,6 +53,11 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
+  // حدّ لمنع إنشاء الحسابات بالجملة: أكثر من 40 طلباً في 10 دقائق ← انتظار
+  const since = new Date(Date.now() - 10 * 60_000).toISOString();
+  const { count: recent } = await admin.from("members").select("id", { count: "exact", head: true }).gte("created_at", since);
+  if ((recent ?? 0) >= 40) return json({ error: "طلبات كثيرة الآن، حاول بعد دقائق." }, 429);
+
   // رقم مسجّل بطلب غير مرفوض؟
   const { data: active } = await admin.from("members").select("id").eq("phone", phone).neq("status", "rejected").limit(1);
   if (active && active.length) return json({ error: "هذا الرقم مسجّل من قبل. ارجع إلى «تسجيل الدخول» وادخل برقمك وكلمة المرور." }, 409);
@@ -64,6 +69,15 @@ Deno.serve(async (req) => {
     const { data: old } = await admin.from("members").select("user_id").eq("phone", phone).not("user_id", "is", null).limit(1);
     userId = old?.[0]?.user_id ?? null;
     if (!userId) return json({ error: "تعذّر إنشاء الحساب، حاول مرة أخرى." }, 500);
+    // حماية: لا نعيد ضبط كلمة مرور حساب من اللجنة أو مشرف أو منتسب نشط (يمنع الاستيلاء على الحسابات)
+    const [{ data: isAdm }, { data: isSup }, { data: activeRows }] = await Promise.all([
+      admin.from("admins").select("user_id").eq("user_id", userId).limit(1),
+      admin.from("lists").select("id").eq("supervisor_user_id", userId).limit(1),
+      admin.from("members").select("id").eq("user_id", userId).neq("status", "rejected").limit(1),
+    ]);
+    if (isAdm?.length || isSup?.length || activeRows?.length) {
+      return json({ error: "هذا الرقم مرتبط بحساب موجود. ارجع إلى «تسجيل الدخول»، وإن نسيت كلمة المرور فاتصل باللجنة." }, 409);
+    }
     await admin.auth.admin.updateUserById(userId, { password: pin });
     await admin.from("members").update({ user_id: null }).eq("user_id", userId);
   } else {
